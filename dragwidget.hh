@@ -38,27 +38,26 @@
 **
 ****************************************************************************/
 
-#ifndef DRAGLABEL_H
-#define DRAGLABEL_H
+#ifndef DRAGWIDGET_H
+#define DRAGWIDGET_H
 
-#include <QLabel>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QDragEnterEvent;
-class QDragMoveEvent;
-class QFrame;
+class QDropEvent;
 QT_END_NAMESPACE
 
-//! [0]
-class DragLabel : public QLabel
+class DragWidget : public QWidget
 {
 public:
-    DragLabel(const QString &text, QWidget *parent);
-    QString labelText() const;
+	DragWidget(QWidget *parent = 0);
 
-private:
-    QString m_labelText;
+protected:
+	void dragEnterEvent(QDragEnterEvent *event);
+	void dragMoveEvent(QDragMoveEvent *event);
+	void dropEvent(QDropEvent *event);
+	void mousePressEvent(QMouseEvent *event);
 };
-//! [0]
 
 #endif

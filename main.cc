@@ -38,28 +38,23 @@
 **
 ****************************************************************************/
 
-#ifndef DRAGWIDGET_H
-#define DRAGWIDGET_H
+#include <QApplication>
+#include "dragwidget.hh"
 
-#include <QWidget>
-
-QT_BEGIN_NAMESPACE
-class QDragEnterEvent;
-class QDropEvent;
-QT_END_NAMESPACE
-
-//! [0]
-class DragWidget : public QWidget
+int main(int argc, char *argv[])
 {
-public:
-    DragWidget(QWidget *parent = 0);
+	Q_INIT_RESOURCE(fridgemagnets);
 
-protected:
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-};
-//! [0]
-
+	QApplication app(argc, argv);
+#ifdef QT_KEYPAD_NAVIGATION
+	QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
 #endif
+	DragWidget window;
+
+	bool smallScreen = QApplication::arguments().contains("-small-screen");
+	if (smallScreen)
+		window.showFullScreen();
+	else
+		window.show();
+	return app.exec();
+}

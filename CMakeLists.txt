@@ -17,8 +17,8 @@ endif(NOT CMAKE_BUILD_TYPE)
 find_package(Qt4 REQUIRED) # find and setup Qt4 for this project
 include(${QT_USE_FILE})
 
-file(GLOB SOURCE_FILES "*.cpp")
-file(GLOB HEADER_FILES "*.h")
+file(GLOB SOURCE_FILES "*.cc")
+file(GLOB HEADER_FILES "*.hh")
 file(GLOB RESOURCE_FILES "*.qrc")
 file(GLOB UI_FILES "*.ui")
 
