@@ -20,11 +20,13 @@ include(${QT_USE_FILE})
 file(GLOB SOURCE_FILES "*.cpp")
 file(GLOB HEADER_FILES "*.h")
 file(GLOB RESOURCE_FILES "*.qrc")
+file(GLOB UI_FILES "*.ui")
 
 QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
+QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
 QT4_AUTOMOC(MOC_SOURCES ${SOURCE_FILES})
 
 include_directories(${CMAKE_BINARY_DIR})
 
-add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES})
+add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
 target_link_libraries(editor ${QT_LIBRARIES})
