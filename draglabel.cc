@@ -42,13 +42,24 @@
 
 #include "draglabel.hh"
 
+namespace {
+	static const int text_margin = 12; // Margin of the label texts
+}
+
 DragLabel::DragLabel(const QString &text, QWidget *parent)
 	: QLabel(parent)
 {
+	m_labelText = text;
 	QFontMetrics metric(font());
-	QSize size = metric.size(Qt::TextSingleLine, text);
+	QSize s = metric.size(Qt::TextSingleLine, text);
+	s.rwidth() += text_margin;
+	s.rheight() += text_margin;
+	createPixmap(s);
+}
 
-	QImage image(size.width() + 12, size.height() + 12,
+void DragLabel::createPixmap(QSize size)
+{
+	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 
@@ -70,14 +81,18 @@ DragLabel::DragLabel(const QString &text, QWidget *parent)
 
 	painter.setFont(font);
 	painter.setBrush(Qt::black);
-	painter.drawText(QRect(QPoint(6, 6), size), Qt::AlignCenter, text);
+	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, m_labelText);
 	painter.end();
 
 	setPixmap(QPixmap::fromImage(image));
-	m_labelText = text;
 }
 
 QString DragLabel::labelText() const
 {
     return m_labelText;
+}
+
+void DragLabel::resizeEvent(QResizeEvent *event)
+{
+	createPixmap(event->size());
 }

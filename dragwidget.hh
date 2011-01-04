@@ -58,6 +58,7 @@ protected:
 	void dragMoveEvent(QDragMoveEvent *event);
 	void dropEvent(QDropEvent *event);
 	void mousePressEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event);
 };
 
 #endif

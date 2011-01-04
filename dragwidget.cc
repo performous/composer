@@ -42,6 +42,7 @@
 
 #include "draglabel.hh"
 #include "dragwidget.hh"
+#include <iostream>
 
 DragWidget::DragWidget(QWidget *parent)
 	: QWidget(parent)
@@ -172,4 +173,18 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 		child->close();
 	else
 		child->show();
+}
+
+void DragWidget::wheelEvent(QWheelEvent *event)
+{
+	DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+	if (!child)
+		return;
+
+	int neww = child->size().width() + event->delta() * 0.1;
+	child->resize(neww, child->size().height());
+
+	std::cout << "RESIZE: " << neww << std::endl;
+
+	event->accept();
 }
