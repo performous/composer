@@ -76,15 +76,13 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
+	if (event->mimeData()->hasFormat("application/x-notelabel")) {
 		if (children().contains(event->source())) {
 			event->setDropAction(Qt::MoveAction);
 			event->accept();
 		} else {
 			event->acceptProposedAction();
 		}
-	} else if (event->mimeData()->hasText()) {
-		event->acceptProposedAction();
 	} else {
 		event->ignore();
 	}
@@ -92,15 +90,13 @@ void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void NoteGraphWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
+	if (event->mimeData()->hasFormat("application/x-notelabel")) {
 		if (children().contains(event->source())) {
 			event->setDropAction(Qt::MoveAction);
 			event->accept();
 		} else {
 			event->acceptProposedAction();
 		}
-	} else if (event->mimeData()->hasText()) {
-		event->acceptProposedAction();
 	} else {
 		event->ignore();
 	}
@@ -108,18 +104,15 @@ void NoteGraphWidget::dragMoveEvent(QDragMoveEvent *event)
 
 void NoteGraphWidget::dropEvent(QDropEvent *event)
 {
-	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
+	if (event->mimeData()->hasFormat("application/x-notelabel")) {
 		const QMimeData *mime = event->mimeData();
-		QByteArray itemData = mime->data("application/x-fridgemagnet");
+		QByteArray itemData = mime->data("application/x-notelabel");
 		QDataStream dataStream(&itemData, QIODevice::ReadOnly);
 
 		QString text;
 		QPoint offset;
 		dataStream >> text >> offset;
-		NoteLabel *newLabel = new NoteLabel(text, this);
-		newLabel->move(event->pos() - offset);
-		newLabel->show();
-		newLabel->setAttribute(Qt::WA_DeleteOnClose);
+		new NoteLabel(text, this, event->pos() - offset);
 
 		if (event->source() == this) {
 			event->setDropAction(Qt::MoveAction);
@@ -127,21 +120,6 @@ void NoteGraphWidget::dropEvent(QDropEvent *event)
 		} else {
 			event->acceptProposedAction();
 		}
-	} else if (event->mimeData()->hasText()) {
-		QStringList pieces = event->mimeData()->text().split(QRegExp("\\s+"),
-							 QString::SkipEmptyParts);
-		QPoint position = event->pos();
-
-		foreach (QString piece, pieces) {
-			NoteLabel *newLabel = new NoteLabel(piece, this);
-			newLabel->move(position);
-			newLabel->show();
-			newLabel->setAttribute(Qt::WA_DeleteOnClose);
-
-			position += QPoint(newLabel->width(), 0);
-		}
-
-		event->acceptProposedAction();
 	} else {
 		event->ignore();
 	}
@@ -161,7 +139,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		dataStream << child->getText() << QPoint(hotSpot);
 
 		QMimeData *mimeData = new QMimeData;
-		mimeData->setData("application/x-fridgemagnet", itemData);
+		mimeData->setData("application/x-notelabel", itemData);
 		mimeData->setText(child->getText());
 
 		QDrag *drag = new QDrag(this);
@@ -177,20 +155,14 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			child->show();
 
 	} else if (event->button() == Qt::RightButton) {
+		// Cut the text in half
 		int cutpos = int(std::ceil(child->getText().length() / 2.0));
 		QString firstst = child->getText().left(cutpos);
 		QString secondst = child->getText().right(child->getText().length() - cutpos);
-
-		NoteLabel *newLabel1 = new NoteLabel(firstst, this);
-		newLabel1->move(child->pos());
-		newLabel1->show();
-		newLabel1->setAttribute(Qt::WA_DeleteOnClose);
-
-		NoteLabel *newLabel2 = new NoteLabel(secondst, this);
-		newLabel2->move(newLabel1->pos() + QPoint(newLabel1->width(), 0));
-		newLabel2->show();
-		newLabel2->setAttribute(Qt::WA_DeleteOnClose);
-
+		// Create new labels
+		NoteLabel *newLabel1 = new NoteLabel(firstst, this,child->pos());
+		new NoteLabel(secondst, this, newLabel1->pos() + QPoint(newLabel1->width(), 0));
+		// Delete the old one
 		child->close();
 	}
 }
@@ -201,10 +173,9 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 	if (!child)
 		return;
 
+	// Figure out new size and apply it
 	int neww = child->size().width() + event->delta() * 0.1;
 	child->resize(neww, child->size().height());
-
-	std::cout << "RESIZE: " << neww << std::endl;
 
 	event->accept();
 }
@@ -215,6 +186,7 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	if (!child)
 		return;
 
+	// Spawn an input dialog
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("Edit lyric"),
 										  tr("Lyric:"), QLineEdit::Normal,

@@ -46,10 +46,14 @@ namespace {
 	static const int text_margin = 12; // Margin of the label texts
 }
 
-NoteLabel::NoteLabel(const QString &text, QWidget *parent)
+NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position)
 	: QLabel(parent), m_labelText(text)
 {
 	createPixmap();
+	if (!position.isNull())
+		move(position);
+	show();
+	setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void NoteLabel::createPixmap(QSize size)
