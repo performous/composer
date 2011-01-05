@@ -6,10 +6,6 @@
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
 	ui.setupUi(this);
-
-	// Signals/slots
-	//connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(about()));
-	//connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(quit()));
 }
 
 void EditorApp::on_actionAbout_triggered()
