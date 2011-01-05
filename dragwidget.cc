@@ -43,6 +43,7 @@
 #include "draglabel.hh"
 #include "dragwidget.hh"
 #include <iostream>
+#include <cmath>
 
 DragWidget::DragWidget(QWidget *parent)
 	: QWidget(parent)
@@ -152,27 +153,46 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 	if (!child)
 		return;
 
-	QPoint hotSpot = event->pos() - child->pos();
+	if (event->button() == Qt::LeftButton) {
+		QPoint hotSpot = event->pos() - child->pos();
 
-	QByteArray itemData;
-	QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-	dataStream << child->labelText() << QPoint(hotSpot);
+		QByteArray itemData;
+		QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+		dataStream << child->getText() << QPoint(hotSpot);
 
-	QMimeData *mimeData = new QMimeData;
-	mimeData->setData("application/x-fridgemagnet", itemData);
-	mimeData->setText(child->labelText());
+		QMimeData *mimeData = new QMimeData;
+		mimeData->setData("application/x-fridgemagnet", itemData);
+		mimeData->setText(child->getText());
 
-	QDrag *drag = new QDrag(this);
-	drag->setMimeData(mimeData);
-	drag->setPixmap(*child->pixmap());
-	drag->setHotSpot(hotSpot);
+		QDrag *drag = new QDrag(this);
+		drag->setMimeData(mimeData);
+		drag->setPixmap(*child->pixmap());
+		drag->setHotSpot(hotSpot);
 
-	child->hide();
+		child->hide();
 
-	if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
+		if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
+			child->close();
+		else
+			child->show();
+
+	} else if (event->button() == Qt::RightButton) {
+		int cutpos = int(std::ceil(child->getText().length() / 2.0));
+		QString firstst = child->getText().left(cutpos);
+		QString secondst = child->getText().right(child->getText().length() - cutpos);
+
+		DragLabel *newLabel1 = new DragLabel(firstst, this);
+		newLabel1->move(child->pos());
+		newLabel1->show();
+		newLabel1->setAttribute(Qt::WA_DeleteOnClose);
+
+		DragLabel *newLabel2 = new DragLabel(secondst, this);
+		newLabel2->move(newLabel1->pos() + QPoint(newLabel1->width(), 0));
+		newLabel2->show();
+		newLabel2->setAttribute(Qt::WA_DeleteOnClose);
+
 		child->close();
-	else
-		child->show();
+	}
 }
 
 void DragWidget::wheelEvent(QWheelEvent *event)

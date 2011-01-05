@@ -47,18 +47,20 @@ namespace {
 }
 
 DragLabel::DragLabel(const QString &text, QWidget *parent)
-	: QLabel(parent)
+	: QLabel(parent), m_labelText(text)
 {
-	m_labelText = text;
-	QFontMetrics metric(font());
-	QSize s = metric.size(Qt::TextSingleLine, text);
-	s.rwidth() += text_margin;
-	s.rheight() += text_margin;
-	createPixmap(s);
+	createPixmap();
 }
 
 void DragLabel::createPixmap(QSize size)
 {
+	if (!size.isValid()) {
+		QFontMetrics metric(font());
+		size = metric.size(Qt::TextSingleLine, m_labelText);
+		size.rwidth() += text_margin;
+		size.rheight() += text_margin;
+	}
+
 	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
@@ -87,9 +89,14 @@ void DragLabel::createPixmap(QSize size)
 	setPixmap(QPixmap::fromImage(image));
 }
 
-QString DragLabel::labelText() const
+QString DragLabel::getText() const
 {
     return m_labelText;
+}
+
+void DragLabel::setText(const QString &text)
+{
+	m_labelText = text;
 }
 
 void DragLabel::resizeEvent(QResizeEvent *event)

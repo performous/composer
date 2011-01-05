@@ -53,8 +53,9 @@ class DragLabel : public QLabel
 {
 public:
 	DragLabel(const QString &text, QWidget *parent);
-	void createPixmap(QSize size);
-	QString labelText() const;
+	void createPixmap(QSize size = QSize());
+	QString getText() const;
+	void setText(const QString &text);
 
 	void resizeEvent(QResizeEvent *event);
 
