@@ -40,12 +40,12 @@
 
 #include <QtGui>
 
-#include "draglabel.hh"
-#include "dragwidget.hh"
+#include "notelabel.hh"
+#include "notegraphwidget.hh"
 #include <iostream>
 #include <cmath>
 
-DragWidget::DragWidget(QWidget *parent)
+NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	QFile dictionaryFile(":/dictionary/words.txt");
@@ -59,7 +59,7 @@ DragWidget::DragWidget(QWidget *parent)
 		QString word;
 		inputStream >> word;
 		if (!word.isEmpty()) {
-			DragLabel *wordLabel = new DragLabel(word, this);
+			NoteLabel *wordLabel = new NoteLabel(word, this);
 			wordLabel->move(x, y);
 			wordLabel->show();
 			wordLabel->setAttribute(Qt::WA_DeleteOnClose);
@@ -74,7 +74,7 @@ DragWidget::DragWidget(QWidget *parent)
 	setAcceptDrops(true);
 }
 
-void DragWidget::dragEnterEvent(QDragEnterEvent *event)
+void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
 {
 	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
 		if (children().contains(event->source())) {
@@ -90,7 +90,7 @@ void DragWidget::dragEnterEvent(QDragEnterEvent *event)
 	}
 }
 
-void DragWidget::dragMoveEvent(QDragMoveEvent *event)
+void NoteGraphWidget::dragMoveEvent(QDragMoveEvent *event)
 {
 	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
 		if (children().contains(event->source())) {
@@ -106,7 +106,7 @@ void DragWidget::dragMoveEvent(QDragMoveEvent *event)
 	}
 }
 
-void DragWidget::dropEvent(QDropEvent *event)
+void NoteGraphWidget::dropEvent(QDropEvent *event)
 {
 	if (event->mimeData()->hasFormat("application/x-fridgemagnet")) {
 		const QMimeData *mime = event->mimeData();
@@ -116,7 +116,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 		QString text;
 		QPoint offset;
 		dataStream >> text >> offset;
-		DragLabel *newLabel = new DragLabel(text, this);
+		NoteLabel *newLabel = new NoteLabel(text, this);
 		newLabel->move(event->pos() - offset);
 		newLabel->show();
 		newLabel->setAttribute(Qt::WA_DeleteOnClose);
@@ -133,7 +133,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 		QPoint position = event->pos();
 
 		foreach (QString piece, pieces) {
-			DragLabel *newLabel = new DragLabel(piece, this);
+			NoteLabel *newLabel = new NoteLabel(piece, this);
 			newLabel->move(position);
 			newLabel->show();
 			newLabel->setAttribute(Qt::WA_DeleteOnClose);
@@ -147,9 +147,9 @@ void DragWidget::dropEvent(QDropEvent *event)
 	}
 }
 
-void DragWidget::mousePressEvent(QMouseEvent *event)
+void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
-	DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child)
 		return;
 
@@ -181,12 +181,12 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 		QString firstst = child->getText().left(cutpos);
 		QString secondst = child->getText().right(child->getText().length() - cutpos);
 
-		DragLabel *newLabel1 = new DragLabel(firstst, this);
+		NoteLabel *newLabel1 = new NoteLabel(firstst, this);
 		newLabel1->move(child->pos());
 		newLabel1->show();
 		newLabel1->setAttribute(Qt::WA_DeleteOnClose);
 
-		DragLabel *newLabel2 = new DragLabel(secondst, this);
+		NoteLabel *newLabel2 = new NoteLabel(secondst, this);
 		newLabel2->move(newLabel1->pos() + QPoint(newLabel1->width(), 0));
 		newLabel2->show();
 		newLabel2->setAttribute(Qt::WA_DeleteOnClose);
@@ -195,9 +195,9 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-void DragWidget::wheelEvent(QWheelEvent *event)
+void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
-	DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child)
 		return;
 
@@ -209,9 +209,9 @@ void DragWidget::wheelEvent(QWheelEvent *event)
 	event->accept();
 }
 
-void DragWidget::mouseDoubleClickEvent(QMouseEvent *event)
+void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child)
 		return;
 

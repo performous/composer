@@ -48,10 +48,10 @@ class QDragEnterEvent;
 class QDropEvent;
 QT_END_NAMESPACE
 
-class DragWidget : public QWidget
+class NoteGraphWidget : public QWidget
 {
 public:
-	DragWidget(QWidget *parent = 0);
+	NoteGraphWidget(QWidget *parent = 0);
 
 protected:
 	void dragEnterEvent(QDragEnterEvent *event);

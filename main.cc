@@ -39,17 +39,17 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include "dragwidget.hh"
+#include "notegraphwidget.hh"
 
 int main(int argc, char *argv[])
 {
-	Q_INIT_RESOURCE(fridgemagnets);
+        Q_INIT_RESOURCE(editor);
 
 	QApplication app(argc, argv);
 #ifdef QT_KEYPAD_NAVIGATION
 	QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
 #endif
-	DragWidget window;
+	NoteGraphWidget window;
 
 	bool smallScreen = QApplication::arguments().contains("-small-screen");
 	if (smallScreen)

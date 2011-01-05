@@ -38,68 +38,29 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#ifndef DRAGLABEL_H
+#define DRAGLABEL_H
 
-#include "draglabel.hh"
+#include <QLabel>
 
-namespace {
-	static const int text_margin = 12; // Margin of the label texts
-}
+QT_BEGIN_NAMESPACE
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QFrame;
+QT_END_NAMESPACE
 
-DragLabel::DragLabel(const QString &text, QWidget *parent)
-	: QLabel(parent), m_labelText(text)
+class NoteLabel : public QLabel
 {
-	createPixmap();
-}
+public:
+        NoteLabel(const QString &text, QWidget *parent);
+	void createPixmap(QSize size = QSize());
+	QString getText() const;
+	void setText(const QString &text);
 
-void DragLabel::createPixmap(QSize size)
-{
-	if (!size.isValid()) {
-		QFontMetrics metric(font());
-		size = metric.size(Qt::TextSingleLine, m_labelText);
-		size.rwidth() += text_margin;
-		size.rheight() += text_margin;
-	}
+	void resizeEvent(QResizeEvent *event);
 
-	QImage image(size.width(), size.height(),
-				 QImage::Format_ARGB32_Premultiplied);
-	image.fill(qRgba(0, 0, 0, 0));
+private:
+	QString m_labelText;
+};
 
-	QFont font;
-	font.setStyleStrategy(QFont::ForceOutline);
-
-	QLinearGradient gradient(0, 0, 0, image.height()-1);
-	gradient.setColorAt(0.0, Qt::white);
-	gradient.setColorAt(0.2, QColor(200, 200, 255));
-	gradient.setColorAt(0.8, QColor(200, 200, 255));
-	gradient.setColorAt(1.0, QColor(127, 127, 200));
-
-	QPainter painter;
-	painter.begin(&image);
-	painter.setRenderHint(QPainter::Antialiasing);
-	painter.setBrush(gradient);
-	painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1),
-							25, 25, Qt::RelativeSize);
-
-	painter.setFont(font);
-	painter.setBrush(Qt::black);
-	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, m_labelText);
-	painter.end();
-
-	setPixmap(QPixmap::fromImage(image));
-}
-
-QString DragLabel::getText() const
-{
-    return m_labelText;
-}
-
-void DragLabel::setText(const QString &text)
-{
-	m_labelText = text;
-}
-
-void DragLabel::resizeEvent(QResizeEvent *event)
-{
-	createPixmap(event->size());
-}
+#endif
