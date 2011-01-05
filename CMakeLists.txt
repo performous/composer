@@ -17,6 +17,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 find_package(Qt4 REQUIRED) # find and setup Qt4 for this project
 include(${QT_USE_FILE})
 
+# Headers that need MOC need to be defined separately
+file(GLOB MOC_HEADER_FILES "editorapp.hh")
+
 file(GLOB SOURCE_FILES "*.cc")
 file(GLOB HEADER_FILES "*.hh")
 file(GLOB RESOURCE_FILES "*.qrc")
@@ -24,7 +27,7 @@ file(GLOB UI_FILES "*.ui")
 
 QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
 QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
-QT4_AUTOMOC(MOC_SOURCES ${SOURCE_FILES})
+QT4_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
 
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})

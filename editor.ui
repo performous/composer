@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>EditorApp</class>
+ <widget class="QMainWindow" name="EditorApp">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -104,13 +104,13 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="action_New"/>
-    <addaction name="action_Open"/>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
     <addaction name="separator"/>
-    <addaction name="action_Save"/>
-    <addaction name="actionS_ave_as"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
-    <addaction name="actionE_xit"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
     <property name="title">
@@ -121,39 +121,39 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="action_About"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_About">
+  <action name="actionAbout">
    <property name="text">
     <string>&amp;About</string>
    </property>
   </action>
-  <action name="action_New">
+  <action name="actionNew">
    <property name="text">
     <string>&amp;New</string>
    </property>
   </action>
-  <action name="action_Open">
+  <action name="actionOpen">
    <property name="text">
     <string>&amp;Open</string>
    </property>
   </action>
-  <action name="action_Save">
+  <action name="actionSave">
    <property name="text">
     <string>&amp;Save</string>
    </property>
   </action>
-  <action name="actionS_ave_as">
+  <action name="actionSaveAs">
    <property name="text">
     <string>S&amp;ave as...</string>
    </property>
   </action>
-  <action name="actionE_xit">
+  <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
    </property>

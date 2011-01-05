@@ -39,9 +39,8 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QScrollArea>
-#include <QHBoxLayout>
-#include "ui_editor.h"
+
+#include "editorapp.hh"
 
 int main(int argc, char *argv[])
 {
@@ -52,9 +51,7 @@ int main(int argc, char *argv[])
 	QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
 #endif
 
-	QMainWindow window;
-	Ui_MainWindow ui;
-	ui.setupUi(&window);
+	EditorApp window;
 
 	bool smallScreen = QApplication::arguments().contains("-small-screen");
 	if (smallScreen)
