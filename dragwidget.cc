@@ -208,3 +208,21 @@ void DragWidget::wheelEvent(QWheelEvent *event)
 
 	event->accept();
 }
+
+void DragWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	DragLabel *child = static_cast<DragLabel*>(childAt(event->pos()));
+	if (!child)
+		return;
+
+	bool ok;
+	QString text = QInputDialog::getText(this, tr("Edit lyric"),
+										  tr("Lyric:"), QLineEdit::Normal,
+										  child->getText(), &ok);
+	if (ok && !text.isEmpty()) {
+		child->setText(text);
+		child->createPixmap();
+	}
+
+	event->accept();
+}
