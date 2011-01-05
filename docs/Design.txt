@@ -1,0 +1,52 @@
+The implementation is based on Qt as planned earlier and we will
+continue with this approach if no serious issues are encountered. We
+also considered an implementation as a feature of Performous and decided
+to use this as a fallback in case Qt turns out to be problematic.
+
+We also reviewed Editor on Fire but determined that it is not suitable
+for our use because it is primarily designed for entering guitar notes
+and a lot of manual labor is required becaus of that. Also the
+implementation is in rather unmaintainable C code (instead of clean C++)
+and the user-interface is not very good.
+
+Instead of separate modes for creating new song or editing an existing
+song we aim to provide all tools in the main editor view. This allows to
+user to choose his workflow in a more flexible manner and one can also
+go back and redo parts of an existing song using any of the tools
+available.
+
+Lyrics are imported in the format commonly used on lyric sites (text
+with sentence per line). Next the user can give timing information
+(beginning time) for each word e.g. by tapping space while listening to
+the song. Not all words need to be timed and anything that is not timed
+will float freely and all floating words will be evenly divided into the
+time period they take (between words that have been already timed). This
+allows the user not to time each word but instead time only what needs
+to be timed (e.g. each sentence) and the rest will be done
+automatically.
+
+Pitch detection is used to find the pitch and then the exact timing is
+determined from the detected pitch. The user may adjust pitch and timing
+(beginning, end) manually to correct possible problems. Here again it
+was planned to have autodetected parameters float, i.e. have them change
+flexibly if anything in the song is changed, until locked down by user's
+manual adjustments.
+
+It is initially planned to display the flexibly created notes as soon as
+lyrics are available so that the user will technically be fixing a song
+rather than creating one. This should allow doing the minimal amount of
+work for getting the job done.
+
+As we won't be able to store all the required metadata about flexible
+parameters and such in SingStar XML nor other established formats, we
+will implement our own project file format that contains all the actions
+taken for creating the song (this also allows for implementing unlimited
+undo/redo).
+
+SingStar XML requires a constant BPM value which is not realistic for
+most songs because BPM usually varies. We considered implementing a beat
+detector for getting the actual beat timing but this would not work for
+all songs and we would have to use a bogus value for SingStar XML
+anyway. Because BPM is not relevant for singing, we plan to simply use a
+bogus value and not even try to detect the beats.
+
