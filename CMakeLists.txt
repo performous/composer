@@ -27,6 +27,7 @@ QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
 QT4_AUTOMOC(MOC_SOURCES ${SOURCE_FILES})
 
 include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
 target_link_libraries(editor ${QT_LIBRARIES})

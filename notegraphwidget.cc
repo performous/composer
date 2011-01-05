@@ -64,10 +64,6 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 			wordLabel->show();
 			wordLabel->setAttribute(Qt::WA_DeleteOnClose);
 			x += wordLabel->width() + 2;
-			if (x >= 245) {
-				x = 5;
-				y += wordLabel->height() + 2;
-			}
 		}
 	}
 

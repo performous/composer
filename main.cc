@@ -39,17 +39,22 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include "notegraphwidget.hh"
+#include <QScrollArea>
+#include <QHBoxLayout>
+#include "ui_editor.h"
 
 int main(int argc, char *argv[])
 {
-        Q_INIT_RESOURCE(editor);
+	Q_INIT_RESOURCE(editor);
 
 	QApplication app(argc, argv);
 #ifdef QT_KEYPAD_NAVIGATION
 	QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
 #endif
-	NoteGraphWidget window;
+
+	QMainWindow window;
+	Ui_MainWindow ui;
+	ui.setupUi(&window);
 
 	bool smallScreen = QApplication::arguments().contains("-small-screen");
 	if (smallScreen)
