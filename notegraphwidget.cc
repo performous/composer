@@ -92,8 +92,10 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	if (!child)
 		return;
 
+	QPoint hotSpot = event->pos() - child->pos();
+
+	// Left Click
 	if (event->button() == Qt::LeftButton) {
-		QPoint hotSpot = event->pos() - child->pos();
 
 		QByteArray itemData;
 		QDataStream dataStream(&itemData, QIODevice::WriteOnly);
@@ -115,14 +117,19 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		else
 			child->show();
 
+	// Right Click
 	} else if (event->button() == Qt::RightButton) {
-		// Cut the text in half
-		int cutpos = int(std::ceil(child->getText().length() / 2.0));
+
+		// Cut the text in a position proportional to the click point
+		float relRatio = float(hotSpot.x()) / child->width();
+		int cutpos = int(std::ceil(child->getText().length() * relRatio));
 		QString firstst = child->getText().left(cutpos);
 		QString secondst = child->getText().right(child->getText().length() - cutpos);
+
 		// Create new labels
 		NoteLabel *newLabel1 = new NoteLabel(firstst, this,child->pos());
 		new NoteLabel(secondst, this, newLabel1->pos() + QPoint(newLabel1->width(), 0));
+
 		// Delete the old one
 		child->close();
 	}
