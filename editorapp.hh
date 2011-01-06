@@ -14,5 +14,5 @@ public slots:
 	void on_actionExit_triggered();
 
 private:
-	Ui_EditorApp ui;
+	Ui::EditorApp ui;
 };

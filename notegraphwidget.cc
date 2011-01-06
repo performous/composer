@@ -26,7 +26,13 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 		}
 	}
 
+	requiredWidth = x + 3;
 	setAcceptDrops(true);
+}
+
+void NoteGraphWidget::updateWidth()
+{
+	setFixedWidth(requiredWidth);
 }
 
 void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
