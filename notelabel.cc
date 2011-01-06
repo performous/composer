@@ -50,6 +50,9 @@ void NoteLabel::createPixmap(QSize size)
 	painter.end();
 
 	setPixmap(QPixmap::fromImage(image));
+
+	setToolTip(m_labelText);
+	setStatusTip(QString("Lyric: ") + m_labelText);
 }
 
 QString NoteLabel::getText() const
