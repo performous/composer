@@ -10,9 +10,18 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 public slots:
-	void on_actionLyricsFromClipboard_triggered();
-	void on_actionAbout_triggered();
+	// File
+	void on_actionNew_triggered();
 	void on_actionExit_triggered();
+
+	// Insert
+	void on_actionMusicFile_triggered();
+	void on_actionLyricsFromFile_triggered();
+	void on_actionLyricsFromClipboard_triggered();
+
+	// Help
+	void on_actionAbout_triggered();
+
 
 private:
 	Ui::EditorApp ui;

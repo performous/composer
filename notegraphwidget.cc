@@ -7,7 +7,7 @@
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent), m_resizingNote(), m_movingNote()
 {
-	setAcceptDrops(true);
+	setLyrics("Please add music file and lyrics text.");
 }
 
 void NoteGraphWidget::clear()
@@ -53,6 +53,8 @@ void NoteGraphWidget::updateWidth()
 
 void NoteGraphWidget::updateNotes()
 {
+	// Here happens the magic that adjusts the floating
+	// notes according to the fixed ones.
 	FloatingGap gap(0);
 	rebuildNoteList();
 	// Determine gaps between non-floating notes

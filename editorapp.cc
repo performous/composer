@@ -6,9 +6,80 @@
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
 	ui.setupUi(this);
-	// FIXME: Should not set any lyrics here
-	ui.noteGraph->setLyrics("Young man, there's no need to feel down. "
-							"I said, young man, pick yourself off the ground.");
+}
+
+void EditorApp::on_actionNew_triggered()
+{
+	// TODO: Check if a save prompt is in order
+	if (true) {
+		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
+			"There are unsaved changes. Do you wish to save before creating a new project?",
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		switch(b) {
+		case QMessageBox::Yes:
+			// TODO: Save
+		case QMessageBox::No:
+			ui.noteGraph->clear(); break;
+		default: break;
+		}
+	} else {
+		ui.noteGraph->clear();
+	}
+}
+
+void EditorApp::on_actionExit_triggered()
+{
+	// TODO: Check if a save prompt is in order
+	if (false) {
+		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
+			"There are unsaved changes. Do you wish to save before quitting?",
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		switch(b) {
+		case QMessageBox::Yes:
+			// TODO: Save
+		case QMessageBox::No:
+			close(); break;
+		default: break;
+		}
+	} else {
+		close();
+	}
+}
+
+void EditorApp::on_actionMusicFile_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+			"",
+			tr("Music files (*.mp3 *.ogg)"));
+
+	if (!fileName.isNull()) {
+		ui.valMusicFile->setText(fileName);
+		ui.tabWidget->setCurrentIndex(1);
+		// TODO: Do something the file
+	}
+}
+
+void EditorApp::on_actionLyricsFromFile_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+			"",
+			tr("Text files (*.txt)"));
+
+	if (!fileName.isNull()) {
+		QFile file(fileName);
+		 if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+			 return;
+
+		 QTextStream in(&file);
+		 QString text = "";
+		 while (!in.atEnd()) {
+			 text += in.readLine();
+			 if (!in.atEnd()) text += " "; // TODO: Some kind of line separator here
+		 }
+
+		 if (text != "")
+			 ui.noteGraph->setLyrics(text);
+	}
 }
 
 void EditorApp::on_actionLyricsFromClipboard_triggered()
@@ -36,21 +107,3 @@ void EditorApp::on_actionAbout_triggered()
 		);
 }
 
-void EditorApp::on_actionExit_triggered()
-{
-	// TODO: Check if a save prompt is in order
-	if (false) {
-		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
-			"There are unsaved changes. Do you wish to save before quitting?",
-			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		switch(b) {
-		case QMessageBox::Yes:
-			// TODO: Save
-		case QMessageBox::No:
-			close(); break;
-		default: break;
-		}
-	} else {
-		close();
-	}
-}
