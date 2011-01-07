@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "notelabel.hh"
+#include "notegraphwidget.hh"
 
 namespace {
 	static const int text_margin = 12; // Margin of the label texts
@@ -82,12 +83,16 @@ void NoteLabel::resizeEvent(QResizeEvent *event)
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
 	QToolTip::showText(event->globalPos(), getText(), this);
+
+	NoteGraphWidget* ngw = dynamic_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
 		if (m_resizing < 0)
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
 		else
 			resize(event->pos().x(), height());
+		if (ngw) ngw->updateNotes();
 	} else if (!m_hotspot.isNull()) {
 		move(pos() + event->pos() - m_hotspot);
+		if (ngw) ngw->updateNotes();
 	}
 }
