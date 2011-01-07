@@ -6,8 +6,9 @@
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
 	ui.setupUi(this);
-	// Now adjust the NoteGraph's width according to the content
-	ui.noteGraph->updateWidth();
+	// FIXME: Should not set any lyrics here
+	ui.noteGraph->setLyrics("Young man, there's no need to feel down. "
+							"I said, young man, pick yourself off the ground.");
 }
 
 void EditorApp::on_actionAbout_triggered()

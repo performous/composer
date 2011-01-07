@@ -7,27 +7,25 @@
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	QFile dictionaryFile(":/dictionary/words.txt");
-	dictionaryFile.open(QFile::ReadOnly);
-	QTextStream inputStream(&dictionaryFile);
+	setAcceptDrops(true);
+}
 
-	int x = 5;
-	int y = 5;
+void NoteGraphWidget::setLyrics(QString lyrics)
+{
+	QTextStream ts(&lyrics, QIODevice::ReadOnly);
+	int x = 5, y = 5;
 
-	while (!inputStream.atEnd()) {
+	while (!ts.atEnd()) {
 		QString word;
-		inputStream >> word;
+		ts >> word;
 		if (!word.isEmpty()) {
-			NoteLabel *wordLabel = new NoteLabel(word, this);
-			wordLabel->move(x, y);
-			wordLabel->show();
-			wordLabel->setAttribute(Qt::WA_DeleteOnClose);
+			NoteLabel *wordLabel = new NoteLabel(word, this, QPoint(x, y));
 			x += wordLabel->width() + 2;
 		}
 	}
 
 	requiredWidth = x + 3;
-	setAcceptDrops(true);
+	updateWidth();
 }
 
 void NoteGraphWidget::updateWidth()
