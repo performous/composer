@@ -109,6 +109,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			// Start a resize
 			m_resizingNote = child;
 			child->startResizing( (hotSpot.x() < resizeHandleSize) ? -1 : 1 );
+			child->disableFloating();
 
 		} else {
 			// Start a drag
