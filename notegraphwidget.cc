@@ -106,11 +106,10 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	if (event->button() == Qt::LeftButton) {
 
 		// Determine if it is drag or resize
-		const int resizeHandleSize = 5;
-		if (hotSpot.x() < resizeHandleSize || hotSpot.x() > child->width() - resizeHandleSize) {
+		if (hotSpot.x() < NoteLabel::resize_margin || hotSpot.x() > child->width() - NoteLabel::resize_margin) {
 			// Start a resize
 			m_resizingNote = child;
-			child->startResizing( (hotSpot.x() < resizeHandleSize) ? -1 : 1 );
+			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
 			child->disableFloating();
 
 		} else {

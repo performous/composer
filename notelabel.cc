@@ -6,6 +6,8 @@ namespace {
 	static const int text_margin = 12; // Margin of the label texts
 }
 
+const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
+
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
 	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0), m_hotspot()
 {
@@ -87,13 +89,42 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 
 	NoteGraphWidget* ngw = dynamic_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
+		// Resizing
 		if (m_resizing < 0)
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
 		else
 			resize(event->pos().x(), height());
 		if (ngw) ngw->updateNotes();
+
 	} else if (!m_hotspot.isNull()) {
+		// Moving
 		move(pos() + event->pos() - m_hotspot);
 		if (ngw) ngw->updateNotes();
+
+	} else {
+		// Hover cursors
+		if (event->pos().x() < NoteLabel::resize_margin || event->pos().x() > width() - NoteLabel::resize_margin) {
+			setCursor(QCursor(Qt::SizeHorCursor));
+		} else {
+			setCursor(QCursor(Qt::OpenHandCursor));
+		}
 	}
 }
+
+void NoteLabel::startResizing(int dir)
+{
+	m_resizing = dir;
+	m_hotspot = QPoint(); // Reset
+	if (dir != 0) setCursor(QCursor(Qt::SizeHorCursor));
+	else setCursor(QCursor());
+}
+
+void NoteLabel::startDragging(const QPoint& point)
+{
+	m_hotspot = point;
+	m_resizing = 0;
+
+	if (!point.isNull()) setCursor(QCursor(Qt::ClosedHandCursor));
+	else setCursor(QCursor());
+}
+
