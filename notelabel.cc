@@ -1,30 +1,33 @@
 #include <QtGui>
 #include "notelabel.hh"
+#include "notegraphwidget.hh"
 
 namespace {
 	static const int text_margin = 12; // Margin of the label texts
 }
 
-NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, bool floating)
-	: QLabel(parent), m_labelText(text), m_floating(floating)
+NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
+	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0), m_hotspot()
 {
-	createPixmap();
+	createPixmap(size);
 	if (!position.isNull())
 		move(position);
-	show();
+
+	setMouseTracking(true);
+	setMinimumSize(10, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
+	show();
 }
 
 void NoteLabel::createPixmap(QSize size)
 {
-	if (!size.isValid()) {
-		QFontMetrics metric(font());
-		size = metric.size(Qt::TextSingleLine, m_labelText);
-		size.rwidth() += text_margin;
-		size.rheight() += text_margin;
+	QFontMetrics metric(font());
+	if (size.width() <= 0) {
+		size.rwidth() = 50; // FIXME: Size is fixed
 	}
-	// FIXME: Size is fixed
-	size.rwidth() = 50;
+	if (size.height() <= 0) {
+		size.rheight() = metric.size(Qt::TextSingleLine, m_labelText).height() + text_margin;
+	}
 
 	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
@@ -76,4 +79,21 @@ void NoteLabel::setText(const QString &text)
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
+}
+
+void NoteLabel::mouseMoveEvent(QMouseEvent *event)
+{
+	QToolTip::showText(event->globalPos(), getText(), this);
+
+	NoteGraphWidget* ngw = dynamic_cast<NoteGraphWidget*>(parent());
+	if (m_resizing != 0) {
+		if (m_resizing < 0)
+			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
+		else
+			resize(event->pos().x(), height());
+		if (ngw) ngw->updateNotes();
+	} else if (!m_hotspot.isNull()) {
+		move(pos() + event->pos() - m_hotspot);
+		if (ngw) ngw->updateNotes();
+	}
 }

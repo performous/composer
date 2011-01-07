@@ -5,7 +5,7 @@
 #include "notegraphwidget.hh"
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent)
+	: QWidget(parent), m_resizingNote(), m_movingNote()
 {
 	setAcceptDrops(true);
 }
@@ -92,60 +92,6 @@ void NoteGraphWidget::rebuildNoteList()
 	m_notes.sort(cmpNoteLabelPtr);
 }
 
-void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-	if (event->mimeData()->hasFormat("application/x-notelabel")) {
-		if (children().contains(event->source())) {
-			event->setDropAction(Qt::MoveAction);
-			event->accept();
-		} else {
-			event->acceptProposedAction();
-		}
-	} else {
-		event->ignore();
-	}
-}
-
-void NoteGraphWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-	if (event->mimeData()->hasFormat("application/x-notelabel")) {
-		if (children().contains(event->source())) {
-			event->setDropAction(Qt::MoveAction);
-			event->accept();
-		} else {
-			event->acceptProposedAction();
-		}
-		// Update note positions on-the-fly
-		updateNotes();
-	} else {
-		event->ignore();
-	}
-}
-
-void NoteGraphWidget::dropEvent(QDropEvent *event)
-{
-	if (event->mimeData()->hasFormat("application/x-notelabel")) {
-		const QMimeData *mime = event->mimeData();
-		QByteArray itemData = mime->data("application/x-notelabel");
-		QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-
-		QString text;
-		QPoint offset;
-		dataStream >> text >> offset;
-		new NoteLabel(text, this, event->pos() - offset, false);
-		updateNotes();
-
-		if (event->source() == this) {
-			event->setDropAction(Qt::MoveAction);
-			event->accept();
-		} else {
-			event->acceptProposedAction();
-		}
-	} else {
-		event->ignore();
-	}
-}
-
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
@@ -157,27 +103,21 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	// Left Click
 	if (event->button() == Qt::LeftButton) {
 
-		QByteArray itemData;
-		QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-		dataStream << child->getText() << QPoint(hotSpot);
+		// Determine if it is drag or resize
+		const int resizeHandleSize = 5;
+		if (hotSpot.x() < resizeHandleSize || hotSpot.x() > child->width() - resizeHandleSize) {
+			// Start a resize
+			m_resizingNote = child;
+			child->startResizing( (hotSpot.x() < resizeHandleSize) ? -1 : 1 );
+			child->disableFloating();
 
-		QMimeData *mimeData = new QMimeData;
-		mimeData->setData("application/x-notelabel", itemData);
-		mimeData->setText(child->getText());
-
-		QDrag *drag = new QDrag(this);
-		drag->setMimeData(mimeData);
-		drag->setPixmap(*child->pixmap());
-		drag->setHotSpot(hotSpot);
-
-		child->disableFloating();
-		child->createPixmap();
-		child->hide();
-
-		if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
-			child->close();
-		else
-			child->show();
+		} else {
+			// Start a drag
+			m_movingNote = child;
+			child->startDragging(hotSpot);
+			child->disableFloating();
+			child->createPixmap(child->size());
+		}
 
 	// Right Click
 	} else if (event->button() == Qt::RightButton) {
@@ -195,6 +135,20 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		// Delete the old one
 		child->close();
 	}
+}
+
+void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	(void)*event;
+	if (m_resizingNote) {
+		m_resizingNote->startResizing(0);
+		m_resizingNote = NULL;
+	}
+	if (m_movingNote) {
+		m_movingNote->startDragging(QPoint());
+		m_movingNote = NULL;
+	}
+	updateNotes();
 }
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)

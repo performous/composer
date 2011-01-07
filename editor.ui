@@ -10,9 +10,6 @@
     <height>600</height>
    </rect>
   </property>
-  <property name="contextMenuPolicy">
-   <enum>Qt::DefaultContextMenu</enum>
-  </property>
   <property name="windowTitle">
    <string>Editor</string>
   </property>
@@ -81,6 +78,166 @@
         <property name="frameShadow">
          <enum>QFrame::Raised</enum>
         </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tabNote">
+            <attribute name="title">
+             <string>&amp;Note properties</string>
+            </attribute>
+            <widget class="QLabel" name="label_3">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>81</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Start time</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_4">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>81</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>End time</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_5">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>50</y>
+               <width>70</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Duration</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="valNoteBegin">
+             <property name="geometry">
+              <rect>
+               <x>120</x>
+               <y>10</y>
+               <width>70</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>XXX</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="valNoteEnd">
+             <property name="geometry">
+              <rect>
+               <x>120</x>
+               <y>30</y>
+               <width>70</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>XXX</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="valNoteDuration">
+             <property name="geometry">
+              <rect>
+               <x>120</x>
+               <y>50</y>
+               <width>70</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>XXX</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_6">
+             <property name="geometry">
+              <rect>
+               <x>360</x>
+               <y>10</y>
+               <width>70</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Type</string>
+             </property>
+            </widget>
+            <widget class="QComboBox" name="comboNoteType">
+             <property name="geometry">
+              <rect>
+               <x>440</x>
+               <y>10</y>
+               <width>92</width>
+               <height>28</height>
+              </rect>
+             </property>
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>Normal</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Golden</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Freestyle</string>
+              </property>
+             </item>
+            </widget>
+           </widget>
+           <widget class="QWidget" name="tabSong">
+            <attribute name="title">
+             <string>&amp;Song properties</string>
+            </attribute>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Title</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="txtTitle"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Artist</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="txtArtist"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

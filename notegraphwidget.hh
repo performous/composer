@@ -18,15 +18,15 @@ public:
 	void rebuildNoteList();
 
 protected:
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dragMoveEvent(QDragMoveEvent *event);
-	void dropEvent(QDropEvent *event);
 	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 
 private:
 	int  m_requiredWidth;
+	NoteLabel* m_resizingNote;
+	NoteLabel* m_movingNote;
 	NoteLabels m_notes;
 };
 

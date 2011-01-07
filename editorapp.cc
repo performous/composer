@@ -38,5 +38,19 @@ void EditorApp::on_actionAbout_triggered()
 
 void EditorApp::on_actionExit_triggered()
 {
-	exit(0); // Hack
+	// TODO: Check if a save prompt is in order
+	if (false) {
+		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
+			"There are unsaved changes. Do you wish to save before quitting?",
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		switch(b) {
+		case QMessageBox::Yes:
+			// TODO: Save
+		case QMessageBox::No:
+			close(); break;
+		default: break;
+		}
+	} else {
+		close();
+	}
 }
