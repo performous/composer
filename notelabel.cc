@@ -6,7 +6,7 @@ namespace {
 }
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0)
+	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	createPixmap(size);
 	if (!position.isNull())
@@ -87,5 +87,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
 		else
 			resize(event->pos().x(), height());
+	} else if (!m_hotspot.isNull()) {
+		move(pos() + event->pos() - m_hotspot);
 	}
 }
