@@ -13,9 +13,10 @@ NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &positio
 	if (!position.isNull())
 		move(position);
 
-	show();
 	setMouseTracking(true);
+	setMinimumSize(10, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
+	show();
 }
 
 void NoteLabel::createPixmap(QSize size)
