@@ -5,7 +5,7 @@
 #include "notegraphwidget.hh"
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent)
+	: QWidget(parent), m_resizing()
 {
 	setAcceptDrops(true);
 }
@@ -157,27 +157,39 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	// Left Click
 	if (event->button() == Qt::LeftButton) {
 
-		QByteArray itemData;
-		QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-		dataStream << child->getText() << QPoint(hotSpot);
+		// Determine if it is drag or resize
+		const int resizeHandleSize = 5;
+		if (hotSpot.x() < resizeHandleSize || hotSpot.x() > child->width() - resizeHandleSize) {
+			// Start a resize
+			m_resizing = child;
+			child->setResizing( (hotSpot.x() < resizeHandleSize) ? -1 : 1 );
+			std::cout << "resize" << std::endl;
 
-		QMimeData *mimeData = new QMimeData;
-		mimeData->setData("application/x-notelabel", itemData);
-		mimeData->setText(child->getText());
+		} else {
+			// Initialize Drag
 
-		QDrag *drag = new QDrag(this);
-		drag->setMimeData(mimeData);
-		drag->setPixmap(*child->pixmap());
-		drag->setHotSpot(hotSpot);
+			QByteArray itemData;
+			QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+			dataStream << child->getText() << QPoint(hotSpot);
 
-		child->disableFloating();
-		child->createPixmap();
-		child->hide();
+			QMimeData *mimeData = new QMimeData;
+			mimeData->setData("application/x-notelabel", itemData);
+			mimeData->setText(child->getText());
 
-		if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
-			child->close();
-		else
-			child->show();
+			QDrag *drag = new QDrag(this);
+			drag->setMimeData(mimeData);
+			drag->setPixmap(*child->pixmap());
+			drag->setHotSpot(hotSpot);
+
+			child->disableFloating();
+			child->createPixmap();
+			child->hide();
+
+			if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
+				child->close();
+			else
+				child->show();
+		}
 
 	// Right Click
 	} else if (event->button() == Qt::RightButton) {
@@ -195,6 +207,13 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		// Delete the old one
 		child->close();
 	}
+}
+
+void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	(void)*event;
+	m_resizing->setResizing(0);
+	m_resizing = NULL;
 }
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)

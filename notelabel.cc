@@ -6,7 +6,7 @@ namespace {
 }
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, bool floating)
-	: QLabel(parent), m_labelText(text), m_floating(floating)
+	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0)
 {
 	createPixmap();
 	if (!position.isNull())
@@ -24,9 +24,9 @@ void NoteLabel::createPixmap(QSize size)
 		size = metric.size(Qt::TextSingleLine, m_labelText);
 		size.rwidth() += text_margin;
 		size.rheight() += text_margin;
+		// FIXME: Size is fixed
+		size.rwidth() = 50;
 	}
-	// FIXME: Size is fixed
-	size.rwidth() = 50;
 
 	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
@@ -83,4 +83,10 @@ void NoteLabel::resizeEvent(QResizeEvent *event)
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
 	QToolTip::showText(event->globalPos(), getText(), this);
+	if (m_resizing != 0) {
+		if (m_resizing < 0)
+			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
+		else
+			resize(event->pos().x(), height());
+	}
 }

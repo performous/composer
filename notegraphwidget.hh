@@ -22,11 +22,13 @@ protected:
 	void dragMoveEvent(QDragMoveEvent *event);
 	void dropEvent(QDropEvent *event);
 	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 
 private:
 	int  m_requiredWidth;
+	NoteLabel* m_resizing;
 	NoteLabels m_notes;
 };
 

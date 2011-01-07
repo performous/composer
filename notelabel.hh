@@ -14,6 +14,8 @@ public:
 	bool isFloating() const { return m_floating; }
 	void disableFloating() { m_floating = false; }
 
+	void setResizing(int dir) { m_resizing = dir; }
+
 	void resizeEvent(QResizeEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 
@@ -22,6 +24,7 @@ public:
 private:
 	QString m_labelText;
 	bool m_floating;
+	int m_resizing;
 };
 
 bool inline cmpNoteLabelPtr(const NoteLabel *lhs, const NoteLabel *rhs)
