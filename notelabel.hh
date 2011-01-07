@@ -13,6 +13,8 @@ public:
 	QString getText() const;
 	void setText(const QString &text);
 
+	void setSelected(bool state = true) { m_selected = state; createPixmap(size()); }
+
 	bool isFloating() const { return m_floating; }
 	void disableFloating() { m_floating = false; }
 
@@ -26,6 +28,7 @@ public:
 
 private:
 	QString m_labelText;
+	bool m_selected;
 	bool m_floating;
 	int m_resizing;
 	QPoint m_hotspot;

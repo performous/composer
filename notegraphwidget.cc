@@ -5,7 +5,7 @@
 #include "notegraphwidget.hh"
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent), m_resizingNote(), m_movingNote()
+	: QWidget(parent), m_selectedNote(), m_selectedAction(NONE)
 {
 	setLyrics("Please add music file and lyrics text.");
 }
@@ -105,20 +105,25 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	// Left Click
 	if (event->button() == Qt::LeftButton) {
 
+		if (m_selectedNote) // Reset old pixmap
+			m_selectedNote->setSelected(false);
+		// Assign new selection
+		m_selectedNote = child;
+		m_selectedNote->setSelected();
 		// Determine if it is drag or resize
 		if (hotSpot.x() < NoteLabel::resize_margin || hotSpot.x() > child->width() - NoteLabel::resize_margin) {
 			// Start a resize
-			m_resizingNote = child;
+			m_selectedAction = RESIZE;
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
 			child->disableFloating();
 
 		} else {
 			// Start a drag
-			m_movingNote = child;
+			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
 			child->disableFloating();
-			child->createPixmap(child->size());
 		}
+		child->createPixmap(child->size());
 
 	// Right Click
 	} else if (event->button() == Qt::RightButton) {
@@ -141,13 +146,10 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	(void)*event;
-	if (m_resizingNote) {
-		m_resizingNote->startResizing(0);
-		m_resizingNote = NULL;
-	}
-	if (m_movingNote) {
-		m_movingNote->startDragging(QPoint());
-		m_movingNote = NULL;
+	if (m_selectedAction != NONE) {
+		m_selectedNote->startResizing(0);
+		m_selectedNote->startDragging(QPoint());
+		m_selectedAction = NONE;
 	}
 	updateNotes();
 }

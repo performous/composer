@@ -9,7 +9,7 @@ namespace {
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0), m_hotspot()
+	: QLabel(parent), m_labelText(text), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	createPixmap(size);
 	if (!position.isNull())
@@ -40,7 +40,11 @@ void NoteLabel::createPixmap(QSize size)
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	gradient.setColorAt(0.0, Qt::white);
-	if (m_floating) {
+	if (m_selected) {
+		gradient.setColorAt(0.2, QColor(100, 180, 100));
+		gradient.setColorAt(0.8, QColor(100, 180, 100));
+		gradient.setColorAt(1.0, QColor(100, 120, 100));
+	} else if (m_floating) {
 		gradient.setColorAt(0.2, QColor(160, 160, 180));
 		gradient.setColorAt(0.8, QColor(160, 160, 180));
 		gradient.setColorAt(1.0, QColor(100, 100, 120));
