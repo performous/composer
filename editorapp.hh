@@ -10,6 +10,7 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 public slots:
+	void on_actionLyricsFromClipboard_triggered();
 	void on_actionAbout_triggered();
 	void on_actionExit_triggered();
 
