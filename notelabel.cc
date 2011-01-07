@@ -5,8 +5,8 @@ namespace {
 	static const int text_margin = 12; // Margin of the label texts
 }
 
-NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position)
-	: QLabel(parent), m_labelText(text)
+NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, bool floating)
+	: QLabel(parent), m_labelText(text), m_floating(floating)
 {
 	createPixmap();
 	if (!position.isNull())
@@ -23,6 +23,8 @@ void NoteLabel::createPixmap(QSize size)
 		size.rwidth() += text_margin;
 		size.rheight() += text_margin;
 	}
+	// FIXME: Size is fixed
+	size.rwidth() = 50;
 
 	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
@@ -33,9 +35,15 @@ void NoteLabel::createPixmap(QSize size)
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	gradient.setColorAt(0.0, Qt::white);
-	gradient.setColorAt(0.2, QColor(200, 200, 255));
-	gradient.setColorAt(0.8, QColor(200, 200, 255));
-	gradient.setColorAt(1.0, QColor(127, 127, 200));
+	if (m_floating) {
+		gradient.setColorAt(0.2, QColor(160, 160, 180));
+		gradient.setColorAt(0.8, QColor(160, 160, 180));
+		gradient.setColorAt(1.0, QColor(100, 100, 120));
+	} else {
+		gradient.setColorAt(0.2, QColor(100, 100, 255));
+		gradient.setColorAt(0.8, QColor(100, 100, 255));
+		gradient.setColorAt(1.0, QColor(100, 100, 200));
+	}
 
 	QPainter painter;
 	painter.begin(&image);
@@ -57,7 +65,7 @@ void NoteLabel::createPixmap(QSize size)
 
 QString NoteLabel::getText() const
 {
-    return m_labelText;
+	return m_labelText;
 }
 
 void NoteLabel::setText(const QString &text)

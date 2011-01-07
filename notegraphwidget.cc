@@ -12,17 +12,20 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 void NoteGraphWidget::clear()
 {
-	const QObjectList &childlist = children ();
+	// Clear NoteLabels
+	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
-		NoteLabel *child = static_cast<NoteLabel*>(*it);
-		child->close();
+		NoteLabel *child = dynamic_cast<NoteLabel*>(*it);
+		if (child) child->close();
 	}
+	m_notes.clear();
 }
 
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
-	int x = 5, y = 5;
+	const int gap = 10;
+	int x = gap, y = 50;
 
 	clear();
 	while (!ts.atEnd()) {
@@ -30,17 +33,63 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		ts >> word;
 		if (!word.isEmpty()) {
 			NoteLabel *wordLabel = new NoteLabel(word, this, QPoint(x, y));
-			x += wordLabel->width() + 2;
+			x += wordLabel->width() + gap;
 		}
 	}
 
-	requiredWidth = x + 3;
+	rebuildNoteList();
+	// Set first and last to non-floating
+	m_notes.front()->disableFloating();
+	m_notes.back()->disableFloating();
+
+	m_requiredWidth = x + gap;
 	updateWidth();
 }
 
 void NoteGraphWidget::updateWidth()
 {
-	setFixedWidth(requiredWidth);
+	setFixedWidth(m_requiredWidth);
+}
+
+void NoteGraphWidget::updateNotes()
+{
+	FloatingGap gap(0);
+	rebuildNoteList();
+	// Determine gaps between non-floating notes
+	for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
+		NoteLabel *child = *it; //dynamic_cast<NoteLabel*>(*it);
+		if (!child) continue;
+		std::cout << "Child, floating: " << child->isFloating() << std::endl;
+		if (child->isFloating()) {
+			// Add floating note to gap
+			gap.addNote(child);
+		} else {
+			// Fixed note encountered, handle the gap (divide notes evenly into it)
+			std::cout << "Gap end, width: " << gap.width() << ", notes: " << gap.notes.size() << std::endl;
+			if (!gap.isEmpty()) {
+				gap.end = child->x();
+				int step = gap.width() / (gap.notes.size() + 1);
+				int x = gap.begin + step * 0.5;
+				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2, x += step) {
+					(*it2)->move(x, (*it2)->y());
+				}
+			}
+			// Start a new gap
+			gap = FloatingGap(child->x() + child->width());
+			std::cout << "New gap from: " << gap.begin << std::endl;
+		}
+	}
+}
+
+void NoteGraphWidget::rebuildNoteList()
+{
+	m_notes.clear();
+	const QObjectList &childlist = children();
+	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
+		NoteLabel *child = dynamic_cast<NoteLabel*>(*it);
+		if (child) m_notes.push_back(child);
+	}
+	m_notes.sort(cmpNoteLabelPtr);
 }
 
 void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -66,6 +115,8 @@ void NoteGraphWidget::dragMoveEvent(QDragMoveEvent *event)
 		} else {
 			event->acceptProposedAction();
 		}
+		// Update note positions on-the-fly
+		updateNotes();
 	} else {
 		event->ignore();
 	}
@@ -81,7 +132,8 @@ void NoteGraphWidget::dropEvent(QDropEvent *event)
 		QString text;
 		QPoint offset;
 		dataStream >> text >> offset;
-		new NoteLabel(text, this, event->pos() - offset);
+		new NoteLabel(text, this, event->pos() - offset, false);
+		updateNotes();
 
 		if (event->source() == this) {
 			event->setDropAction(Qt::MoveAction);
@@ -118,6 +170,8 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		drag->setPixmap(*child->pixmap());
 		drag->setHotSpot(hotSpot);
 
+		child->disableFloating();
+		child->createPixmap();
 		child->hide();
 
 		if (drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction) == Qt::MoveAction)
@@ -173,4 +227,11 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	}
 
 	event->accept();
+}
+
+
+void FloatingGap::addNote(NoteLabel* n)
+{
+	notes.push_back(n);
+	end = n->x();
 }
