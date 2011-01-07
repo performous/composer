@@ -5,7 +5,7 @@
 class NoteLabel: public QLabel
 {
 public:
-	NoteLabel(const QString &text, QWidget *parent, const QPoint &position = QPoint(), bool floating = true);
+	NoteLabel(const QString &text, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
 
 	void createPixmap(QSize size = QSize());
 	QString getText() const;

@@ -5,10 +5,10 @@ namespace {
 	static const int text_margin = 12; // Margin of the label texts
 }
 
-NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, bool floating)
+NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
 	: QLabel(parent), m_labelText(text), m_floating(floating), m_resizing(0)
 {
-	createPixmap();
+	createPixmap(size);
 	if (!position.isNull())
 		move(position);
 
@@ -19,13 +19,12 @@ NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &positio
 
 void NoteLabel::createPixmap(QSize size)
 {
-	if (!size.isValid()) {
-		QFontMetrics metric(font());
-		size = metric.size(Qt::TextSingleLine, m_labelText);
-		size.rwidth() += text_margin;
-		size.rheight() += text_margin;
-		// FIXME: Size is fixed
-		size.rwidth() = 50;
+	QFontMetrics metric(font());
+	if (size.width() <= 0) {
+		size.rwidth() = 50; // FIXME: Size is fixed
+	}
+	if (size.height() <= 0) {
+		size.rheight() = metric.size(Qt::TextSingleLine, m_labelText).height() + text_margin;
 	}
 
 	QImage image(size.width(), size.height(),

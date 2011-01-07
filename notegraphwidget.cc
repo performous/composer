@@ -131,8 +131,9 @@ void NoteGraphWidget::dropEvent(QDropEvent *event)
 
 		QString text;
 		QPoint offset;
-		dataStream >> text >> offset;
-		new NoteLabel(text, this, event->pos() - offset, false);
+		int w;
+		dataStream >> text >> offset >> w;
+		new NoteLabel(text, this, event->pos() - offset, QSize(w, 0), false);
 		updateNotes();
 
 		if (event->source() == this) {
@@ -170,7 +171,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 
 			QByteArray itemData;
 			QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-			dataStream << child->getText() << QPoint(hotSpot);
+			dataStream << child->getText() << QPoint(hotSpot) << child->width();
 
 			QMimeData *mimeData = new QMimeData;
 			mimeData->setData("application/x-notelabel", itemData);
