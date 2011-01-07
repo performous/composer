@@ -11,7 +11,9 @@ NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &positio
 	createPixmap();
 	if (!position.isNull())
 		move(position);
+
 	show();
+	setMouseTracking(true);
 	setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -76,4 +78,9 @@ void NoteLabel::setText(const QString &text)
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
+}
+
+void NoteLabel::mouseMoveEvent(QMouseEvent *event)
+{
+	QToolTip::showText(event->globalPos(), getText(), this);
 }

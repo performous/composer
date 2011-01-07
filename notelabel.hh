@@ -15,6 +15,7 @@ public:
 	void disableFloating() { m_floating = false; }
 
 	void resizeEvent(QResizeEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
 
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
 
