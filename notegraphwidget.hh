@@ -7,6 +7,7 @@ class NoteGraphWidget: public QWidget
 public:
 	NoteGraphWidget(QWidget *parent = 0);
 
+	void clear();
 	void setLyrics(QString lyrics);
 	void updateWidth();
 

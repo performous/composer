@@ -10,11 +10,21 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	setAcceptDrops(true);
 }
 
+void NoteGraphWidget::clear()
+{
+	const QObjectList &childlist = children ();
+	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
+		NoteLabel *child = static_cast<NoteLabel*>(*it);
+		child->close();
+	}
+}
+
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 	int x = 5, y = 5;
 
+	clear();
 	while (!ts.atEnd()) {
 		QString word;
 		ts >> word;
