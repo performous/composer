@@ -25,8 +25,8 @@ protected:
 
 private:
 	int  m_requiredWidth;
-	NoteLabel* m_resizingNote;
-	NoteLabel* m_movingNote;
+	NoteLabel* m_selectedNote;
+	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	NoteLabels m_notes;
 };
 
