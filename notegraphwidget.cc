@@ -5,7 +5,7 @@
 #include "notegraphwidget.hh"
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent), m_selectedNote(), m_selectedAction(NONE)
+	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE)
 {
 	setLyrics("Please add music file and lyrics text.");
 }
@@ -61,7 +61,7 @@ void NoteGraphWidget::updateNotes()
 	for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
 		NoteLabel *child = *it; //dynamic_cast<NoteLabel*>(*it);
 		if (!child) continue;
-		std::cout << "Child, floating: " << child->isFloating() << std::endl;
+		//std::cout << "Child, floating: " << child->isFloating() << std::endl;
 		if (child->isFloating()) {
 			// Add floating note to gap
 			gap.addNote(child);
@@ -97,8 +97,12 @@ void NoteGraphWidget::rebuildNoteList()
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
-	if (!child)
+	if (!child) {
+		// Left click empty area = pan
+		if (event->button() == Qt::LeftButton)
+			m_panHotSpot = event->pos();
 		return;
+	}
 
 	QPoint hotSpot = event->pos() - child->pos();
 
@@ -151,6 +155,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		m_selectedNote->startDragging(QPoint());
 		m_selectedAction = NONE;
 	}
+	m_panHotSpot = QPoint();
 	updateNotes();
 }
 
@@ -185,6 +190,26 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 	event->accept();
 }
+
+void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
+{
+	// Pan
+	if (!m_panHotSpot.isNull()) {
+		setCursor(QCursor(Qt::ClosedHandCursor));
+		QScrollArea *scrollArea = NULL;
+		if (parentWidget() && parentWidget()->parent())
+			scrollArea = dynamic_cast<QScrollArea*>(parentWidget()->parent()->parent());
+		if (scrollArea) {
+			QPoint diff = event->pos() - m_panHotSpot;
+			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();
+			scrollHor->setValue(scrollHor->value() + diff.x());
+			QScrollBar *scrollVer = scrollArea->horizontalScrollBar();
+			scrollVer->setValue(scrollVer->value() + diff.y());
+			m_panHotSpot = event->pos() + diff;
+		}
+	}
+}
+
 
 
 void FloatingGap::addNote(NoteLabel* n)

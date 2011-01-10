@@ -22,9 +22,11 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
+	void mouseMoveEvent(QMouseEvent * event);
 
 private:
 	int  m_requiredWidth;
+	QPoint m_panHotSpot;
 	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	NoteLabels m_notes;
