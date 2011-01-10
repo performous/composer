@@ -30,7 +30,7 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 	Analyzer analyzer(44100, "");
 	MusicalScale scale;
 	QProgressDialog progress(tr("Analyzing and rendering pitch data..."), tr("&Abort"), 0, width, this);
-		progress.setWindowModality(Qt::WindowModal);
+	progress.setWindowModality(Qt::WindowModal);
 
 	for (unsigned x = 0; x < width; ++x) {
 		progress.setValue(x);
