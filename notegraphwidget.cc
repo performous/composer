@@ -31,6 +31,7 @@ void NoteGraphWidget::selectNote(NoteLabel* note)
 
 void NoteGraphWidget::clear()
 {
+	selectNote(NULL);
 	// Clear NoteLabels
 	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
@@ -57,9 +58,13 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	}
 
 	rebuildNoteList();
+	/*
 	// Set first and last to non-floating
-	m_notes.front()->disableFloating();
-	m_notes.back()->disableFloating();
+	if (m_notes.size() > 0)
+		m_notes.front()->disableFloating();
+	if (m_notes.size() > 1)
+		m_notes.back()->disableFloating();
+	*/
 
 	m_requiredWidth = x + gap;
 	updateWidth();
@@ -76,28 +81,36 @@ void NoteGraphWidget::updateNotes()
 	// notes according to the fixed ones.
 	FloatingGap gap(0);
 	rebuildNoteList();
+
 	// Determine gaps between non-floating notes
 	for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-		NoteLabel *child = *it; //dynamic_cast<NoteLabel*>(*it);
+		NoteLabel *child = *it;
 		if (!child) continue;
-		//std::cout << "Child, floating: " << child->isFloating() << std::endl;
 		if (child->isFloating()) {
 			// Add floating note to gap
 			gap.addNote(child);
 		} else {
 			// Fixed note encountered, handle the gap (divide notes evenly into it)
-			std::cout << "Gap end, width: " << gap.width() << ", notes: " << gap.notes.size() << std::endl;
 			if (!gap.isEmpty()) {
 				gap.end = child->x();
-				int step = gap.width() / (gap.notes.size() + 1);
-				int x = gap.begin + step * 0.5;
-				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2, x += step) {
-					(*it2)->move(x, (*it2)->y());
+				if (gap.width() >= gap.notesWidth()) {
+					// We have enough space - no resizing needed
+					int step = (gap.width() - gap.notesWidth()) / (gap.notes.size() + 1);
+					int x = gap.begin + step;
+					for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
+						(*it2)->move(x, (*it2)->y());
+						x += step + (*it2)->width();
+					}
+				} else if (gap.width() <= gap.minWidth()) {
+					// We are at minimum width, enforce it
+					// TODO
+				} else {
+					// We can fit everything, if we make the notes smaller
+					// TODO
 				}
 			}
 			// Start a new gap
 			gap = FloatingGap(child->x() + child->width());
-			std::cout << "New gap from: " << gap.begin << std::endl;
 		}
 	}
 }
@@ -108,7 +121,7 @@ void NoteGraphWidget::rebuildNoteList()
 	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
 		NoteLabel *child = dynamic_cast<NoteLabel*>(*it);
-		if (child) m_notes.push_back(child);
+		if (child && child->isVisible()) m_notes.push_back(child);
 	}
 	m_notes.sort(cmpNoteLabelPtr);
 }
@@ -122,6 +135,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			m_panHotSpot = event->pos();
 		return;
 	}
+	if (child->isHidden()) return;
 
 	QPoint hotSpot = event->pos() - child->pos();
 
@@ -251,4 +265,10 @@ void FloatingGap::addNote(NoteLabel* n)
 {
 	notes.push_back(n);
 	end = n->x();
+	m_notesWidth += n->width();
+}
+
+int FloatingGap::minWidth() const
+{
+	return notes.size() * NoteLabel::min_width;
 }

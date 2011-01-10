@@ -6,6 +6,7 @@ class NoteLabel: public QLabel
 {
 public:
 	static const int resize_margin;
+	static const int min_width;
 
 	NoteLabel(const QString &text, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
 

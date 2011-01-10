@@ -46,14 +46,19 @@ private:
 
 struct FloatingGap
 {
-	FloatingGap(int x): begin(x), end(x) {}
+	FloatingGap(int x): begin(x), end(x), m_notesWidth() {}
 
 	void addNote(NoteLabel* n);
-	int width() const { return end - begin; }
 	bool isEmpty() const { return notes.empty(); }
+	int width() const { return end - begin; }
+	int minWidth() const;
+	int notesWidth() const { return m_notesWidth; }
 
 	int begin;
 	int end;
 
 	NoteLabels notes;
+
+private:
+	int m_notesWidth;
 };

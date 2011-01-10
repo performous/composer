@@ -7,6 +7,7 @@ namespace {
 }
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
+const int NoteLabel::min_width = 10; // How many pixels is the resize area
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
 	: QLabel(parent), m_labelText(text), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
@@ -16,7 +17,7 @@ NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &positio
 		move(position);
 
 	setMouseTracking(true);
-	setMinimumSize(10, 10);
+	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
 	show();
 }
