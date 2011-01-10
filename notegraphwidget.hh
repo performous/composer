@@ -1,13 +1,13 @@
 #pragma once
 
 #include "pitchvis.hh"
-#include <QWidget>
+#include <QLabel>
 #include <list>
 
 class NoteLabel;
 typedef std::list<NoteLabel*> NoteLabels;
 
-class NoteGraphWidget: public QWidget
+class NoteGraphWidget: public QLabel
 {
 	Q_OBJECT
 

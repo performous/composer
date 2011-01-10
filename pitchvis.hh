@@ -20,9 +20,9 @@ struct Pixel {
 };
 
 class PitchVis {
-	std::size_t height;
 	std::vector<Pixel> img;
 public:
+	const std::size_t height;
 	Pixel& operator()(std::size_t x, std::size_t y) { return img[x * height + y]; }
 	std::size_t width() const { return img.size() / height; }
 	PitchVis(std::string const& filename);

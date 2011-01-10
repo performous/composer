@@ -24,7 +24,7 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 	std::vector<float> data;
 	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
 	unsigned step = 1024;
-	unsigned width = data.size() / step / height;
+	unsigned width = data.size() / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
 	MusicalScale scale;

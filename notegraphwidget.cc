@@ -9,8 +9,18 @@
 const int NoteGraphWidget::noteYStep = 40;
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
+	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
 {
+	unsigned width = m_pitch.width(), height = m_pitch.height;
+	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+	for (unsigned x = 0; x < width; ++x) {
+		for (unsigned y = 0; y < height; ++y) {
+			rgba[y * width + x] = m_pitch(x, y).rgba();
+		}
+	}
+	setPixmap(QPixmap::fromImage(image));
+
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 	setLyrics(tr("Please add music file and lyrics text."));
@@ -55,9 +65,9 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		ts >> word;
 		if (!word.isEmpty()) {
 			NoteLabel *wordLabel = new NoteLabel(word, this, QPoint(x, y));
+			last = wordLabel;
 			x += wordLabel->width() + gap;
 			if (!first) first = wordLabel;
-			last = wordLabel;
 		}
 	}
 
