@@ -141,10 +141,11 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		int cutpos = int(std::ceil(child->getText().length() * relRatio));
 		QString firstst = child->getText().left(cutpos);
 		QString secondst = child->getText().right(child->getText().length() - cutpos);
+		int w1 = relRatio * child->width();
 
 		// Create new labels
-		NoteLabel *newLabel1 = new NoteLabel(firstst, this,child->pos());
-		new NoteLabel(secondst, this, newLabel1->pos() + QPoint(newLabel1->width(), 0));
+		NoteLabel *newLabel1 = new NoteLabel(firstst, this, child->pos(), QSize(w1, 0));
+		new NoteLabel(secondst, this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
 
 		// Delete the old one
 		child->close();
