@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pitchvis.hh"
 #include <QWidget>
 #include <list>
 
@@ -41,6 +42,7 @@ private:
 	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	NoteLabels m_notes;
+	PitchVis m_pitch;
 };
 
 

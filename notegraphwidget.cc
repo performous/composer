@@ -9,7 +9,7 @@
 const int NoteGraphWidget::noteYStep = 40;
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE)
+	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setLyrics("Please add music file and lyrics text.");
