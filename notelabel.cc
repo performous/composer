@@ -104,8 +104,11 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 
 	} else if (!m_hotspot.isNull()) {
 		// Moving
-		move(pos() + event->pos() - m_hotspot);
+		QPoint newpos = pos() + event->pos() - m_hotspot;
+		move(newpos);
 		if (ngw) ngw->updateNotes();
+		// Check if we need a new hotspot, because the note was constrained
+		if (pos().x() != newpos.x()) m_hotspot.rx() = event->x();
 
 	} else {
 		// Hover cursors
