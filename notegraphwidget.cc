@@ -12,7 +12,8 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
 {
 	setFocusPolicy(Qt::StrongFocus);
-	setLyrics("Please add music file and lyrics text.");
+	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
+	setLyrics(tr("Please add music file and lyrics text."));
 	emit updateNoteInfo(NULL);
 }
 
@@ -150,6 +151,9 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		// Left click empty area = pan
 		if (event->button() == Qt::LeftButton)
 			m_panHotSpot = event->pos();
+		// Right click empty area = deselect
+		if (event->button() == Qt::RightButton)
+			selectNote(NULL);
 		return;
 	}
 	if (child->isHidden()) return;

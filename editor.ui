@@ -36,7 +36,7 @@
           <x>0</x>
           <y>0</y>
           <width>780</width>
-          <height>370</height>
+          <height>227</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
@@ -88,183 +88,154 @@
            <attribute name="title">
             <string>&amp;Note properties</string>
            </attribute>
-           <widget class="QLabel" name="label_3">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>10</y>
-              <width>81</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Start time</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_4">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>30</y>
-              <width>81</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>End time</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_5">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>50</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Duration</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="valNoteBegin">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>10</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>XXX</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="valNoteEnd">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>30</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>XXX</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="valNoteDuration">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>50</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>XXX</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_6">
-            <property name="geometry">
-             <rect>
-              <x>600</x>
-              <y>10</y>
-              <width>41</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Type</string>
-            </property>
-           </widget>
-           <widget class="QComboBox" name="comboNoteType">
-            <property name="geometry">
-             <rect>
-              <x>650</x>
-              <y>10</y>
-              <width>92</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="editable">
-             <bool>false</bool>
-            </property>
-            <item>
-             <property name="text">
-              <string>Normal</string>
-             </property>
+           <attribute name="toolTip">
+            <string>Note properties</string>
+           </attribute>
+           <attribute name="whatsThis">
+            <string>This tabs displays information on the currently selected note in the note graph. You can also change various note properties.</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Start time</string>
+              </property>
+             </widget>
             </item>
-            <item>
-             <property name="text">
-              <string>Golden</string>
-             </property>
+            <item row="0" column="1">
+             <widget class="QLabel" name="valNoteBegin">
+              <property name="text">
+               <string>XXX</string>
+              </property>
+             </widget>
             </item>
-            <item>
-             <property name="text">
-              <string>Freestyle</string>
-             </property>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>End time</string>
+              </property>
+             </widget>
             </item>
-           </widget>
-           <widget class="QLabel" name="label_8">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>70</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Note</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="valNote">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>70</y>
-              <width>70</width>
-              <height>18</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>XXX</string>
-            </property>
-           </widget>
-           <widget class="QCheckBox" name="chkFloating">
-            <property name="geometry">
-             <rect>
-              <x>610</x>
-              <y>60</y>
-              <width>131</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>Floating note</string>
-            </property>
-           </widget>
-           <zorder>label_3</zorder>
-           <zorder>label_4</zorder>
-           <zorder>label_5</zorder>
-           <zorder>valNoteBegin</zorder>
-           <zorder>valNoteEnd</zorder>
-           <zorder>valNoteDuration</zorder>
-           <zorder>label_6</zorder>
-           <zorder>comboNoteType</zorder>
-           <zorder>label_8</zorder>
-           <zorder>valNote</zorder>
-           <zorder>chkFloating</zorder>
-           <zorder>scrollArea</zorder>
+            <item row="1" column="1">
+             <widget class="QLabel" name="valNoteEnd">
+              <property name="text">
+               <string>XXX</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QComboBox" name="cmbNoteType">
+              <property name="toolTip">
+               <string>Note type</string>
+              </property>
+              <property name="statusTip">
+               <string>Choose what kind of note the selection should be.</string>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <item>
+               <property name="text">
+                <string>Normal</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Golden</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Freestyle</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QCheckBox" name="chkFloating">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Floating note</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Type</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Duration</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="valNoteDuration">
+              <property name="text">
+               <string>XXX</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Note</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="valNote">
+              <property name="text">
+               <string>XXX</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </widget>
           <widget class="QWidget" name="tabSong">
            <attribute name="title">
             <string>&amp;Song properties</string>
+           </attribute>
+           <attribute name="toolTip">
+            <string>Song properties</string>
+           </attribute>
+           <attribute name="whatsThis">
+            <string>This tab lets you to configure the song metadata.</string>
            </attribute>
            <layout class="QFormLayout" name="formLayout">
             <item row="0" column="0">
@@ -329,6 +300,8 @@
       <string>Expo&amp;rt</string>
      </property>
      <addaction name="actionSingStarXML"/>
+     <addaction name="actionUltraStarTXT"/>
+     <addaction name="actionFoFMIDI"/>
      <addaction name="separator"/>
      <addaction name="actionLyricsToFile"/>
      <addaction name="actionLyricsToClipboard"/>
@@ -356,6 +329,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionWhatsThis"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuInsert">
@@ -461,6 +436,27 @@
   <action name="actionLyricsFromClipboard">
    <property name="text">
     <string>Lyrics from &amp;clipboard</string>
+   </property>
+  </action>
+  <action name="actionUltraStarTXT">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;UltraStar TXT</string>
+   </property>
+  </action>
+  <action name="actionFoFMIDI">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;FoF MIDI</string>
+   </property>
+  </action>
+  <action name="actionWhatsThis">
+   <property name="text">
+    <string>&amp;What's this?</string>
    </property>
   </action>
  </widget>

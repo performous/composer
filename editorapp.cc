@@ -24,6 +24,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteEnd->setText(QString::number(note->x() + note->width()));
 		ui.valNoteDuration->setText(QString::number(note->width()));
 		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
+		ui.cmbNoteType->setEnabled(true);
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
 	} else {
@@ -31,6 +32,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteEnd->setText("-");
 		ui.valNoteDuration->setText("-");
 		ui.valNote->setText("-");
+		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 	}
 }
@@ -39,8 +41,8 @@ void EditorApp::on_actionNew_triggered()
 {
 	// TODO: Check if a save prompt is in order
 	if (true) {
-		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
-			"There are unsaved changes. Do you wish to save before creating a new project?",
+		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
+			tr("There are unsaved changes. Do you wish to save before creating a new project?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		switch(b) {
 		case QMessageBox::Yes:
@@ -58,8 +60,8 @@ void EditorApp::on_actionExit_triggered()
 {
 	// TODO: Check if a save prompt is in order
 	if (false) {
-		QMessageBox::StandardButton b = QMessageBox::question(this, "Unsaved changes",
-			"There are unsaved changes. Do you wish to save before quitting?",
+		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
+			tr("There are unsaved changes. Do you wish to save before quitting?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		switch(b) {
 		case QMessageBox::Yes:
@@ -116,21 +118,25 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 	if (mimeData->hasText() && !mimeData->text().isEmpty()) {
 		QString text = mimeData->text();
-		QMessageBox::StandardButton b = QMessageBox::question(this, "Replace lyrics",
-			"Pasting lyrics from clipboard will replace the existing ones. Continue?",
+		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Replace lyrics"),
+			tr("Pasting lyrics from clipboard will replace the existing ones. Continue?"),
 			QMessageBox::Ok | QMessageBox::Cancel);
 		if (b == QMessageBox::Ok) {
 			ui.noteGraph->setLyrics(text);
 		}
 	} else {
-		QMessageBox::warning(this, "No text to paste", "No suitable data on the clipboard.");
+		QMessageBox::warning(this, tr("No text to paste"), tr("No suitable data on the clipboard."));
 	}
+}
+
+void EditorApp::on_actionWhatsThis_triggered() {
+	QWhatsThis::enterWhatsThisMode ();
 }
 
 void EditorApp::on_actionAbout_triggered()
 {
-	QMessageBox::about(this, "About",
-		"Semi-automatic karaoke song editor.\n"
+	QMessageBox::about(this, tr("About"),
+		tr("Semi-automatic karaoke song editor.\n")
 		);
 }
 
