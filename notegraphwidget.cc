@@ -3,6 +3,10 @@
 #include <cmath>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
+#include "util.hh"
+
+
+const int NoteGraphWidget::noteYStep = 40;
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE)
@@ -25,7 +29,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 	const int gap = 10;
-	int x = gap, y = 50;
+	int x = gap, y = 2 * noteYStep;
 
 	clear();
 	while (!ts.atEnd()) {
@@ -151,8 +155,11 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	(void)*event;
 	if (m_selectedAction != NONE) {
-		m_selectedNote->startResizing(0);
-		m_selectedNote->startDragging(QPoint());
+		if (m_selectedNote) {
+			m_selectedNote->startResizing(0);
+			m_selectedNote->startDragging(QPoint());
+			m_selectedNote->move(m_selectedNote->pos().x(), int(round(m_selectedNote->pos().y() / float(noteYStep))) * noteYStep);
+		}
 		m_selectedAction = NONE;
 	}
 	m_panHotSpot = QPoint();

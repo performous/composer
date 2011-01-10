@@ -9,6 +9,9 @@ typedef std::list<NoteLabel*> NoteLabels;
 class NoteGraphWidget: public QWidget
 {
 public:
+
+	static const int noteYStep;
+
 	NoteGraphWidget(QWidget *parent = 0);
 
 	void clear();
