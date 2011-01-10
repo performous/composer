@@ -281,16 +281,40 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 
 void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
  {
-	 switch (event->key()) {
-	 case Qt::Key_Delete:
-		 if (m_selectedNote) {
+	switch (event->key()) {
+	case Qt::Key_Left: // Select note on the left
+		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
+			for (NoteLabels::reverse_iterator it = m_notes.rbegin(); it != m_notes.rend(); ++it) {
+				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
+			}
+		}
+		break;
+	case Qt::Key_Right: // Select note on the right
+		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
+			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
+				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
+			}
+		}
+		break;
+	case Qt::Key_Up: // Move note up
+		if (m_selectedNote) {
+			m_selectedNote->move(m_selectedNote->x(), m_selectedNote->y() - noteYStep);
+		}
+		break;
+	case Qt::Key_Down: // Move note down
+		if (m_selectedNote) {
+			m_selectedNote->move(m_selectedNote->x(), m_selectedNote->y() + noteYStep);
+		}
+		break;
+	case Qt::Key_Delete: // Delete selected note
+		if (m_selectedNote) {
 			m_selectedNote->close();
 			m_selectedNote = NULL;
 			updateNotes();
-		 }
-		 break;
-	 default:
-		 QWidget::keyPressEvent(event);
+		}
+		break;
+	default:
+		QWidget::keyPressEvent(event);
 	 }
  }
 
