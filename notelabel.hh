@@ -18,7 +18,7 @@ public:
 	void setSelected(bool state = true) { m_selected = state; createPixmap(size()); }
 
 	bool isFloating() const { return m_floating; }
-	void disableFloating() { m_floating = false; createPixmap(size()); }
+	void setFloating(bool state) { m_floating = state; createPixmap(size()); }
 
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);

@@ -24,6 +24,7 @@ public:
 	void rebuildNoteList();
 
 	void selectNote(NoteLabel* note);
+	NoteLabel* selectedNote() const { return m_selectedNote; }
 
 signals:
 	void updateNoteInfo(NoteLabel*);

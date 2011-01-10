@@ -154,3 +154,8 @@ void EditorApp::on_actionAbout_triggered()
 		);
 }
 
+void EditorApp::on_chkFloating_stateChanged(int state)
+{
+	if (ui.noteGraph->selectedNote())
+		ui.noteGraph->selectedNote()->setFloating(state != 0);
+}

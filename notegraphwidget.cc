@@ -31,11 +31,14 @@ void NoteGraphWidget::selectNote(NoteLabel* note)
 {
 	if (m_selectedNote) // Reset old pixmap
 		m_selectedNote->setSelected(false);
+
 	// Assign new selection
 	m_selectedNote = note;
-	if (m_selectedNote)
+	if (m_selectedNote) {
 		m_selectedNote->setSelected();
-	else m_selectedAction = NONE;
+		m_selectedNote->setFloating(false);
+	} else m_selectedAction = NONE;
+
 	// Signal UI about the change
 	emit updateNoteInfo(m_selectedNote);
 }
@@ -72,8 +75,8 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	}
 
 	// Set first and last to non-floating
-	if (first) first->disableFloating();
-	if (last) last->disableFloating();
+	if (first) first->setFloating(false);
+	if (last) last->setFloating(false);
 
 	rebuildNoteList();
 	m_requiredWidth = x + gap;
@@ -178,13 +181,13 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			// Start a resize
 			m_selectedAction = RESIZE;
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
-			child->disableFloating();
+			child->setFloating(false);
 
 		} else {
 			// Start a drag
 			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
-			child->disableFloating();
+			child->setFloating(false);
 		}
 		child->createPixmap(child->size());
 

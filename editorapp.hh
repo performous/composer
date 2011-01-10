@@ -14,6 +14,8 @@ public:
 public slots:
 	void updateNoteInfo(NoteLabel* note);
 
+	// Automatic slots
+
 	// File menu
 	void on_actionNew_triggered();
 	void on_actionExit_triggered();
@@ -27,6 +29,8 @@ public slots:
 	void on_actionWhatsThis_triggered();
 	void on_actionAbout_triggered();
 
+	// Note properties tab
+	void on_chkFloating_stateChanged(int);
 
 private:
 	Ui::EditorApp ui;
