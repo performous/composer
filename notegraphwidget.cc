@@ -93,20 +93,32 @@ void NoteGraphWidget::updateNotes()
 			// Fixed note encountered, handle the gap (divide notes evenly into it)
 			if (!gap.isEmpty()) {
 				gap.end = child->x();
+				int x = gap.begin;
 				if (gap.width() >= gap.notesWidth()) {
-					// We have enough space - no resizing needed
+					// Plenty of space - no resizing needed
 					int step = (gap.width() - gap.notesWidth()) / (gap.notes.size() + 1);
-					int x = gap.begin + step;
+					x += step;
 					for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 						(*it2)->move(x, (*it2)->y());
 						x += step + (*it2)->width();
 					}
 				} else if (gap.width() <= gap.minWidth()) {
 					// We are at minimum width, enforce it
-					// TODO
+					for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
+						(*it2)->move(x, (*it2)->y());
+						(*it2)->resize(NoteLabel::min_width, (*it2)->height());
+						x += NoteLabel::min_width;
+					}
+					// TODO: Doesn't work properly
+					child->move(gap.begin + gap.minWidth(), child->y());
 				} else {
-					// We can fit everything, if we make the notes smaller
-					// TODO
+					// Make the notes smaller so that they fit
+					float sf = gap.width() / float(gap.notesWidth());
+					for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
+						(*it2)->move(x, (*it2)->y());
+						(*it2)->resize((*it2)->width() * sf, (*it2)->height());
+						x += (*it2)->width();
+					}
 				}
 			}
 			// Start a new gap

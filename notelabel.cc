@@ -8,6 +8,7 @@ namespace {
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const int NoteLabel::min_width = 10; // How many pixels is the resize area
+const int NoteLabel::default_size = 50; // The preferred size of notes
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
 	: QLabel(parent), m_labelText(text), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
@@ -26,7 +27,7 @@ void NoteLabel::createPixmap(QSize size)
 {
 	QFontMetrics metric(font());
 	if (size.width() <= 0) {
-		size.rwidth() = 50; // FIXME: Size is fixed
+		size.rwidth() = default_size;
 	}
 	if (size.height() <= 0) {
 		size.rheight() = metric.size(Qt::TextSingleLine, m_labelText).height() + text_margin;
