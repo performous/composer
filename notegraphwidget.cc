@@ -11,6 +11,7 @@ const int NoteGraphWidget::noteYStep = 40;
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QWidget(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE)
 {
+	setFocusPolicy(Qt::StrongFocus);
 	setLyrics("Please add music file and lyrics text.");
 }
 
@@ -217,6 +218,22 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 }
+
+
+void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
+ {
+	 switch (event->key()) {
+	 case Qt::Key_Delete:
+		 if (m_selectedNote) {
+			m_selectedNote->close();
+			m_selectedNote = NULL;
+			updateNotes();
+		 }
+		 break;
+	 default:
+		 QWidget::keyPressEvent(event);
+	 }
+ }
 
 
 

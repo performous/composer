@@ -26,6 +26,7 @@ protected:
 	void wheelEvent(QWheelEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 	void mouseMoveEvent(QMouseEvent * event);
+	void keyPressEvent(QKeyEvent *event);
 
 private:
 	int  m_requiredWidth;
