@@ -14,6 +14,20 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 	// Custom signals/slots
 	connect(ui.noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
 	updateNoteInfo(NULL);
+
+	// Some icons to menus to make them prettier
+	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
+	ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
+	ui.actionSave->setIcon(QIcon::fromTheme("document-save"));
+	ui.actionSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
+	ui.actionExit->setIcon(QIcon::fromTheme("application-exit"));
+	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo"));
+	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo"));
+	ui.actionPreferences->setIcon(QIcon::fromTheme("preferences-other"));
+	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object"));
+	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
+	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
+	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
 }
 
 
