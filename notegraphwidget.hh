@@ -8,6 +8,8 @@ typedef std::list<NoteLabel*> NoteLabels;
 
 class NoteGraphWidget: public QWidget
 {
+	Q_OBJECT
+
 public:
 
 	static const int noteYStep;
@@ -19,6 +21,11 @@ public:
 	void updateWidth();
 	void updateNotes();
 	void rebuildNoteList();
+
+	void selectNote(NoteLabel* note);
+
+signals:
+	void updateNoteInfo(NoteLabel*);
 
 protected:
 	void mousePressEvent(QMouseEvent *event);

@@ -13,6 +13,20 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setLyrics("Please add music file and lyrics text.");
+	emit updateNoteInfo(NULL);
+}
+
+void NoteGraphWidget::selectNote(NoteLabel* note)
+{
+	if (m_selectedNote) // Reset old pixmap
+		m_selectedNote->setSelected(false);
+	// Assign new selection
+	m_selectedNote = note;
+	if (m_selectedNote)
+		m_selectedNote->setSelected();
+	else m_selectedAction = NONE;
+	// Signal UI about the change
+	emit updateNoteInfo(m_selectedNote);
 }
 
 void NoteGraphWidget::clear()
@@ -114,11 +128,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	// Left Click
 	if (event->button() == Qt::LeftButton) {
 
-		if (m_selectedNote) // Reset old pixmap
-			m_selectedNote->setSelected(false);
-		// Assign new selection
-		m_selectedNote = child;
-		m_selectedNote->setSelected();
+		selectNote(child);
 		// Determine if it is drag or resize
 		if (hotSpot.x() < NoteLabel::resize_margin || hotSpot.x() > child->width() - NoteLabel::resize_margin) {
 			// Start a resize

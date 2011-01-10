@@ -1,6 +1,7 @@
 #include <QtGui> 
 #include <cstdlib>
 #include "editorapp.hh"
+#include "notelabel.hh"
 
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
@@ -9,6 +10,29 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 	// Splitter sizes cannot be set through designer :(
 	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
 	ui.splitter->setSizes(ss);
+
+	// Custom signals/slots
+	connect(ui.noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	updateNoteInfo(NULL);
+}
+
+
+void EditorApp::updateNoteInfo(NoteLabel *note)
+{
+	if (note) {
+		ui.valNoteBegin->setText(QString::number(note->x()));
+		ui.valNoteEnd->setText(QString::number(note->x() + note->width()));
+		ui.valNoteDuration->setText(QString::number(note->width()));
+		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
+		ui.chkFloating->setEnabled(true);
+		ui.chkFloating->setChecked(note->isFloating());
+	} else {
+		ui.valNoteBegin->setText("-");
+		ui.valNoteEnd->setText("-");
+		ui.valNoteDuration->setText("-");
+		ui.valNote->setText("-");
+		ui.chkFloating->setEnabled(false);
+	}
 }
 
 void EditorApp::on_actionNew_triggered()
