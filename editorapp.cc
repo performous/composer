@@ -6,6 +6,9 @@
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
 	ui.setupUi(this);
+	// Splitter sizes cannot be set through designer :(
+	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
+	ui.splitter->setSizes(ss);
 }
 
 void EditorApp::on_actionNew_triggered()

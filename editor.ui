@@ -16,287 +16,298 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="mainLayout" stretch="7,3">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetNoConstraint</enum>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-      <item>
-       <widget class="QScrollArea" name="scrollArea">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>780</width>
+          <height>370</height>
+         </rect>
         </property>
-        <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOn</enum>
-        </property>
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>778</width>
-           <height>351</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="NoteGraphWidget" name="noteGraph" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QFrame" name="frame">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_3">
+        <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QTabWidget" name="tabWidget">
-           <property name="currentIndex">
-            <number>0</number>
+          <widget class="NoteGraphWidget" name="noteGraph" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <widget class="QWidget" name="tabNote">
-            <attribute name="title">
-             <string>&amp;Note properties</string>
-            </attribute>
-            <widget class="QLabel" name="label_3">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>10</y>
-               <width>81</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Start time</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_4">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>30</y>
-               <width>81</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>End time</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_5">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>50</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Duration</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="valNoteBegin">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>10</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>XXX</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="valNoteEnd">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>30</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>XXX</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="valNoteDuration">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>50</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>XXX</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_6">
-             <property name="geometry">
-              <rect>
-               <x>600</x>
-               <y>10</y>
-               <width>41</width>
-               <height>31</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Type</string>
-             </property>
-            </widget>
-            <widget class="QComboBox" name="comboNoteType">
-             <property name="geometry">
-              <rect>
-               <x>650</x>
-               <y>10</y>
-               <width>92</width>
-               <height>31</height>
-              </rect>
-             </property>
-             <property name="editable">
-              <bool>false</bool>
-             </property>
-             <item>
-              <property name="text">
-               <string>Normal</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Golden</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Freestyle</string>
-              </property>
-             </item>
-            </widget>
-            <widget class="QLabel" name="label_8">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>70</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Note</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="valNote">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>70</y>
-               <width>70</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>XXX</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="chkFloating">
-             <property name="geometry">
-              <rect>
-               <x>610</x>
-               <y>60</y>
-               <width>131</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>Floating note</string>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QWidget" name="tabSong">
-            <attribute name="title">
-             <string>&amp;Song properties</string>
-            </attribute>
-            <layout class="QFormLayout" name="formLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Title</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="txtTitle"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Artist</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="txtArtist"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Music</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLabel" name="valMusicFile">
-               <property name="text">
-                <string>No music</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
           </widget>
          </item>
         </layout>
        </widget>
-      </item>
-     </layout>
+      </widget>
+      <widget class="QFrame" name="frame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>300</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tabNote">
+           <attribute name="title">
+            <string>&amp;Note properties</string>
+           </attribute>
+           <widget class="QLabel" name="label_3">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>81</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Start time</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_4">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>81</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>End time</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>50</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Duration</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="valNoteBegin">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>10</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>XXX</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="valNoteEnd">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>30</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>XXX</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="valNoteDuration">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>50</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>XXX</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_6">
+            <property name="geometry">
+             <rect>
+              <x>600</x>
+              <y>10</y>
+              <width>41</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="comboNoteType">
+            <property name="geometry">
+             <rect>
+              <x>650</x>
+              <y>10</y>
+              <width>92</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string>Normal</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Golden</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Freestyle</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QLabel" name="label_8">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>70</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Note</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="valNote">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>70</y>
+              <width>70</width>
+              <height>18</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>XXX</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="chkFloating">
+            <property name="geometry">
+             <rect>
+              <x>610</x>
+              <y>60</y>
+              <width>131</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>Floating note</string>
+            </property>
+           </widget>
+           <zorder>label_3</zorder>
+           <zorder>label_4</zorder>
+           <zorder>label_5</zorder>
+           <zorder>valNoteBegin</zorder>
+           <zorder>valNoteEnd</zorder>
+           <zorder>valNoteDuration</zorder>
+           <zorder>label_6</zorder>
+           <zorder>comboNoteType</zorder>
+           <zorder>label_8</zorder>
+           <zorder>valNote</zorder>
+           <zorder>chkFloating</zorder>
+           <zorder>scrollArea</zorder>
+          </widget>
+          <widget class="QWidget" name="tabSong">
+           <attribute name="title">
+            <string>&amp;Song properties</string>
+           </attribute>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Title</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="txtTitle"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Artist</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="txtArtist"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Music</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="valMusicFile">
+              <property name="text">
+               <string>No music</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -306,7 +317,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
