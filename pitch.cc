@@ -8,7 +8,7 @@
 
 static const unsigned FFT_P = 10;  // FFT size setting, will use 2^FFT_P sample FFT
 static const std::size_t FFT_N = 1 << FFT_P;  // FFT size in samples
-static const std::size_t FFT_STEP = 128;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
+static const std::size_t FFT_STEP = 256;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
 
 // Limit the range to avoid noise and useless computation
 static const double FFT_MINFREQ = 45.0;
@@ -114,6 +114,7 @@ void Analyzer::calcTones() {
 		m_peaks[k].magnitude = magnitude;
 		magnitudes.push_back(magnitude);
 	}
+	return;  // No further processing needed by editor at the moment
 	std::sort(magnitudes.begin(), magnitudes.end());
 	double m80 = magnitudes[magnitudes.size() * 80 / 100];  // m80 > 80 % peaks
 	double mmax = magnitudes.back();  // Max magnitude of peaks (note: combos will combine peaks and go higher)
