@@ -29,7 +29,7 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
 	MusicalScale scale;
-	QProgressDialog progress("Analyzing and rendering pitch...", "Abort", 0, width, this);
+	QProgressDialog progress(tr("Analyzing and rendering pitch data..."), tr("&Abort"), 0, width, this);
 		progress.setWindowModality(Qt::WindowModal);
 
 	for (unsigned x = 0; x < width; ++x) {
