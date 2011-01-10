@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QWidget>
 #include <string>
 #include <vector>
 
@@ -19,7 +20,7 @@ struct Pixel {
 	float& operator[](unsigned idx) { return (&r)[idx]; }
 };
 
-class PitchVis {
+class PitchVis: public QWidget {
 	std::vector<Pixel> img;
 public:
 	const std::size_t height;

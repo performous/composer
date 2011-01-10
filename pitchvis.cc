@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <QProgressDialog>
 
 /** Read the entire file into a vector of some type.
 The file needs to be in the machine-native endianess. **/
@@ -28,7 +29,13 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
 	MusicalScale scale;
+	QProgressDialog progress("Analyzing and rendering pitch...", "Abort", 0, width, this);
+		progress.setWindowModality(Qt::WindowModal);
+
 	for (unsigned x = 0; x < width; ++x) {
+		progress.setValue(x);
+		if (progress.wasCanceled()) return;
+
 		analyzer.input(data.begin() + x * step, data.begin() + (x + 1) * step);
 		analyzer.process();
 		Analyzer::Peaks peaks = analyzer.getPeaks();
@@ -39,5 +46,6 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 			if (value > 0.0) (*this)(x, y).r += 0.01 * value;
 		}
 	}
+	progress.setValue(width);
 }
 
