@@ -63,7 +63,7 @@ void NoteLabel::createPixmap(QSize size)
 	painter.setPen(m_selected ? Qt::red : Qt::black); // Hilight selected note
 	painter.setBrush(gradient);
 	painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1),
-							25, 25, Qt::RelativeSize);
+							8, 8);
 
 	painter.setFont(font);
 	painter.setBrush(Qt::black);
