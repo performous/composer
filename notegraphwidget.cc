@@ -196,9 +196,9 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 
 		// Cut the text in a position proportional to the click point
 		float relRatio = float(hotSpot.x()) / child->width();
-		int cutpos = int(std::ceil(child->getText().length() * relRatio));
-		QString firstst = child->getText().left(cutpos);
-		QString secondst = child->getText().right(child->getText().length() - cutpos);
+		int cutpos = int(std::ceil(child->lyric().length() * relRatio));
+		QString firstst = child->lyric().left(cutpos);
+		QString secondst = child->lyric().right(child->lyric().length() - cutpos);
 		int w1 = relRatio * child->width();
 
 		// Create new labels
@@ -251,9 +251,9 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("Edit lyric"),
 										  tr("Lyric:"), QLineEdit::Normal,
-										  child->getText(), &ok);
+										  child->lyric(), &ok);
 	if (ok && !text.isEmpty()) {
-		child->setText(text);
+		child->setLyric(text);
 		child->createPixmap();
 	}
 

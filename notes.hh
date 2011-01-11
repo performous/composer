@@ -47,7 +47,7 @@ typedef std::map<int, Durations> NoteMap;
 
 /// note read from songfile
 struct Note {
-	Note();
+	Note(std::string lyric = "");
 	Duration duration; ///< note begin/end
 	double phase; ///< position within a measure, [0, 1)
 	/// note type

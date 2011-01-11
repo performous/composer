@@ -3,7 +3,7 @@
 #include <QLabel>
 #include "notes.hh"
 
-class NoteLabel: public QLabel, public Note
+class NoteLabel: public QLabel
 {
 public:
 	static const int resize_margin;
@@ -13,10 +13,13 @@ public:
 	NoteLabel(const QString &text, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
 
 	void createPixmap(QSize size = QSize());
-	QString getText() const;
-	void setText(const QString &text);
+	QString lyric() const { return QString::fromStdString(m_note.syllable); }
+	void setLyric(const QString &text) { m_note.syllable = text.toStdString(); }
 
 	void setSelected(bool state = true) { m_selected = state; createPixmap(size()); }
+
+	Note& note() { return m_note; }
+	Note note() const { return m_note; }
 
 	bool isFloating() const { return m_floating; }
 	void setFloating(bool state) { m_floating = state; createPixmap(size()); }
@@ -30,7 +33,7 @@ public:
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
 
 private:
-	QString m_labelText;
+	Note m_note;
 	bool m_selected;
 	bool m_floating;
 	int m_resizing;

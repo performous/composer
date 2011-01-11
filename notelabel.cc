@@ -11,7 +11,7 @@ const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 50; // The preferred size of notes
 
 NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_labelText(text), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
+	: QLabel(parent), m_note(text.toStdString()), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	createPixmap(size);
 	if (!position.isNull())
@@ -30,7 +30,7 @@ void NoteLabel::createPixmap(QSize size)
 		size.rwidth() = default_size;
 	}
 	if (size.height() <= 0) {
-		size.rheight() = metric.size(Qt::TextSingleLine, m_labelText).height() + text_margin;
+		size.rheight() = metric.size(Qt::TextSingleLine, lyric()).height() + text_margin;
 	}
 
 	QImage image(size.width(), size.height(),
@@ -47,15 +47,15 @@ void NoteLabel::createPixmap(QSize size)
 		gradient.setColorAt(0.2, QColor(180, 100, 100));
 		gradient.setColorAt(0.8, QColor(180, 100, 100));
 		gradient.setColorAt(1.0, QColor(120, 100, 100));
-	} else if (type == NORMAL) {
+	} else if (m_note.type == Note::NORMAL) {
 		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff));
 		gradient.setColorAt(0.8, QColor(100 * ff, 100 * ff, 255 * ff));
 		gradient.setColorAt(1.0, QColor(100 * ff, 100 * ff, 200 * ff));
-	} else if (type == GOLDEN) {
+	} else if (m_note.type == Note::GOLDEN) {
 		gradient.setColorAt(0.2, QColor(255 * ff, 255 * ff, 100 * ff));
 		gradient.setColorAt(0.8, QColor(255 * ff, 255 * ff, 100 * ff));
 		gradient.setColorAt(1.0, QColor(160 * ff, 160 * ff, 100 * ff));
-	} else if (type == FREESTYLE) {
+	} else if (m_note.type == Note::FREESTYLE) {
 		gradient.setColorAt(0.2, QColor(100 * ff, 180 * ff, 100 * ff));
 		gradient.setColorAt(0.8, QColor(100 * ff, 180 * ff, 100 * ff));
 		gradient.setColorAt(1.0, QColor(100 * ff, 120 * ff, 100 * ff));
@@ -70,23 +70,13 @@ void NoteLabel::createPixmap(QSize size)
 
 	painter.setFont(font);
 	painter.setBrush(Qt::black);
-	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, m_labelText);
+	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
 	painter.end();
 
 	setPixmap(QPixmap::fromImage(image));
 
-	setToolTip(QString("\"%1\"\n%2").arg(m_labelText).arg(QString::fromStdString(typeString())));
-	setStatusTip(QString("Lyric: ") + m_labelText);
-}
-
-QString NoteLabel::getText() const
-{
-	return m_labelText;
-}
-
-void NoteLabel::setText(const QString &text)
-{
-	m_labelText = text;
+	setToolTip(QString("\"%1\"\n%2").arg(lyric()).arg(QString::fromStdString(m_note.typeString())));
+	setStatusTip(QString("Lyric: ") + lyric());
 }
 
 void NoteLabel::resizeEvent(QResizeEvent *event)
