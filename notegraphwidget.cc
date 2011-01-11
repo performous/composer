@@ -67,11 +67,34 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			NoteLabel *wordLabel = new NoteLabel(word, this, QPoint(x, y));
+			NoteLabel *wordLabel = new NoteLabel(Note(word.toStdString()), this, QPoint(x, y));
 			last = wordLabel;
 			x += wordLabel->width() + gap;
 			if (!first) first = wordLabel;
 		}
+	}
+
+	// Set first and last to non-floating
+	if (first) first->setFloating(false);
+	if (last) last->setFloating(false);
+
+	rebuildNoteList();
+	m_requiredWidth = x + gap;
+	updateWidth();
+}
+
+void NoteGraphWidget::setLyrics(const Notes &notes)
+{
+	const int gap = 10;
+	int x = gap, y = 2 * noteYStep;
+
+	clear();
+	NoteLabel *first = NULL, *last = NULL;
+	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
+		NoteLabel *label = new NoteLabel(*it, this, QPoint(x, y));
+		last = label;
+		x += label->width() + gap;
+		if (!first) first = label;
 	}
 
 	// Set first and last to non-floating
@@ -202,8 +225,8 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		int w1 = relRatio * child->width();
 
 		// Create new labels
-		NoteLabel *newLabel1 = new NoteLabel(firstst, this, child->pos(), QSize(w1, 0));
-		new NoteLabel(secondst, this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
+		NoteLabel *newLabel1 = new NoteLabel(Note(firstst.toStdString()), this, child->pos(), QSize(w1, 0));
+		new NoteLabel(Note(secondst.toStdString()), this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
 
 		// Delete the old one
 		child->close();

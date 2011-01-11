@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pitchvis.hh"
+#include "notes.hh"
 #include <QLabel>
 #include <list>
 
@@ -19,6 +20,7 @@ public:
 
 	void clear();
 	void setLyrics(QString lyrics);
+	void setLyrics(const Notes &notes);
 	void updateWidth();
 	void updateNotes();
 	void rebuildNoteList();

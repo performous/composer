@@ -10,7 +10,7 @@ public:
 	static const int min_width;
 	static const int default_size;
 
-	NoteLabel(const QString &text, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
+	NoteLabel(const Note &note, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
 
 	void createPixmap(QSize size = QSize());
 	QString lyric() const { return QString::fromStdString(m_note.syllable); }

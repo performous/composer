@@ -10,8 +10,8 @@ const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 50; // The preferred size of notes
 
-NoteLabel::NoteLabel(const QString &text, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_note(text.toStdString()), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
+NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
+	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	createPixmap(size);
 	if (!position.isNull())
