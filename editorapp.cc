@@ -71,6 +71,23 @@ void EditorApp::on_actionNew_triggered()
 	}
 }
 
+void EditorApp::on_actionOpen_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+			"",
+			tr("All supported formats (*.TBD!!! *.xml *.mid *.ini *.txt)") + ";;" +
+			tr("Project files (*.TBD!!!)") + ";;" + // FIXME: Project file extension
+			tr("SingStar XML (*.xml)") + ";;" +
+			tr("Frets on Fire MIDI (*.mid *.ini)") + ";;" +
+			tr("UltraStar TXT (*.txt)") + ";;" +
+			tr("All files (*)")
+			);
+
+	if (!fileName.isNull()) {
+		// TODO: Spawn a parser
+	}
+}
+
 void EditorApp::on_actionExit_triggered()
 {
 	// TODO: Check if a save prompt is in order
