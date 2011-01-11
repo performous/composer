@@ -160,7 +160,7 @@ void EditorApp::on_actionAbout_triggered()
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
 	if (ui.noteGraph->selectedNote())
-		ui.noteGraph->selectedNote()->note().type = Note::Type(index);
+		ui.noteGraph->selectedNote()->setType(index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)

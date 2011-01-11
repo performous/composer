@@ -23,6 +23,7 @@ public:
 
 	bool isFloating() const { return m_floating; }
 	void setFloating(bool state) { m_floating = state; createPixmap(size()); }
+	void setType(int newtype) { m_note.type = Note::Type(newtype); createPixmap(size()); }
 
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);
