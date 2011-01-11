@@ -48,7 +48,7 @@ void NoteGraphWidget::clear()
 	// Clear NoteLabels
 	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
-		NoteLabel *child = dynamic_cast<NoteLabel*>(*it);
+		NoteLabel *child = qobject_cast<NoteLabel*>(*it);
 		if (child) child->close();
 	}
 	m_notes.clear();
@@ -165,7 +165,7 @@ void NoteGraphWidget::rebuildNoteList()
 	m_notes.clear();
 	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
-		NoteLabel *child = dynamic_cast<NoteLabel*>(*it);
+		NoteLabel *child = qobject_cast<NoteLabel*>(*it);
 		if (child) m_notes.push_back(child);
 	}
 	m_notes.sort(cmpNoteLabelPtr);
@@ -173,7 +173,7 @@ void NoteGraphWidget::rebuildNoteList()
 
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
-	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
+	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child) {
 		// Left click empty area = pan
 		if (event->button() == Qt::LeftButton)
@@ -241,7 +241,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
-	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
+	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child)
 		return;
 
@@ -256,7 +256,7 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 
 void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	NoteLabel *child = static_cast<NoteLabel*>(childAt(event->pos()));
+	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child)
 		return;
 
@@ -280,7 +280,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		setCursor(QCursor(Qt::ClosedHandCursor));
 		QScrollArea *scrollArea = NULL;
 		if (parentWidget() && parentWidget()->parent())
-			scrollArea = dynamic_cast<QScrollArea*>(parentWidget()->parent()->parent());
+			scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent()->parent());
 		if (scrollArea) {
 			QPoint diff = event->pos() - m_panHotSpot;
 			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();

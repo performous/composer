@@ -18,7 +18,7 @@ find_package(Qt4 REQUIRED) # find and setup Qt4 for this project
 include(${QT_USE_FILE})
 
 # Headers that need MOC need to be defined separately
-file(GLOB MOC_HEADER_FILES "editorapp.hh" "notegraphwidget.hh")
+file(GLOB MOC_HEADER_FILES "editorapp.hh" "notelabel.hh" "notegraphwidget.hh")
 
 file(GLOB SOURCE_FILES "*.cc")
 file(GLOB HEADER_FILES "*.hh")

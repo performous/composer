@@ -91,7 +91,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
 	QToolTip::showText(event->globalPos(), toolTip(), this);
 
-	NoteGraphWidget* ngw = dynamic_cast<NoteGraphWidget*>(parent());
+	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
 		// Resizing
 		if (m_resizing < 0)

@@ -5,6 +5,8 @@
 
 class NoteLabel: public QLabel
 {
+	Q_OBJECT
+
 public:
 	static const int resize_margin;
 	static const int min_width;
