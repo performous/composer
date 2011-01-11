@@ -222,6 +222,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		m_selectedAction = NONE;
 	}
 	m_panHotSpot = QPoint();
+	setCursor(QCursor());
 	updateNotes();
 }
 
@@ -270,10 +271,10 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		if (scrollArea) {
 			QPoint diff = event->pos() - m_panHotSpot;
 			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();
-			scrollHor->setValue(scrollHor->value() + diff.x());
-			QScrollBar *scrollVer = scrollArea->horizontalScrollBar();
-			scrollVer->setValue(scrollVer->value() + diff.y());
-			m_panHotSpot = event->pos() + diff;
+			scrollHor->setValue(scrollHor->value() - diff.x());
+			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
+			scrollVer->setValue(scrollVer->value() - diff.y());
+			m_panHotSpot = event->pos() - diff;
 		}
 	}
 }
