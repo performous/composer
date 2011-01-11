@@ -39,6 +39,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteDuration->setText(QString::number(note->width()));
 		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
 		ui.cmbNoteType->setEnabled(true);
+		ui.cmbNoteType->setCurrentIndex(note->type);
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
 	} else {
@@ -143,7 +144,8 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 	}
 }
 
-void EditorApp::on_actionWhatsThis_triggered() {
+void EditorApp::on_actionWhatsThis_triggered()
+{
 	QWhatsThis::enterWhatsThisMode ();
 }
 
@@ -152,6 +154,13 @@ void EditorApp::on_actionAbout_triggered()
 	QMessageBox::about(this, tr("About"),
 		tr("Semi-automatic karaoke song editor.\n")
 		);
+}
+
+
+void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
+{
+	if (ui.noteGraph->selectedNote())
+		ui.noteGraph->selectedNote()->type = Note::Type(index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)

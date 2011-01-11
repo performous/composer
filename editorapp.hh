@@ -30,6 +30,7 @@ public slots:
 	void on_actionAbout_triggered();
 
 	// Note properties tab
+	void on_cmbNoteType_currentIndexChanged(int);
 	void on_chkFloating_stateChanged(int);
 
 private:

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <QLabel>
+#include "notes.hh"
 
-class NoteLabel: public QLabel
+class NoteLabel: public QLabel, public Note
 {
 public:
 	static const int resize_margin;
