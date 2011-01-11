@@ -43,11 +43,7 @@ void NoteLabel::createPixmap(QSize size)
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	gradient.setColorAt(0.0, Qt::white);
 	float ff = m_floating ? 1.0f : 0.5f;
-	if (m_selected) {
-		gradient.setColorAt(0.2, QColor(180, 100, 100));
-		gradient.setColorAt(0.8, QColor(180, 100, 100));
-		gradient.setColorAt(1.0, QColor(120, 100, 100));
-	} else if (m_note.type == Note::NORMAL) {
+	if (m_note.type == Note::NORMAL) {
 		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff));
 		gradient.setColorAt(0.8, QColor(100 * ff, 100 * ff, 255 * ff));
 		gradient.setColorAt(1.0, QColor(100 * ff, 100 * ff, 200 * ff));
@@ -64,6 +60,7 @@ void NoteLabel::createPixmap(QSize size)
 	QPainter painter;
 	painter.begin(&image);
 	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setPen(m_selected ? Qt::red : Qt::black); // Hilight selected note
 	painter.setBrush(gradient);
 	painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1),
 							25, 25, Qt::RelativeSize);
