@@ -54,7 +54,7 @@ double MusicalScale::getNoteOffset(double freq) const {
 
 Duration::Duration(): begin(getNaN()), end(getNaN()) {}
 
-Note::Note(): begin(getNaN()), end(getNaN()), phase(getNaN()), type(NORMAL), note(), notePrev() {}
+Note::Note(): duration(getNaN(), getNaN()), phase(getNaN()), type(NORMAL), note(), notePrev() {}
 
 double Note::diff(double note, double n) { return remainder(n - note, 12.0); }
 
