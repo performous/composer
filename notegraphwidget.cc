@@ -129,35 +129,28 @@ void NoteGraphWidget::updateNotes()
 		} else {
 			// Fixed note encountered, handle the gap (divide notes evenly into it)
 			gap.end = child->x();
-			int x = gap.begin;
 
-			if (gap.width() >= gap.notesWidth()) {
-				// Plenty of space - no resizing needed
-				int step = (gap.width() - gap.notesWidth()) / (gap.notes.size() + 1);
-				x += step;
-				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
-					(*it2)->move(x, (*it2)->y());
-					x += step + (*it2)->width();
-				}
-
-			} else if (gap.width() <= gap.minWidth()) {
+			if (gap.width() <= gap.minWidth()) {
 				// We are at minimum width, enforce it
+				int x = gap.begin;
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					(*it2)->move(x, (*it2)->y());
 					(*it2)->resize(NoteLabel::min_width, (*it2)->height());
 					x += NoteLabel::min_width;
 				}
 				// FIXME: Enforcing fixed note position can be cheated by rapid mouse movement
-				// Also, left & right side behaves differently
+				// Also, left & right side behave differently
 				child->move(gap.begin + gap.minWidth(), child->y());
 
 			} else {
-				// Make the notes smaller so that they fit
-				float sf = gap.width() / float(gap.notesWidth());
+				// Calculate position and size
+				int w = gap.width() / float(gap.notes.size()) * 0.9;
+				int step = (gap.width() - w * gap.notes.size()) / float(gap.notes.size() + 1);
+				int x = gap.begin + step;
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					(*it2)->move(x, (*it2)->y());
-					(*it2)->resize((*it2)->width() * sf, (*it2)->height());
-					x += (*it2)->width();
+					(*it2)->resize(w, (*it2)->height());
+					x += w + step;
 				}
 			}
 
