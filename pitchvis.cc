@@ -21,7 +21,7 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 	if (!f) throw std::runtime_error("Error reading " + filename);
 }
 
-PitchVis::PitchVis(std::string const& filename): height(512) {
+PitchVis::PitchVis(std::string const& filename): height(1024) {
 	std::vector<float> data;
 	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
 	unsigned step = 1024;
@@ -40,17 +40,20 @@ PitchVis::PitchVis(std::string const& filename): height(512) {
 		analyzer.process();
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
-			unsigned y = height - static_cast<unsigned>(8.0 * (scale.getNote(peaks[i].freq)));
-			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (magn2dB(peaks[i].magnitude) + 80.0);
-			if (value < 0.0) continue;
-			Pixel p(value, value, value);
-			(*this)(x, y) += p;
-			p.r *= 0.5;
-			p.g *= 0.5;
-			p.b *= 0.5;
-			(*this)(x, y + 1) += p;
-			(*this)(x, y - 1) += p;
+			for (unsigned div = 1; div < 4; ++div) {
+				unsigned y = height - static_cast<unsigned>(16.0 * (scale.getNote(peaks[i].freq * div)));
+				if (y == 0 || y >= height - 1) continue;
+				float value = 0.003 * (magn2dB(peaks[i].magnitude) + 80.0);
+				if (value <= 0.0) continue;
+				if (div > 1) value *= -0.5;
+				Pixel p(value, value, value);
+				(*this)(x, y) += p;
+				p.r *= 0.5;
+				p.g *= 0.5;
+				p.b *= 0.5;
+				(*this)(x, y + 1) += p;
+				(*this)(x, y - 1) += p;
+			}
 		}
 	}
 	progress.setValue(width);
