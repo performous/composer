@@ -55,6 +55,7 @@ struct Note {
 	int note; ///< MIDI pitch of the note (at the end for slide notes)
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	std::string syllable; ///< lyrics syllable for that note
+	bool lineBreak; ///< is this note ending a syllable?
 	/// note begin time access
 	double& begin() { return duration.begin; }
 	double begin() const { return duration.begin; }

@@ -71,6 +71,12 @@ void NoteLabel::createPixmap(QSize size)
 	painter.setFont(font);
 	painter.setBrush(Qt::black);
 	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
+
+	// Render sentence end indicator
+	if (m_note.lineBreak) {
+		// TODO
+	}
+
 	painter.end();
 
 	setPixmap(QPixmap::fromImage(image));
