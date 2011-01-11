@@ -36,7 +36,6 @@ void NoteGraphWidget::selectNote(NoteLabel* note)
 	m_selectedNote = note;
 	if (m_selectedNote) {
 		m_selectedNote->setSelected();
-		m_selectedNote->setFloating(false);
 	} else m_selectedAction = NONE;
 
 	// Signal UI about the change
@@ -204,13 +203,11 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			// Start a resize
 			m_selectedAction = RESIZE;
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
-			child->setFloating(false);
 
 		} else {
 			// Start a drag
 			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
-			child->setFloating(false);
 		}
 		child->createPixmap(child->size());
 

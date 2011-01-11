@@ -16,7 +16,11 @@ public:
 	QString lyric() const { return QString::fromStdString(m_note.syllable); }
 	void setLyric(const QString &text) { m_note.syllable = text.toStdString(); }
 
-	void setSelected(bool state = true) { m_selected = state; createPixmap(size()); }
+	void setSelected(bool state = true) {
+		if (m_selected != state) {
+			m_selected = state; createPixmap(size());
+		}
+	}
 
 	Note& note() { return m_note; }
 	Note note() const { return m_note; }
