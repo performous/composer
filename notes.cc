@@ -58,6 +58,12 @@ Note::Note(): duration(getNaN(), getNaN()), phase(getNaN()), type(NORMAL), note(
 
 double Note::diff(double note, double n) { return remainder(n - note, 12.0); }
 
+std::string Note::typeString() const {
+	static const std::string typenames[] = { "Normal", "Bonus", "Freestyle" };
+	return typenames[type];
+}
+
+
 VocalTrack::VocalTrack(std::string name) : name(name) {reload();}
 
 void VocalTrack::reload() {

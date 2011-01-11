@@ -69,6 +69,9 @@ struct Note {
 	static bool ltBegin(Note const& a, Note const& b) { return a.duration.begin < b.duration.begin; }
 	/// compares end of two notes
 	static bool ltEnd(Note const& a, Note const& b) { return a.duration.end < b.duration.end; }
+
+	/// human-readable description of note type
+	std::string typeString() const;
 };
 
 typedef std::vector<Note> Notes;

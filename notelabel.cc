@@ -42,18 +42,23 @@ void NoteLabel::createPixmap(QSize size)
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	gradient.setColorAt(0.0, Qt::white);
+	float ff = m_floating ? 1.0f : 0.5f;
 	if (m_selected) {
-		gradient.setColorAt(0.2, QColor(100, 180, 100));
-		gradient.setColorAt(0.8, QColor(100, 180, 100));
-		gradient.setColorAt(1.0, QColor(100, 120, 100));
-	} else if (m_floating) {
-		gradient.setColorAt(0.2, QColor(160, 160, 180));
-		gradient.setColorAt(0.8, QColor(160, 160, 180));
-		gradient.setColorAt(1.0, QColor(100, 100, 120));
-	} else {
-		gradient.setColorAt(0.2, QColor(100, 100, 255));
-		gradient.setColorAt(0.8, QColor(100, 100, 255));
-		gradient.setColorAt(1.0, QColor(100, 100, 200));
+		gradient.setColorAt(0.2, QColor(180, 100, 100));
+		gradient.setColorAt(0.8, QColor(180, 100, 100));
+		gradient.setColorAt(1.0, QColor(120, 100, 100));
+	} else if (type == NORMAL) {
+		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff));
+		gradient.setColorAt(0.8, QColor(100 * ff, 100 * ff, 255 * ff));
+		gradient.setColorAt(1.0, QColor(100 * ff, 100 * ff, 200 * ff));
+	} else if (type == GOLDEN) {
+		gradient.setColorAt(0.2, QColor(255 * ff, 255 * ff, 100 * ff));
+		gradient.setColorAt(0.8, QColor(255 * ff, 255 * ff, 100 * ff));
+		gradient.setColorAt(1.0, QColor(160 * ff, 160 * ff, 100 * ff));
+	} else if (type == FREESTYLE) {
+		gradient.setColorAt(0.2, QColor(100 * ff, 180 * ff, 100 * ff));
+		gradient.setColorAt(0.8, QColor(100 * ff, 180 * ff, 100 * ff));
+		gradient.setColorAt(1.0, QColor(100 * ff, 120 * ff, 100 * ff));
 	}
 
 	QPainter painter;
@@ -70,7 +75,7 @@ void NoteLabel::createPixmap(QSize size)
 
 	setPixmap(QPixmap::fromImage(image));
 
-	setToolTip(m_labelText);
+	setToolTip(QString("\"%1\"\n%2").arg(m_labelText).arg(QString::fromStdString(typeString())));
 	setStatusTip(QString("Lyric: ") + m_labelText);
 }
 
@@ -91,7 +96,7 @@ void NoteLabel::resizeEvent(QResizeEvent *event)
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
-	QToolTip::showText(event->globalPos(), getText(), this);
+	QToolTip::showText(event->globalPos(), toolTip(), this);
 
 	NoteGraphWidget* ngw = dynamic_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
