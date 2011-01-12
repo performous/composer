@@ -27,6 +27,13 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 	setLyrics(tr("Please add music file and lyrics text."));
+
+	// We want the initial text to be completely visible on screen
+	// FIXME: This should be handled with more robustness and elegance
+	m_notes.back()->move(600, m_notes.back()->y());
+	updateNotes();
+
+	// Signal the UI to update itself
 	emit updateNoteInfo(NULL);
 }
 
