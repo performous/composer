@@ -114,7 +114,6 @@ void Analyzer::calcTones() {
 		m_peaks[k].magnitude = magnitude;
 		magnitudes.push_back(magnitude);
 	}
-	return;  // No further processing needed by editor at the moment
 	std::sort(magnitudes.begin(), magnitudes.end());
 	double m80 = magnitudes[magnitudes.size() * 80 / 100];  // m80 > 80 % peaks
 	double mmax = magnitudes.back();  // Max magnitude of peaks (note: combos will combine peaks and go higher)

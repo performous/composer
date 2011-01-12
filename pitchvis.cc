@@ -26,7 +26,7 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
 	unsigned step = 1024;
 	unsigned width = data.size() / step;
-	img.resize(width * height, Pixel(0.5f, 0.5f, 0.5f, 1.0f));
+	img.resize(width * height);
 	Analyzer analyzer(44100, "");
 	MusicalScale scale;
 	QProgressDialog progress(tr("Analyzing and rendering pitch data..."), tr("&Abort"), 0, width, this);
@@ -40,20 +40,31 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 		analyzer.process();
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
-			for (unsigned div = 1; div < 4; ++div) {
-				unsigned y = height - static_cast<unsigned>(16.0 * (scale.getNote(peaks[i].freq * div)));
-				if (y == 0 || y >= height - 1) continue;
-				float value = 0.003 * (magn2dB(peaks[i].magnitude) + 80.0);
-				if (value <= 0.0) continue;
-				if (div > 1) value *= -0.5;
-				Pixel p(value, value, value);
-				(*this)(x, y) += p;
-				p.r *= 0.5;
-				p.g *= 0.5;
-				p.b *= 0.5;
-				(*this)(x, y + 1) += p;
-				(*this)(x, y - 1) += p;
-			}
+			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(peaks[i].freq));
+			if (y == 0 || y >= height - 1) continue;
+			float value = 0.003 * (magn2dB(peaks[i].magnitude) + 80.0);
+			if (value <= 0.0) continue;
+			Pixel p(0.0f, 0.0f, value);
+			(*this)(x, y) += p;
+			p.r *= 0.5;
+			p.g *= 0.5;
+			p.b *= 0.5;
+			(*this)(x, y + 1) += p;
+			(*this)(x, y - 1) += p;
+		}
+		Analyzer::Tones tones = analyzer.getTones();
+		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
+			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freq));
+			if (y == 0 || y >= height - 1) continue;
+			float value = 0.003 * (it->db + 80.0);
+			if (value <= 0.0) continue;
+			Pixel p(value, value, value);
+			(*this)(x, y) += p;
+			p.r *= 0.5;
+			p.g *= 0.5;
+			p.b *= 0.5;
+			(*this)(x, y + 1) += p;
+			(*this)(x, y - 1) += p;
 		}
 	}
 	progress.setValue(width);
