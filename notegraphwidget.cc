@@ -92,13 +92,13 @@ void NoteGraphWidget::setLyrics(const Notes &notes)
 	clear();
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		// TODO: Implement proper seconds-to-pixels mapping and note height thingy
-		const float sec2pix = 100;
+		const float sec2pix = 200;
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE)
-			m_notes.push_back(new NoteLabel(*it, this, QPoint(it->begin*sec2pix, 2 * noteYStep),
+			m_notes.push_back(new NoteLabel(*it, this, QPoint(it->begin*sec2pix, height() - it->note * noteYStep),
 				QSize((it->end - it->begin)*sec2pix, 0), false));
 	}
 
-	finalizeNewLyrics();
+	updateNotes();
 }
 
 void NoteGraphWidget::finalizeNewLyrics()
