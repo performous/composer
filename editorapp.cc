@@ -7,6 +7,7 @@
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
+	showMaximized();
 	ui.setupUi(this);
 
 	noteGraph = new NoteGraphWidget(NULL);
