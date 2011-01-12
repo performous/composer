@@ -1,5 +1,6 @@
 #include <QtGui>
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -199,7 +200,17 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 
 		// Create new labels
 		NoteLabel *newLabel1 = new NoteLabel(Note(firstst.toStdString()), this, child->pos(), QSize(w1, 0));
-		new NoteLabel(Note(secondst.toStdString()), this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
+		NoteLabel *newLabel2 = new NoteLabel(Note(secondst.toStdString()), this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
+		// Insert them to the list removing the old one
+		NoteLabels::iterator it = std::find(m_notes.begin(), m_notes.end(), child);
+		if (it != m_notes.end()) {
+			m_notes.insert(it, newLabel1);
+			m_notes.insert(it, newLabel2);
+			m_notes.erase(it);
+		} else {
+			m_notes.push_back(newLabel1);
+			m_notes.push_back(newLabel2);
+		}
 
 		// Delete the old one
 		child->close();
