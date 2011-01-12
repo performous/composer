@@ -138,9 +138,9 @@ void NoteGraphWidget::updateNotes()
 
 			} else {
 				// Calculate position and size
-				int w = gap.width() / float(gap.notes.size()) * 0.9;
-				int step = (gap.width() - w * gap.notes.size()) / float(gap.notes.size() + 1);
-				int x = gap.begin + step;
+				double w = gap.width() / double(gap.notes.size()) * 0.9;
+				double step = (gap.width() - w * gap.notes.size()) / double(gap.notes.size() + 1);
+				double x = gap.begin + step;
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					(*it2)->move(x, (*it2)->y());
 					(*it2)->resize(w, (*it2)->height());
