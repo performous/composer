@@ -149,6 +149,9 @@ bool SongParser::txtParseNote(std::string line, VocalTrack &vocal) {
 		if (notes.empty()) return true; // Ignore sleeps at song beginning
 		n.begin = n.end = prevtime; // Normalize sleep notes
 	}
+	// Add lineBreak flag for notes preceding SLEEPs
+	if (notes.size() > 0 && n.type == Note::SLEEP)
+		n.lineBreak = true;
 	notes.push_back(n);
 	return true;
 }
