@@ -13,14 +13,21 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
 {
 	unsigned width = m_pitch.width(), height = m_pitch.height;
+	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
+	progress.setWindowModality(Qt::WindowModal);
+
 	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
 	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
 	for (unsigned x = 0; x < width; ++x) {
+		progress.setValue(x);
+		if (progress.wasCanceled()) break;
+
 		for (unsigned y = 0; y < height; ++y) {
 			rgba[y * width + x] = m_pitch(x, y).rgba();
 		}
 	}
 	setPixmap(QPixmap::fromImage(image));
+	progress.setValue(width);
 
 	// FIXME: Width should come from song length * pixPerSec
 	setFixedSize(std::max(width, (unsigned)1024), height);
