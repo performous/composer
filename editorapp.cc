@@ -17,6 +17,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 	ui.splitter->setSizes(ss);
 
 	// Custom signals/slots
+	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
 	updateNoteInfo(NULL);
 
@@ -35,6 +36,11 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
 }
 
+
+void EditorApp::operationDone(const Operation& op)
+{
+	opStack.push(op);
+}
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
@@ -109,6 +115,21 @@ void EditorApp::on_actionExit_triggered()
 		}
 	} else {
 		close();
+	}
+}
+
+void EditorApp::on_actionUndo_triggered()
+{
+	// TODO: Move popped to redo stack
+	opStack.pop();
+	noteGraph->close();
+	noteGraph = new NoteGraphWidget(NULL);
+	ui.noteGraphScroller->setWidget(noteGraph);
+	// Re-apply all operations in the stack
+	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
+		// FIXME: This should check from the operation what class will implement it
+		// and call the appropriate object. QObject meta info could be very useful.
+		noteGraph->doOperation(*opit, Operation::NO_EMIT);
 	}
 }
 

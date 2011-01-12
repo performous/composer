@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_editor.h"
+#include "operation.hh"
 
 class NoteLabel;
 class NoteGraphWidget;
@@ -13,6 +14,7 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 public slots:
+	void operationDone(const Operation& op);
 	void updateNoteInfo(NoteLabel* note);
 
 	// Automatic slots
@@ -21,6 +23,9 @@ public slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
 	void on_actionExit_triggered();
+
+	// Edit menu
+	void on_actionUndo_triggered();
 
 	// Insert menu
 	void on_actionMusicFile_triggered();
@@ -38,4 +43,5 @@ public slots:
 private:
 	Ui::EditorApp ui;
 	NoteGraphWidget* noteGraph;
+	OperationStack opStack;
 };

@@ -2,6 +2,7 @@
 
 #include "pitchvis.hh"
 #include "notes.hh"
+#include "operation.hh"
 #include <QLabel>
 #include <list>
 
@@ -26,8 +27,11 @@ public:
 	void selectNote(NoteLabel* note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
 
+	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
+
 signals:
 	void updateNoteInfo(NoteLabel*);
+	void operationDone(const Operation&);
 
 protected:
 	void mousePressEvent(QMouseEvent *event);

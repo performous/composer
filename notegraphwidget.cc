@@ -247,8 +247,8 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	// Spawn an input dialog
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("Edit lyric"),
-										  tr("Lyric:"), QLineEdit::Normal,
-										  child->lyric(), &ok);
+										tr("Lyric:"), QLineEdit::Normal,
+										child->lyric(), &ok);
 	if (ok && !text.isEmpty()) {
 		child->setLyric(text);
 		child->createPixmap(child->size());
@@ -313,6 +313,15 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		QWidget::keyPressEvent(event);
 	 }
  }
+
+void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags flags)
+{
+	if (!(flags & Operation::NO_EXEC)) {
+		// TODO: This should perform the operation
+	}
+	if (!(flags & Operation::NO_EMIT))
+		emit operationDone(op);
+}
 
 
 
