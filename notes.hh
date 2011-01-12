@@ -48,28 +48,24 @@ typedef std::map<int, Durations> NoteMap;
 /// note read from songfile
 struct Note {
 	Note(std::string lyric = "");
-	Duration duration; ///< note begin/end
+	//Duration duration; ///< note begin/end
+	double begin; // FIXME: Should use duration but it is pain to change everywhere
+	double end;
 	double phase; ///< position within a measure, [0, 1)
 	/// note type
-	enum Type { NORMAL = 0, GOLDEN = 1, FREESTYLE = 2 } type;
+	enum Type { NORMAL = 0, GOLDEN = 1, FREESTYLE = 2, SLEEP } type;
 	int note; ///< MIDI pitch of the note (at the end for slide notes)
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	std::string syllable; ///< lyrics syllable for that note
 	bool lineBreak; ///< is this note ending a syllable?
-	/// note begin time access
-	double& begin() { return duration.begin; }
-	double begin() const { return duration.begin; }
-	/// note end time access
-	double& end() { return duration.end; }
-	double end() const { return duration.end; }
 	/// difference of n from note
 	double diff(double n) const { return diff(note, n); }
 	/// difference of n from note, so that note + diff(note, n) is n (mod 12)
 	static double diff(double note, double n);
 	/// compares begin of two notes
-	static bool ltBegin(Note const& a, Note const& b) { return a.duration.begin < b.duration.begin; }
+	static bool ltBegin(Note const& a, Note const& b) { return a.begin < b.begin; }
 	/// compares end of two notes
-	static bool ltEnd(Note const& a, Note const& b) { return a.duration.end < b.duration.end; }
+	static bool ltEnd(Note const& a, Note const& b) { return a.end < b.end; }
 
 	/// human-readable description of note type
 	std::string typeString() const;

@@ -14,6 +14,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+find_package(Boost 1.36 REQUIRED COMPONENTS regex filesystem)
+include_directories(${Boost_INCLUDE_DIRS})
+list(APPEND LIBS ${Boost_LIBRARIES})
+
 find_package(Qt4 REQUIRED) # find and setup Qt4 for this project
 include(${QT_USE_FILE})
 
@@ -33,4 +37,4 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
-target_link_libraries(editor ${QT_LIBRARIES})
+target_link_libraries(editor ${QT_LIBRARIES} ${LIBS})
