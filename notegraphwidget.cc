@@ -272,8 +272,8 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
 		QScrollArea *scrollArea = NULL;
-		if (parentWidget() && parentWidget()->parent())
-			scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent()->parent());
+		if (parentWidget())
+			scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
 		if (scrollArea) {
 			QPoint diff = event->pos() - m_panHotSpot;
 			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();
