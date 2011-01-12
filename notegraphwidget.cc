@@ -21,6 +21,8 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	}
 	setPixmap(QPixmap::fromImage(image));
 
+	setFixedWidth(std::max(width, (unsigned)1024)); // FIXME: Width should come from song length * pixPerSec
+
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 	setLyrics(tr("Please add music file and lyrics text."));
@@ -57,57 +59,42 @@ void NoteGraphWidget::clear()
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
-	const int gap = 10;
-	int x = gap, y = 2 * noteYStep;
 
 	clear();
-	NoteLabel *first = NULL, *last = NULL;
 	while (!ts.atEnd()) {
 		QString word;
 		ts >> word;
-		if (!word.isEmpty()) {
-			NoteLabel *wordLabel = new NoteLabel(Note(word.toStdString()), this, QPoint(x, y));
-			last = wordLabel;
-			x += wordLabel->width() + gap;
-			if (!first) first = wordLabel;
-		}
+		if (!word.isEmpty())
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, 2 * noteYStep)));
 	}
 
-	// Set first and last to non-floating
-	if (first) first->setFloating(false);
-	if (last) last->setFloating(false);
-
-	rebuildNoteList();
-	m_requiredWidth = x + gap;
-	updateWidth();
+	finalizeNewLyrics();
 }
 
 void NoteGraphWidget::setLyrics(const Notes &notes)
 {
-	const int gap = 10;
-	int x = gap, y = 2 * noteYStep;
-
 	clear();
-	NoteLabel *first = NULL, *last = NULL;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
-		NoteLabel *label = new NoteLabel(*it, this, QPoint(x, y));
-		last = label;
-		x += label->width() + gap;
-		if (!first) first = label;
+		m_notes.push_back(new NoteLabel(*it, this, QPoint(0, 2 * noteYStep)));
 	}
 
-	// Set first and last to non-floating
-	if (first) first->setFloating(false);
-	if (last) last->setFloating(false);
-
-	rebuildNoteList();
-	m_requiredWidth = x + gap;
-	updateWidth();
+	finalizeNewLyrics();
 }
 
-void NoteGraphWidget::updateWidth()
+void NoteGraphWidget::finalizeNewLyrics()
 {
-	setFixedWidth(m_requiredWidth);
+	// Set first and last to non-floating and put the last one to the end of the song
+	if (m_notes.size() > 0) {
+		m_notes.front()->setFloating(false);
+		if (m_notes.size() > 1) {
+			m_notes.back()->setFloating(false);
+			m_notes.back()->move(width() - m_notes.back()->width(), m_notes.back()->y());
+		}
+		// Make sure there is enough room
+		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
+	}
+	// Calculate floating note positions
+	updateNotes();
 }
 
 void NoteGraphWidget::updateNotes()
@@ -115,7 +102,6 @@ void NoteGraphWidget::updateNotes()
 	// Here happens the magic that adjusts the floating
 	// notes according to the fixed ones.
 	FloatingGap gap(0);
-	rebuildNoteList();
 
 	// Determine gaps between non-floating notes
 	for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
@@ -158,17 +144,6 @@ void NoteGraphWidget::updateNotes()
 			gap = FloatingGap(child->x() + child->width());
 		}
 	}
-}
-
-void NoteGraphWidget::rebuildNoteList()
-{
-	m_notes.clear();
-	const QObjectList &childlist = children();
-	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
-		NoteLabel *child = qobject_cast<NoteLabel*>(*it);
-		if (child) m_notes.push_back(child);
-	}
-	m_notes.sort(cmpNoteLabelPtr);
 }
 
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)

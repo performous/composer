@@ -21,9 +21,7 @@ public:
 	void clear();
 	void setLyrics(QString lyrics);
 	void setLyrics(const Notes &notes);
-	void updateWidth();
 	void updateNotes();
-	void rebuildNoteList();
 
 	void selectNote(NoteLabel* note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
@@ -40,6 +38,8 @@ protected:
 	void keyPressEvent(QKeyEvent *event);
 
 private:
+	void finalizeNewLyrics();
+
 	int  m_requiredWidth;
 	QPoint m_panHotSpot;
 	NoteLabel* m_selectedNote;
