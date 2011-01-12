@@ -98,12 +98,9 @@ void EditorApp::on_actionOpen_triggered()
 		QFileInfo finfo(fileName);
 		try {
 			song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
-			VocalTrack vt = song->getVocalTrack();
 			noteGraph->setLyrics(song->getVocalTrack().notes);
 		} catch (const std::exception& e) {
-			// TODO: Error handling
-			std::cerr << "Error loading song: " << finfo.filePath().toStdString() << std::endl;
-			std::cerr << "  --> " << e.what() << std::endl;
+			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
 
 	}
