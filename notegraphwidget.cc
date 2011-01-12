@@ -224,17 +224,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
-	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
-	if (!child)
-		return;
-
-	// Figure out new size and apply it
-	int neww = child->size().width() + event->delta() * 0.1;
-	child->resize(neww, child->size().height());
-
-	updateNotes();
-
-	event->accept();
+	event->ignore();
 }
 
 void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -252,8 +242,6 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 		child->setLyric(text);
 		child->createPixmap();
 	}
-
-	event->accept();
 }
 
 void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
