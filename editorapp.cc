@@ -50,7 +50,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteDuration->setText(QString::number(note->width()));
 		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
 		ui.cmbNoteType->setEnabled(true);
-		// FIXME: ui.cmbNoteType->setCurrentIndex(note->note().type);
+		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
 	} else {
@@ -209,9 +209,8 @@ void EditorApp::on_actionAbout_triggered()
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
-	// FIXME: Fix this
-	//if (noteGraph->selectedNote())
-	//	noteGraph->selectedNote()->setType(index);
+	if (noteGraph->selectedNote())
+		noteGraph->selectedNote()->setType(index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)

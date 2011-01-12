@@ -1,6 +1,7 @@
 #include "notes.hh"
 
 #include "util.hh"
+#include <QtGlobal>
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
@@ -54,14 +55,33 @@ double MusicalScale::getNoteOffset(double freq) const {
 
 Duration::Duration(): begin(getNaN()), end(getNaN()) {}
 
+
+const Note::Type Note::types[] = { NORMAL, GOLDEN, FREESTYLE, SLIDE, SLEEP, TAP, HOLDBEGIN, HOLDEND, ROLL, MINE, LIFT };
+
 Note::Note(std::string lyric): syllable(lyric), begin(), end(), phase(getNaN()), type(NORMAL), note(), notePrev(), lineBreak() {}
 
 double Note::diff(double note, double n) { return remainder(n - note, 12.0); }
 
+int Note::getTypeInt() const {
+	switch (type) {
+		case NORMAL:    return 0;
+		case GOLDEN:    return 1;
+		case FREESTYLE: return 2;
+		case SLIDE:     return 3;
+		case SLEEP:     return 4;
+		default:        return 255;
+	}
+}
+
 std::string Note::typeString() const {
-	static const std::string typenames[] = { "Normal", "Bonus", "Freestyle" };
-	return typenames[0]; // FIXME: Handle notetypes properly
-	//return typenames[type];
+	switch (type) {
+		case NORMAL:    return QT_TR_NOOP("Normal");
+		case GOLDEN:    return QT_TR_NOOP("Bonus");
+		case FREESTYLE: return QT_TR_NOOP("Freestyle");
+		case SLIDE:     return QT_TR_NOOP("Slide");
+		case SLEEP:     return QT_TR_NOOP("Sleep");
+		default:        return QT_TR_NOOP("Unknown");
+	}
 }
 
 

@@ -48,13 +48,16 @@ typedef std::map<int, Durations> NoteMap;
 /// note read from songfile
 struct Note {
 	Note(std::string lyric = "");
+	/// note type - NOTE! Keep the types array below in sync with the enum!
+	enum Type { FREESTYLE = 'F', NORMAL = ':', GOLDEN = '*', SLIDE = '+', SLEEP = '-',
+		TAP = '1', HOLDBEGIN = '2', HOLDEND = '3', ROLL = '4', MINE = 'M', LIFT = 'L'} type;
+	static const Type types[];
+	int getTypeInt() const;
+
 	//Duration duration; ///< note begin/end
 	double begin; // FIXME: Should use duration but it is pain to change everywhere
 	double end;
 	double phase; ///< position within a measure, [0, 1)
-	/// note type
-	enum Type { FREESTYLE = 'F', NORMAL = ':', GOLDEN = '*', SLIDE = '+', SLEEP = '-',
-		TAP = '1', HOLDBEGIN = '2', HOLDEND = '3', ROLL = '4', MINE = 'M', LIFT = 'L'} type;
 	int note; ///< MIDI pitch of the note (at the end for slide notes)
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	std::string syllable; ///< lyrics syllable for that note
