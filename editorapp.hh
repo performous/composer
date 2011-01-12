@@ -2,6 +2,7 @@
 
 #include "ui_editor.h"
 #include "operation.hh"
+#include "song.hh"
 
 class NoteLabel;
 class NoteGraphWidget;
@@ -44,4 +45,5 @@ private:
 	Ui::EditorApp ui;
 	NoteGraphWidget* noteGraph;
 	OperationStack opStack;
+	QScopedPointer<Song> song;
 };

@@ -53,7 +53,8 @@ struct Note {
 	double end;
 	double phase; ///< position within a measure, [0, 1)
 	/// note type
-	enum Type { NORMAL = 0, GOLDEN = 1, FREESTYLE = 2, SLEEP } type;
+	enum Type { FREESTYLE = 'F', NORMAL = ':', GOLDEN = '*', SLIDE = '+', SLEEP = '-',
+		TAP = '1', HOLDBEGIN = '2', HOLDEND = '3', ROLL = '4', MINE = 'M', LIFT = 'L'} type;
 	int note; ///< MIDI pitch of the note (at the end for slide notes)
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	std::string syllable; ///< lyrics syllable for that note

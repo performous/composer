@@ -1,5 +1,5 @@
 #include <QtGui>
-#include <cstdlib>
+#include <iostream>
 #include "editorapp.hh"
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -50,7 +50,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteDuration->setText(QString::number(note->width()));
 		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
 		ui.cmbNoteType->setEnabled(true);
-		ui.cmbNoteType->setCurrentIndex(note->note().type);
+		// FIXME: ui.cmbNoteType->setCurrentIndex(note->note().type);
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
 	} else {
@@ -95,7 +95,17 @@ void EditorApp::on_actionOpen_triggered()
 			);
 
 	if (!fileName.isNull()) {
-		// TODO: Spawn a parser
+		QFileInfo finfo(fileName);
+		try {
+			song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
+			VocalTrack vt = song->getVocalTrack();
+			noteGraph->setLyrics(song->getVocalTrack().notes);
+		} catch (const std::exception& e) {
+			// TODO: Error handling
+			std::cerr << "Error loading song: " << finfo.filePath().toStdString() << std::endl;
+			std::cerr << "  --> " << e.what() << std::endl;
+		}
+
 	}
 }
 
@@ -142,7 +152,7 @@ void EditorApp::on_actionMusicFile_triggered()
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
 		ui.tabWidget->setCurrentIndex(1);
-		// TODO: Do something the file
+		// TODO: Do something with the file
 	}
 }
 
@@ -202,8 +212,9 @@ void EditorApp::on_actionAbout_triggered()
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
-	if (noteGraph->selectedNote())
-		noteGraph->selectedNote()->setType(index);
+	// FIXME: Fix this
+	//if (noteGraph->selectedNote())
+	//	noteGraph->selectedNote()->setType(index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)

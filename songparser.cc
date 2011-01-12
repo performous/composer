@@ -65,20 +65,7 @@ SongParser::SongParser(Song& s):
 		m_ss.write(&data[0], size);
 	}
 	// FIXME: convertToUTF8(m_ss, s.path + s.filename);
-	// Header already parsed?
-	if (s.loadStatus == Song::HEADER) {
-		try {
-			if (type == TXT) txtParse();
-			else if (type == INI) iniParse();
-			else if (type == SM) smParse();
-		} catch (std::runtime_error& e) {
-			throw SongParserException(e.what(), m_linenum);
-		}
-		finalize(); // Do some adjusting to the notes
-		s.loadStatus = Song::FULL;
-		return;
-	}
-	// Parse only header to speed up loading and conserve memory
+	// Header parsing
 	try {
 		if (type == TXT) txtParseHeader();
 		else if (type == INI) iniParseHeader();
@@ -112,6 +99,23 @@ SongParser::SongParser(Song& s):
 		}
 	}
 	s.loadStatus = Song::HEADER;
+
+	// Note: The full parser invocation below should actually be above header parsing
+	// if two-phase parsing is wanted
+
+	// Header already parsed?
+	if (s.loadStatus == Song::HEADER) {
+		try {
+			if (type == TXT) txtParse();
+			else if (type == INI) iniParse();
+			else if (type == SM) smParse();
+		} catch (std::runtime_error& e) {
+			throw SongParserException(e.what(), m_linenum);
+		}
+		finalize(); // Do some adjusting to the notes
+		s.loadStatus = Song::FULL;
+		return; // FIXME: Header-only parsing is disabled
+	}
 }
 
 

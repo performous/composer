@@ -60,7 +60,8 @@ double Note::diff(double note, double n) { return remainder(n - note, 12.0); }
 
 std::string Note::typeString() const {
 	static const std::string typenames[] = { "Normal", "Bonus", "Freestyle" };
-	return typenames[type];
+	return typenames[0]; // FIXME: Handle notetypes properly
+	//return typenames[type];
 }
 
 
