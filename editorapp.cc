@@ -1,18 +1,23 @@
-#include <QtGui> 
+#include <QtGui>
 #include <cstdlib>
 #include "editorapp.hh"
 #include "notelabel.hh"
+#include "notegraphwidget.hh"
 
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 {
 	ui.setupUi(this);
+
+	noteGraph = new NoteGraphWidget(NULL);
+	ui.noteGraphScroller->setWidget(noteGraph);
+
 	// Splitter sizes cannot be set through designer :(
 	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
 	ui.splitter->setSizes(ss);
 
 	// Custom signals/slots
-	connect(ui.noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
 	updateNoteInfo(NULL);
 
 	// Some icons to menus to make them prettier
@@ -63,11 +68,11 @@ void EditorApp::on_actionNew_triggered()
 		case QMessageBox::Yes:
 			// TODO: Save
 		case QMessageBox::No:
-			ui.noteGraph->clear(); break;
+			noteGraph->clear(); break;
 		default: break;
 		}
 	} else {
-		ui.noteGraph->clear();
+		noteGraph->clear();
 	}
 }
 
@@ -139,7 +144,7 @@ void EditorApp::on_actionLyricsFromFile_triggered()
 		 }
 
 		 if (text != "")
-			 ui.noteGraph->setLyrics(text);
+			 noteGraph->setLyrics(text);
 	}
 }
 
@@ -154,7 +159,7 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 			tr("Pasting lyrics from clipboard will replace the existing ones. Continue?"),
 			QMessageBox::Ok | QMessageBox::Cancel);
 		if (b == QMessageBox::Ok) {
-			ui.noteGraph->setLyrics(text);
+			noteGraph->setLyrics(text);
 		}
 	} else {
 		QMessageBox::warning(this, tr("No text to paste"), tr("No suitable data on the clipboard."));
@@ -176,12 +181,12 @@ void EditorApp::on_actionAbout_triggered()
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
-	if (ui.noteGraph->selectedNote())
-		ui.noteGraph->selectedNote()->setType(index);
+	if (noteGraph->selectedNote())
+		noteGraph->selectedNote()->setType(index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)
 {
-	if (ui.noteGraph->selectedNote())
-		ui.noteGraph->selectedNote()->setFloating(state != 0);
+	if (noteGraph->selectedNote())
+		noteGraph->selectedNote()->setFloating(state != 0);
 }

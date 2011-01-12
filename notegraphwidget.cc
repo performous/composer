@@ -21,7 +21,8 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	}
 	setPixmap(QPixmap::fromImage(image));
 
-	setFixedWidth(std::max(width, (unsigned)1024)); // FIXME: Width should come from song length * pixPerSec
+	// FIXME: Width should come from song length * pixPerSec
+	setFixedSize(std::max(width, (unsigned)1024), height);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));

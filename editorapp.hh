@@ -3,6 +3,7 @@
 #include "ui_editor.h"
 
 class NoteLabel;
+class NoteGraphWidget;
 
 class EditorApp: public QMainWindow
 {
@@ -36,4 +37,5 @@ public slots:
 
 private:
 	Ui::EditorApp ui;
+	NoteGraphWidget* noteGraph;
 };
