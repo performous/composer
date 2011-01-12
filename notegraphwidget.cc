@@ -240,7 +240,7 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 										  child->lyric(), &ok);
 	if (ok && !text.isEmpty()) {
 		child->setLyric(text);
-		child->createPixmap();
+		child->createPixmap(child->size());
 	}
 }
 
