@@ -312,6 +312,8 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 			m_panHotSpot = event->pos() - diff;
 		}
 	}
+
+	emit updateNoteInfo(m_selectedNote);
 }
 
 

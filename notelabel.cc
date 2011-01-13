@@ -85,9 +85,7 @@ void NoteLabel::createPixmap(QSize size)
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
-	// Update note length
-	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
-	if (ngw) m_note.end = m_note.begin + ngw->px2s(width());
+	updateNote();
 }
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
@@ -121,9 +119,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			setCursor(QCursor(Qt::OpenHandCursor));
 		}
 	}
-
-	// Update note pos
-	if (ngw) m_note.begin = ngw->px2s(m_note.begin);
+	updateNote();
 
 	event->ignore(); // Propagate event to parent
 }
@@ -145,3 +141,14 @@ void NoteLabel::startDragging(const QPoint& point)
 	else setCursor(QCursor());
 }
 
+void NoteLabel::updateNote()
+{
+	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
+	if (ngw) {
+		// Update note pos
+		m_note.note = ngw->px2n(y());
+		m_note.begin = ngw->px2s(x());
+		// Update note length
+		m_note.end = m_note.begin + ngw->px2s(width());
+	}
+}

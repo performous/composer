@@ -60,10 +60,12 @@ void EditorApp::operationDone(const Operation &op)
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
 	if (note) {
-		ui.valNoteBegin->setText(QString::number(note->x()));
-		ui.valNoteEnd->setText(QString::number(note->x() + note->width()));
-		ui.valNoteDuration->setText(QString::number(note->width()));
-		ui.valNote->setText(QString::number(note->y() / NoteGraphWidget::noteYStep));
+		MusicalScale ms;
+		ui.valNoteBegin->setText(QString::number(note->note().begin) + tr(" s"));
+		ui.valNoteEnd->setText(QString::number(note->note().end) + tr(" s"));
+		ui.valNoteDuration->setText(QString::number(note->note().length()) + tr(" s"));
+		ui.valNote->setText(QString::fromStdString(ms.getNoteStr(ms.getNoteFreq(note->note().note)))
+			+ " (" + QString::number(note->note().note) + ")");
 		ui.cmbNoteType->setEnabled(true);
 		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
 		ui.chkFloating->setEnabled(true);
