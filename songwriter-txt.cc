@@ -4,6 +4,7 @@
 
 void UltraStarTXTWriter::writeTXT() {
 	throw std::runtime_error("TXT export is not implemented.");
+/*
 	std::ofstream f((path + "notes.txt").c_str(), std::ios::binary);
 	// FIXME: The following is just an example and doesn't actually output TXT format
 	char buf[1024] = {};
@@ -15,5 +16,5 @@ void UltraStarTXTWriter::writeTXT() {
 		buf[1] = n.note; // MIDI note value
 		// Others are n.begin, n.end, n.type etc. (see notes.hh)
 		f.write(buf, 1024);
-	}
+	}*/
 }

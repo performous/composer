@@ -5,9 +5,9 @@
 struct SongWriter
 {
 	SongWriter(const Song& s_, const QString& path_)
-		: s(s_), path(path_.toStdString()) { QDir dir; dir.mkpath(path_); }
+		: s(s_), path(path_) { QDir dir; dir.mkpath(path_); }
 	const Song& s;
-	std::string path;
+	QString path;
 };
 
 struct SingStarXMLWriter: public SongWriter
