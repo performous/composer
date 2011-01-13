@@ -20,6 +20,19 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 	// Custom signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+
+	// We must set the initial lyrics here, because constructor doesn't have
+	// signals yet ready, which leads to empty undo stack
+	noteGraph->setLyrics(tr("Please add music file and lyrics text."));
+	// We want the initial text to be completely visible on screen
+	// FIXME: This should be handled with more robustness and elegance
+	Operation moveop("MOVE");
+	moveop << (int)noteGraph->noteLabels().size()-1 << 600 - noteGraph->noteLabels().back()->width() << noteGraph->noteLabels().back()->y();
+	noteGraph->doOperation(moveop);
+	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
+
+	noteGraph->updateNotes();
+
 	updateNoteInfo(NULL);
 
 	// Some icons to menus to make them prettier
@@ -38,8 +51,9 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 }
 
 
-void EditorApp::operationDone(const Operation& op)
+void EditorApp::operationDone(const Operation &op)
 {
+	std::cout << "Push op: " << op.dump() << std::endl;
 	opStack.push(op);
 }
 
@@ -128,16 +142,25 @@ void EditorApp::on_actionExit_triggered()
 
 void EditorApp::on_actionUndo_triggered()
 {
+	if (opStack.top().op() == "BLOCK")
+		return;
+
 	// TODO: Move popped to redo stack
 	opStack.pop();
-	noteGraph->close();
-	noteGraph = new NoteGraphWidget(NULL);
-	ui.noteGraphScroller->setWidget(noteGraph);
+	std::cout << "Undo!" << std::endl;
+	noteGraph->clear();
+	//noteGraph = new NoteGraphWidget(NULL);
+	//ui.noteGraphScroller->setWidget(noteGraph);
 	// Re-apply all operations in the stack
+	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
 	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
+		std::cout << "Doing op: " << opit->dump() << std::endl;
 		// FIXME: This should check from the operation what class will implement it
 		// and call the appropriate object. QObject meta info could be very useful.
-		noteGraph->doOperation(*opit, Operation::NO_EMIT);
+		try {
+			noteGraph->doOperation(*opit, Operation::NO_EMIT);
+		} catch (std::exception& e) { std::cout << e.what() << std::endl;
+		} catch (...) { std::cout << "UNDO ERROR!" << std::endl; }
 	}
 }
 
@@ -210,12 +233,21 @@ void EditorApp::on_actionAbout_triggered()
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
-	if (noteGraph->selectedNote())
+	if (noteGraph->selectedNote() && noteGraph->selectedNote()->note().getTypeInt() != index) {
 		noteGraph->selectedNote()->setType(index);
+		Operation op("TYPE");
+		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << index;
+		operationDone(op);
+	}
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)
 {
-	if (noteGraph->selectedNote())
-		noteGraph->selectedNote()->setFloating(state != 0);
+	bool floating = (state != 0);
+	if (noteGraph->selectedNote() && noteGraph->selectedNote()->isFloating() != floating) {
+		noteGraph->selectedNote()->setFloating(floating);
+		Operation op("FLOATING");
+		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << (floating);
+		operationDone(op);
+	}
 }

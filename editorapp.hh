@@ -15,8 +15,8 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 public slots:
-	void operationDone(const Operation& op);
-	void updateNoteInfo(NoteLabel* note);
+	void operationDone(const Operation &op);
+	void updateNoteInfo(NoteLabel *note);
 
 	// Automatic slots
 

@@ -118,6 +118,8 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			setCursor(QCursor(Qt::OpenHandCursor));
 		}
 	}
+
+	event->ignore(); // Propagate event to parent
 }
 
 void NoteLabel::startResizing(int dir)

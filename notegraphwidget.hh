@@ -4,10 +4,10 @@
 #include "notes.hh"
 #include "operation.hh"
 #include <QLabel>
-#include <list>
+#include <QList>
 
 class NoteLabel;
-typedef std::list<NoteLabel*> NoteLabels;
+typedef QList<NoteLabel*> NoteLabels;
 
 class NoteGraphWidget: public QLabel
 {
@@ -27,6 +27,8 @@ public:
 	void selectNote(NoteLabel* note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
 
+	int getNoteLabelId(NoteLabel* note) const;
+	NoteLabels& noteLabels() { return m_notes; }
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
 
 signals:
@@ -48,6 +50,7 @@ private:
 	QPoint m_panHotSpot;
 	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
+	bool m_actionHappened;
 	NoteLabels m_notes;
 	PitchVis m_pitch;
 };

@@ -16,7 +16,7 @@ public:
 
 	void createPixmap(QSize size = QSize());
 	QString lyric() const { return QString::fromStdString(m_note.syllable); }
-	void setLyric(const QString &text) { m_note.syllable = text.toStdString(); }
+	void setLyric(const QString &text) { m_note.syllable = text.toStdString(); createPixmap(size()); }
 
 	void setSelected(bool state = true) {
 		if (m_selected != state) {

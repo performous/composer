@@ -7,10 +7,19 @@
 #include "util.hh"
 
 
+namespace {
+	static Operation opFromNote(const NoteLabel& note, int id) {
+		Operation op("NEW");
+		op << id << note.lyric() << note.x() << note.y() << note.width() << note.height() << note.isFloating();
+		return op;
+	}
+}
+
+
 const int NoteGraphWidget::noteYStep = 40;
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_pitch("music.raw")
+	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch("music.raw")
 {
 	unsigned width = m_pitch.width(), height = m_pitch.height;
 	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
@@ -34,15 +43,8 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
-	setLyrics(tr("Please add music file and lyrics text."));
 
-	// We want the initial text to be completely visible on screen
-	// FIXME: This should be handled with more robustness and elegance
-	m_notes.back()->move(600, m_notes.back()->y());
 	updateNotes();
-
-	// Signal the UI to update itself
-	emit updateNoteInfo(NULL);
 }
 
 void NoteGraphWidget::selectNote(NoteLabel* note)
@@ -80,8 +82,10 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	while (!ts.atEnd()) {
 		QString word;
 		ts >> word;
-		if (!word.isEmpty())
+		if (!word.isEmpty()) {
 			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, 2 * noteYStep)));
+			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+		}
 	}
 
 	finalizeNewLyrics();
@@ -93,9 +97,11 @@ void NoteGraphWidget::setLyrics(const Notes &notes)
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		// TODO: Implement proper seconds-to-pixels mapping and note height thingy
 		const float sec2pix = 200;
-		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE)
+		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
 			m_notes.push_back(new NoteLabel(*it, this, QPoint(it->begin*sec2pix, height() - it->note * noteYStep),
 				QSize((it->end - it->begin)*sec2pix, 0), false));
+			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+		}
 	}
 
 	updateNotes();
@@ -105,16 +111,27 @@ void NoteGraphWidget::finalizeNewLyrics()
 {
 	// Set first and last to non-floating and put the last one to the end of the song
 	if (m_notes.size() > 0) {
-		m_notes.front()->setFloating(false);
+		Operation floatop1("FLOATING"); floatop1 << (int)0 << false;
+		doOperation(floatop1);
 		if (m_notes.size() > 1) {
-			m_notes.back()->setFloating(false);
-			m_notes.back()->move(width() - m_notes.back()->width(), m_notes.back()->y());
+			Operation floatop2("FLOATING"); floatop2 << (int)m_notes.size()-1 << false;
+			doOperation(floatop2);
+			Operation moveop("MOVE");
+			moveop << (int)m_notes.size()-1 << width() - m_notes.back()->width() << m_notes.back()->y();
+			doOperation(moveop);
 		}
 		// Make sure there is enough room
 		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
 	}
 	// Calculate floating note positions
 	updateNotes();
+}
+
+int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
+{
+	for (int i = 0; i < m_notes.size(); ++i)
+		if (m_notes[i] == note) return i;
+	return -1;
 }
 
 void NoteGraphWidget::updateNotes()
@@ -236,9 +253,18 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 			m_selectedNote->startResizing(0);
 			m_selectedNote->startDragging(QPoint());
 			m_selectedNote->move(m_selectedNote->pos().x(), int(round(m_selectedNote->pos().y() / float(noteYStep))) * noteYStep);
+			if (m_actionHappened) {
+				// Operation for undo stack & saving
+				Operation op("SETGEOM");
+				op << getNoteLabelId(m_selectedNote)
+					<< m_selectedNote->x() << m_selectedNote->y()
+					<< m_selectedNote->width() << m_selectedNote->height();
+				doOperation(op, Operation::NO_EXEC);
+			}
 		}
 		m_selectedAction = NONE;
 	}
+	m_actionHappened = false;
 	m_panHotSpot = QPoint();
 	setCursor(QCursor());
 	updateNotes();
@@ -262,12 +288,16 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 										child->lyric(), &ok);
 	if (ok && !text.isEmpty()) {
 		child->setLyric(text);
-		child->createPixmap(child->size());
+		Operation op("LYRIC");
+		op << getNoteLabelId(child) << text;
+		doOperation(op, Operation::NO_EXEC);
 	}
 }
 
 void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
+	m_actionHappened = true; // We have movement, so resize/move can be accepted
+
 	// Pan
 	if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
@@ -290,11 +320,12 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
  {
 	switch (event->key()) {
 	case Qt::Key_Left: // Select note on the left
-		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
+		// FIXME!
+/*		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
 			for (NoteLabels::reverse_iterator it = m_notes.rbegin(); it != m_notes.rend(); ++it) {
 				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
 			}
-		}
+		}*/
 		break;
 	case Qt::Key_Right: // Select note on the right
 		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
@@ -315,6 +346,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Delete: // Delete selected note
 		if (m_selectedNote) {
+			// FIXME: Erase from the list!!!
 			m_selectedNote->close();
 			m_selectedNote = NULL;
 			updateNotes();
@@ -328,7 +360,44 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags flags)
 {
 	if (!(flags & Operation::NO_EXEC)) {
-		// TODO: This should perform the operation
+		std::string action = op.op().toStdString();
+		if (action == "BLOCK") {
+			; // No op
+		} else if (action == "NEW") {
+			NoteLabel *newLabel = new NoteLabel(
+				Note(op.s(2).toStdString()), // Note(lyric)
+				this, // parent
+				QPoint(op.i(3), op.i(4)), // x,y
+				QSize(op.i(5), op.i(6)), // w,h
+				op.b(7) // floating
+				);
+			if (m_notes.isEmpty()) m_notes.push_back(newLabel);
+			else m_notes.insert(op.i(1), newLabel);
+		} else {
+			NoteLabel *n = m_notes.at(op.i(1));
+			if (n) {
+				if (action == "DEL") {
+					n->close();
+					m_notes.removeAt(op.i(1));
+				} else if (action == "SPLIT") {
+					// TODO
+				} else if (action == "SETGEOM") {
+					n->setGeometry(op.i(2), op.i(3), op.i(4), op.i(5));
+				} else if (action == "RESIZE") {
+					n->resize(op.i(2), op.i(3));
+				} else if (action == "MOVE") {
+					n->move(op.i(2), op.i(3));
+				} else if (action == "FLOATING") {
+					n->setFloating(op.b(2));
+				} else if (action == "LYRIC") {
+					n->setLyric(op.s(2));
+				} else if (action == "TYPE") {
+					n->setType(op.i(2));
+				}
+				n->createPixmap(n->size());
+			}
+		}
+		updateNotes();
 	}
 	if (!(flags & Operation::NO_EMIT))
 		emit operationDone(op);
