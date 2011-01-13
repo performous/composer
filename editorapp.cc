@@ -5,8 +5,11 @@
 #include "notegraphwidget.hh"
 #include "songwriter.hh"
 
+namespace {
+	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
+}
 
-EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
+EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
 {
 	showMaximized();
 	ui.setupUi(this);
@@ -60,6 +63,21 @@ void EditorApp::operationDone(const Operation &op)
 	opStack.push(op);
 }
 
+void EditorApp::doOpStack()
+{
+	noteGraph->clear();
+	// Re-apply all operations in the stack
+	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
+	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
+		std::cout << "Doing op: " << opit->dump() << std::endl;
+		// FIXME: This should check from the operation what class will implement it
+		// and call the appropriate object. QObject meta info could be very useful.
+		try {
+			noteGraph->doOperation(*opit, Operation::NO_EMIT);
+		} catch (std::exception& e) { std::cout << e.what() << std::endl; }
+	}
+}
+
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
 	if (note) {
@@ -81,6 +99,9 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 	}
+	QFileInfo finfo(projectFileName);
+	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
+	setWindowTitle("Editor - " + proName);
 }
 
 void EditorApp::on_actionNew_triggered()
@@ -106,27 +127,58 @@ void EditorApp::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
 			QDir::homePath(),
-			tr("All supported formats (*.TBD!!! *.xml *.mid *.ini *.txt)") + ";;" +
-			tr("Project files (*.TBD!!!)") + ";;" + // FIXME: Project file extension
-			tr("SingStar XML (*.xml)") + ";;" +
-			tr("Frets on Fire MIDI (*.mid *.ini)") + ";;" +
-			tr("UltraStar TXT (*.txt)") + ";;" +
-			tr("All files (*)")
-			);
+			tr("All supported formats") + "(*." + PROJECT_SAVE_FILE_EXTENSION + " *.xml *.mid *.ini *.txt);;" +
+			tr("Project files") +" (*." + PROJECT_SAVE_FILE_EXTENSION + ") ;;" +
+			tr("SingStar XML") + " (*.xml);;" +
+			tr("Frets on Fire MIDI") + " (*.mid *.ini);;" +
+			tr("UltraStar TXT") + " (*.txt);;" +
+			tr("All files") + " (*)");
 
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName);
 		try {
-			song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
-			noteGraph->setLyrics(song->getVocalTrack());
-			updateSongMeta(true);
-			noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
-			ui.tabWidget->setCurrentIndex(1); // Swicth to song properties tab
+			if (finfo.suffix() == PROJECT_SAVE_FILE_EXTENSION) {
+				opStack.clear();
+				// TODO: Load opstack
+				doOpStack();
+			} else {
+				song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
+				noteGraph->setLyrics(song->getVocalTrack());
+				updateSongMeta(true);
+				noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
+			}
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
 
 	}
+}
+
+void EditorApp::on_actionSave_triggered()
+{
+	if (projectFileName.isEmpty()) on_actionSaveAs_triggered();
+	else saveProject(projectFileName);
+}
+
+void EditorApp::on_actionSaveAs_triggered()
+{
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Project"),
+			QDir::homePath(),
+			tr("Project files ") + "(*." + PROJECT_SAVE_FILE_EXTENSION + ");;" +
+			tr("All files") + " (*)");
+	if (!fileName.isNull()) {
+		// Add the correct suffix if it is missing
+		QFileInfo finfo(fileName);
+		if (finfo.suffix() != PROJECT_SAVE_FILE_EXTENSION)
+			fileName += "." + PROJECT_SAVE_FILE_EXTENSION;
+		saveProject(fileName);
+	}
+}
+
+void EditorApp::saveProject(QString fileName)
+{
+	projectFileName = fileName;
+	updateNoteInfo(NULL); // Title bar
 }
 
 void EditorApp::on_actionSingStarXML_triggered()
@@ -193,21 +245,7 @@ void EditorApp::on_actionUndo_triggered()
 
 	// TODO: Move popped to redo stack
 	opStack.pop();
-	std::cout << "Undo!" << std::endl;
-	noteGraph->clear();
-	//noteGraph = new NoteGraphWidget(NULL);
-	//ui.noteGraphScroller->setWidget(noteGraph);
-	// Re-apply all operations in the stack
-	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
-	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
-		std::cout << "Doing op: " << opit->dump() << std::endl;
-		// FIXME: This should check from the operation what class will implement it
-		// and call the appropriate object. QObject meta info could be very useful.
-		try {
-			noteGraph->doOperation(*opit, Operation::NO_EMIT);
-		} catch (std::exception& e) { std::cout << e.what() << std::endl;
-		} catch (...) { std::cout << "UNDO ERROR!" << std::endl; }
-	}
+	doOpStack();
 }
 
 void EditorApp::on_actionMusicFile_triggered()

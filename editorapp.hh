@@ -15,6 +15,8 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 	void updateSongMeta(bool readFromSongToUI = false);
+	void saveProject(QString fileName);
+	void doOpStack();
 
 public slots:
 	void operationDone(const Operation &op);
@@ -25,6 +27,8 @@ public slots:
 	// File menu
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
+	void on_actionSave_triggered();
+	void on_actionSaveAs_triggered();
 	void on_actionSingStarXML_triggered();
 	void on_actionUltraStarTXT_triggered();
 	void on_actionFoFMIDI_triggered();
@@ -55,4 +59,5 @@ private:
 	NoteGraphWidget* noteGraph;
 	OperationStack opStack;
 	QScopedPointer<Song> song;
+	QString projectFileName;
 };
