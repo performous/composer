@@ -138,10 +138,27 @@ void EditorApp::on_actionOpen_triggered()
 		QFileInfo finfo(fileName);
 		try {
 			if (finfo.suffix() == PROJECT_SAVE_FILE_EXTENSION) {
-				opStack.clear();
-				// TODO: Load opstack
-				doOpStack();
+
+				// Project file loading
+				QFile f(fileName);
+				if (f.open(QFile::ReadOnly)) {
+					opStack.clear();
+					QDataStream in(&f);
+					while (!in.atEnd()) {
+						Operation op;
+						in >> op;
+						std::cout << "Loaded op: " << op.dump() << std::endl;
+						opStack.push(op);
+					}
+					doOpStack();
+					projectFileName = fileName;
+					updateNoteInfo(NULL); // Title bar
+				} else
+					QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for saving.").arg(fileName));
+
 			} else {
+
+				// Song import
 				song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
 				noteGraph->setLyrics(song->getVocalTrack());
 				updateSongMeta(true);
@@ -177,8 +194,15 @@ void EditorApp::on_actionSaveAs_triggered()
 
 void EditorApp::saveProject(QString fileName)
 {
-	projectFileName = fileName;
-	updateNoteInfo(NULL); // Title bar
+	QFile f(fileName);
+	if (f.open(QFile::WriteOnly)) {
+		QDataStream out(&f);
+		foreach (Operation op, opStack)
+			out << op;
+		projectFileName = fileName;
+		updateNoteInfo(NULL); // Title bar
+	} else
+		QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for saving.").arg(fileName));
 }
 
 void EditorApp::on_actionSingStarXML_triggered()

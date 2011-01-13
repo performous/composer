@@ -3,6 +3,7 @@
 #include <QStack>
 #include <QVariant>
 #include <QTextStream>
+#include <QDataStream>
 #include <ostream>
 
 struct Operation
@@ -51,9 +52,14 @@ struct Operation
 		return st.toStdString();
 	}
 
+	friend QDataStream& operator<<(QDataStream&, const Operation&);
+
 private:
 	QList<QVariant> m_params;
 };
 
 typedef QStack<Operation> OperationStack;
 
+// Serialization operators
+QDataStream& operator<<(QDataStream& stream, const Operation& op);
+QDataStream& operator>>(QDataStream& stream, Operation& op);
