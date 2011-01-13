@@ -21,7 +21,7 @@ public:
 
 	void clear();
 	void setLyrics(QString lyrics);
-	void setLyrics(const Notes &notes);
+	void setLyrics(const VocalTrack &track);
 	void updateNotes();
 
 	void selectNote(NoteLabel* note);
@@ -33,8 +33,10 @@ public:
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
+	int ndiff2px(int dn) const;
 	int n2px(int note) const;
 	int px2n(int px) const;
+	int h() const { return 12 * m_octaves * noteYStep; }
 
 
 signals:

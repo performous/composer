@@ -17,7 +17,6 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, 
 	createPixmap(size);
 	if (!position.isNull())
 		move(position);
-	std::cout << x() << " " << y() << " " << width() << std::endl;
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);

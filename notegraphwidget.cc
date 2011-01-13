@@ -10,7 +10,6 @@
 namespace {
 	static Operation opFromNote(const NoteLabel& note, int id) {
 		Operation op("NEW");
-		op << id << note.lyric() << note.x() << note.y() << note.width() << note.height() << note.isFloating();
 		return op;
 	}
 }
@@ -40,7 +39,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	progress.setValue(width);
 
 	// FIXME: Width should come from song length * pixPerSec
-	setFixedSize(std::max(width, (unsigned)1024), noteYStep * 12 * m_octaves);
+	setFixedSize(std::max(width, (unsigned)1024), h());
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
@@ -92,9 +91,18 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	finalizeNewLyrics();
 }
 
-void NoteGraphWidget::setLyrics(const Notes &notes)
+void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	clear();
+
+	// Determine how many octaves are needed and what is the base line
+	int diff = track.noteMax - track.noteMin;
+	m_octaves = std::ceil(diff / 12.0f) + 1;
+	m_lowestNote = clamp(track.noteMin - 6, 0, 1000);
+	std::cout << "--: " << m_octaves << " " << m_lowestNote << std::endl;
+	setFixedSize(s2px(track.endTime), ndiff2px(m_octaves*12));
+
+	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
 			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
@@ -410,6 +418,9 @@ int NoteGraphWidget::s2px(double sec) const {
 }
 double NoteGraphWidget::px2s(int px) const {
 	return px / m_pixPerSec;
+}
+int NoteGraphWidget::ndiff2px(int dn) const {
+	return dn * noteYStep;
 }
 int NoteGraphWidget::n2px(int note) const {
 	int highestNote = m_lowestNote + 12 * m_octaves;

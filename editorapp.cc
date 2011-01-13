@@ -55,7 +55,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 
 void EditorApp::operationDone(const Operation &op)
 {
-	std::cout << "Push op: " << op.dump() << std::endl;
+	//std::cout << "Push op: " << op.dump() << std::endl;
 	opStack.push(op);
 }
 
@@ -117,7 +117,7 @@ void EditorApp::on_actionOpen_triggered()
 		QFileInfo finfo(fileName);
 		try {
 			song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
-			noteGraph->setLyrics(song->getVocalTrack().notes);
+			noteGraph->setLyrics(song->getVocalTrack());
 			updateSongMeta(true);
 			noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
 			ui.tabWidget->setCurrentIndex(1); // Swicth to song properties tab
