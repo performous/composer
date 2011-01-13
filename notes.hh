@@ -27,7 +27,12 @@ class MusicalScale {
 	double getNote(double freq) const;
 	/// get note offset for frequence
 	double getNoteOffset(double freq) const;
+	/// get octave number
+
+	/// get base id
+	static int getBaseId() { return m_baseId; }
 };
+
 
 /// stores duration of a note
 struct Duration {
@@ -62,6 +67,8 @@ struct Note {
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	std::string syllable; ///< lyrics syllable for that note
 	bool lineBreak; ///< is this note ending a syllable?
+	/// note length
+	double length() const { return end - begin; }
 	/// difference of n from note
 	double diff(double n) const { return diff(note, n); }
 	/// difference of n from note, so that note + diff(note, n) is n (mod 12)

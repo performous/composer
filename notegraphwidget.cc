@@ -16,10 +16,11 @@ namespace {
 }
 
 
-const int NoteGraphWidget::noteYStep = 40;
+const int NoteGraphWidget::noteYStep = 28;
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch("music.raw")
+	: QLabel(parent), m_pixPerSec(200), m_lowestNote(MusicalScale::getBaseId()), m_octaves(3),
+	m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch("music.raw")
 {
 	unsigned width = m_pitch.width(), height = m_pitch.height;
 	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
@@ -39,7 +40,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	progress.setValue(width);
 
 	// FIXME: Width should come from song length * pixPerSec
-	setFixedSize(std::max(width, (unsigned)1024), height);
+	setFixedSize(std::max(width, (unsigned)1024), noteYStep * 12 * m_octaves);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
@@ -83,7 +84,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, 2 * noteYStep)));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(m_lowestNote + 12 * m_octaves - 6))));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 		}
 	}
@@ -95,11 +96,9 @@ void NoteGraphWidget::setLyrics(const Notes &notes)
 {
 	clear();
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
-		// TODO: Implement proper seconds-to-pixels mapping and note height thingy
-		const float sec2pix = 200;
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
-			m_notes.push_back(new NoteLabel(*it, this, QPoint(it->begin*sec2pix, height() - it->note * noteYStep),
-				QSize((it->end - it->begin)*sec2pix, 0), false));
+			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
+				QSize(s2px(it->length()), 0), false));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 		}
 	}
@@ -252,7 +251,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		if (m_selectedNote) {
 			m_selectedNote->startResizing(0);
 			m_selectedNote->startDragging(QPoint());
-			m_selectedNote->move(m_selectedNote->pos().x(), int(round(m_selectedNote->pos().y() / float(noteYStep))) * noteYStep);
+			m_selectedNote->move(m_selectedNote->pos().x(), n2px(px2n(m_selectedNote->pos().y())));
 			if (m_actionHappened) {
 				// Operation for undo stack & saving
 				Operation op("SETGEOM");
@@ -401,6 +400,22 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 	}
 	if (!(flags & Operation::NO_EMIT))
 		emit operationDone(op);
+}
+
+
+int NoteGraphWidget::s2px(double sec) const {
+	return sec * m_pixPerSec;
+}
+double NoteGraphWidget::px2s(int px) const {
+	return px / m_pixPerSec;
+}
+int NoteGraphWidget::n2px(int note) const {
+	int highestNote = m_lowestNote + 12 * m_octaves;
+	return (highestNote - note) * noteYStep;
+}
+int NoteGraphWidget::px2n(int px) const {
+	int highestNote = m_lowestNote + 12 * m_octaves;
+	return highestNote - round(px / (float)noteYStep);
 }
 
 

@@ -1,14 +1,15 @@
 #include <QtGui>
+#include <iostream>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
 
 namespace {
-	static const int text_margin = 12; // Margin of the label texts
+	static const int text_margin = 3; // Margin of the label texts
 }
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const int NoteLabel::min_width = 10; // How many pixels is the resize area
-const int NoteLabel::default_size = 50; // The preferred size of notes
+const int NoteLabel::default_size = 100; // The preferred size of notes
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
@@ -16,7 +17,7 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, 
 	createPixmap(size);
 	if (!position.isNull())
 		move(position);
-
+	std::cout << x() << " " << y() << " " << width() << std::endl;
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -25,20 +26,19 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, 
 
 void NoteLabel::createPixmap(QSize size)
 {
-	QFontMetrics metric(font());
+	QFont font;
+	font.setStyleStrategy(QFont::ForceOutline);
+	QFontMetrics metric(font);
 	if (size.width() <= 0) {
 		size.rwidth() = default_size;
 	}
 	if (size.height() <= 0) {
-		size.rheight() = metric.size(Qt::TextSingleLine, lyric()).height() + text_margin;
+		size.rheight() = metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin;
 	}
 
 	QImage image(size.width(), size.height(),
 				 QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
-
-	QFont font;
-	font.setStyleStrategy(QFont::ForceOutline);
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	gradient.setColorAt(0.0, Qt::white);
@@ -67,7 +67,7 @@ void NoteLabel::createPixmap(QSize size)
 
 	painter.setFont(font);
 	painter.setBrush(Qt::black);
-	painter.drawText(QRect(QPoint(6, 6), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
+	painter.drawText(QRect(QPoint(text_margin, text_margin), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
 
 	// Render sentence end indicator
 	if (m_note.lineBreak) {
@@ -85,6 +85,9 @@ void NoteLabel::createPixmap(QSize size)
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
+	// Update note length
+	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
+	if (ngw) m_note.end = m_note.begin + ngw->px2s(width());
 }
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
@@ -118,6 +121,9 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			setCursor(QCursor(Qt::OpenHandCursor));
 		}
 	}
+
+	// Update note pos
+	if (ngw) m_note.begin = ngw->px2s(m_note.begin);
 
 	event->ignore(); // Propagate event to parent
 }
