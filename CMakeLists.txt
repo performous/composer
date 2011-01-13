@@ -18,7 +18,7 @@ find_package(Boost 1.36 REQUIRED COMPONENTS regex filesystem system)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 
-find_package(Qt4 REQUIRED) # find and setup Qt4 for this project
+find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED) # find and setup Qt4 for this project
 include(${QT_USE_FILE})
 
 # Headers that need MOC need to be defined separately
