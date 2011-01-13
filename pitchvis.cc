@@ -38,7 +38,6 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 
 		analyzer.input(data.begin() + x * step, data.begin() + (x + 1) * step);
 		analyzer.process();
-		/*
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
 			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(peaks[i].freq));
@@ -53,11 +52,11 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 			(*this)(x, y + 1) += p;
 			(*this)(x, y - 1) += p;
 		}
-		*/
 		Analyzer::Tones tones = analyzer.getTones();
 		unsigned int i = 0;
 		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
-			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNoteId(it->freq));
+			if (it->age < Tone::MINAGE) continue;
+			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freq));
 			if (y == 0 || y >= height - 1) continue;
 			float value = 0.003 * (it->db + 80.0);
 			if (value <= 0.0) continue;

@@ -197,7 +197,7 @@ void Analyzer::mergeWithOld(Tones& tones) const {
 			// Merge the old tone into the new tone
 			it->age = oldit->age + 1;
 			it->stabledb = 0.8 * oldit->stabledb + 0.2 * it->db;
-			//it->freq = 0.5 * oldit->freq + 0.5 * it->freq;
+			it->freq = 0.5 * oldit->freq + 0.5 * it->freq;
 		} else if (oldit->db > -80.0) {
 			// Insert a decayed version of the old tone into new tones
 			Tone& t = *tones.insert(it, *oldit);
