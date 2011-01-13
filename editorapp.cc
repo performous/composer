@@ -3,6 +3,7 @@
 #include "editorapp.hh"
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
+#include "songwriter.hh"
 
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
@@ -104,7 +105,7 @@ void EditorApp::on_actionNew_triggered()
 void EditorApp::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			"",
+			QDir::homePath(),
 			tr("All supported formats (*.TBD!!! *.xml *.mid *.ini *.txt)") + ";;" +
 			tr("Project files (*.TBD!!!)") + ";;" + // FIXME: Project file extension
 			tr("SingStar XML (*.xml)") + ";;" +
@@ -125,6 +126,39 @@ void EditorApp::on_actionOpen_triggered()
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
 
+	}
+}
+
+void EditorApp::on_actionSingStarXML_triggered()
+{
+	QString path = QFileDialog::getExistingDirectory(this, tr("Export SingStar XML"), QDir::homePath());
+	if (!path.isNull()) {
+		try { SingStarXMLWriter(*song.data(), path); }
+		catch (const std::exception& e) {
+			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
+		}
+	}
+}
+
+void EditorApp::on_actionUltraStarTXT_triggered()
+{
+	QString path = QFileDialog::getExistingDirectory(this, tr("Export UltraStar TXT"), QDir::homePath());
+	if (!path.isNull()) {
+		try { UltraStarTXTWriter(*song.data(), path); }
+		catch (const std::exception& e) {
+			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
+		}
+	}
+}
+
+void EditorApp::on_actionFoFMIDI_triggered()
+{
+		QString path = QFileDialog::getExistingDirectory(this, tr("Export FoF MIDI"), QDir::homePath());
+	if (!path.isNull()) {
+		try { FoFMIDIWriter(*song.data(), path); }
+		catch (const std::exception& e) {
+			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
+		}
 	}
 }
 

@@ -25,6 +25,9 @@ public slots:
 	// File menu
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
+	void on_actionSingStarXML_triggered();
+	void on_actionUltraStarTXT_triggered();
+	void on_actionFoFMIDI_triggered();
 	void on_actionExit_triggered();
 
 	// Edit menu

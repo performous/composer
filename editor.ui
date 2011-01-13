@@ -464,17 +464,11 @@
    </property>
   </action>
   <action name="actionUltraStarTXT">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>&amp;UltraStar TXT</string>
    </property>
   </action>
   <action name="actionFoFMIDI">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>&amp;FoF MIDI</string>
    </property>

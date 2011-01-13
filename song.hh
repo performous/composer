@@ -77,7 +77,23 @@ class Song {
 				}
 			}
 		}
-	};
+	}
+	VocalTrack getVocalTrack(std::string vocalTrack = TrackName::LEAD_VOCAL) const {
+		if(vocalTracks.find(vocalTrack) != vocalTracks.end()) {
+			return vocalTracks.find(vocalTrack)->second;
+		} else {
+			if(vocalTracks.find(TrackName::LEAD_VOCAL) != vocalTracks.end()) {
+				return vocalTracks.find(TrackName::LEAD_VOCAL)->second;
+			} else {
+				if(!vocalTracks.empty()) {
+					return vocalTracks.begin()->second;
+				} else {
+					return dummyVocal;
+				}
+			}
+		}
+	}
+
 	std::vector<std::string> getVocalTrackNames() {
 		std::vector<std::string> result;
 		for (VocalTracks::const_iterator it = vocalTracks.begin(); it != vocalTracks.end(); ++it) {
