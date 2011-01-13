@@ -356,10 +356,10 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Delete: // Delete selected note
 		if (m_selectedNote) {
-			// FIXME: Erase from the list!!!
-			m_selectedNote->close();
+			Operation op("DEL");
+			op << getNoteLabelId(m_selectedNote);
+			doOperation(op);
 			m_selectedNote = NULL;
-			updateNotes();
 		}
 		break;
 	default:
