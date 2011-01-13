@@ -185,6 +185,11 @@ void EditorApp::on_actionUndo_triggered()
 {
 	if (opStack.top().op() == "BLOCK")
 		return;
+	else if (opStack.top().op() == "COMBINER") {
+		int count = opStack.top().i(1);
+		for (int i = 0; i < count; ++i) opStack.pop();
+		// TODO: Redo handling
+	}
 
 	// TODO: Move popped to redo stack
 	opStack.pop();
