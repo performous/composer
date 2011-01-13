@@ -38,6 +38,7 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 
 		analyzer.input(data.begin() + x * step, data.begin() + (x + 1) * step);
 		analyzer.process();
+		/*
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
 			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(peaks[i].freq));
@@ -52,19 +53,33 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 			(*this)(x, y + 1) += p;
 			(*this)(x, y - 1) += p;
 		}
+		*/
 		Analyzer::Tones tones = analyzer.getTones();
-		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
-			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freq));
+		unsigned int i = 0;
+		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
+			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNoteId(it->freq));
 			if (y == 0 || y >= height - 1) continue;
 			float value = 0.003 * (it->db + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(value, value, value);
+			switch(i) {
+				case 0:
+					p.r = 0.0; p.g = 1.0; p.b = 0.0;
+					break;
+				case 1:
+					p.r = 0.0; p.g = 0.5; p.b = 0.0;
+					break;
+				case 2:
+					p.r = 0.0; p.g = 0.3; p.b = 0.0;
+					break;
+			}
 			(*this)(x, y) += p;
 			p.r *= 0.5;
 			p.g *= 0.5;
 			p.b *= 0.5;
 			(*this)(x, y + 1) += p;
 			(*this)(x, y - 1) += p;
+			++i;
 		}
 	}
 	progress.setValue(width);
