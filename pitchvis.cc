@@ -67,18 +67,17 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 					p.r = 0.0; p.g = 1.0; p.b = 0.0;
 					break;
 				case 1:
-					p.r = 0.0; p.g = 0.5; p.b = 0.0;
+					p.r = 0.15; p.g = 0.15; p.b = 0.0;
 					break;
 				case 2:
-					p.r = 0.0; p.g = 0.3; p.b = 0.0;
+					p.r = 0.05; p.g = 0.05; p.b = 0.0;
 					break;
 			}
-			(*this)(x, y) += p;
-			p.r *= 0.5;
-			p.g *= 0.5;
-			p.b *= 0.5;
-			(*this)(x, y + 1) += p;
-			(*this)(x, y - 1) += p;
+			(*this)(x, y) = p;
+			for(int j = -3 ; j < 4 ; ++j) {
+				if(y + j < 0 || y + j >= height) continue;
+				(*this)(x, y + j) = p;
+			}
 			++i;
 		}
 	}
