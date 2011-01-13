@@ -78,8 +78,8 @@ void NoteLabel::createPixmap(QSize size)
 
 	setPixmap(QPixmap::fromImage(image));
 
-	setToolTip(QString("\"%1\"\n%2").arg(lyric()).arg(QString::fromStdString(m_note.typeString())));
 	setStatusTip(QString("Lyric: ") + lyric());
+	updateNote();
 }
 
 void NoteLabel::resizeEvent(QResizeEvent *event)
@@ -90,8 +90,6 @@ void NoteLabel::resizeEvent(QResizeEvent *event)
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
-	QToolTip::showText(event->globalPos(), toolTip(), this);
-
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
 		// Resizing
@@ -120,7 +118,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 	updateNote();
-
+	QToolTip::showText(event->globalPos(), toolTip(), this);
 	event->ignore(); // Propagate event to parent
 }
 
@@ -151,4 +149,12 @@ void NoteLabel::updateNote()
 		// Update note length
 		m_note.end = m_note.begin + ngw->px2s(width());
 	}
+	MusicalScale ms;
+	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
+		.arg(lyric())
+		.arg(QString::fromStdString(m_note.typeString()))
+		.arg(QString::fromStdString(ms.getNoteStr(ms.getNoteFreq(m_note.note))))
+		.arg(QString::number(m_note.begin))
+		.arg(QString::number(m_note.end))
+		);
 }

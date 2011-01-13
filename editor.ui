@@ -88,7 +88,7 @@
             <item row="0" column="1">
              <widget class="QLabel" name="valNoteBegin">
               <property name="text">
-               <string>XXX</string>
+               <string>-</string>
               </property>
              </widget>
             </item>
@@ -102,7 +102,7 @@
             <item row="1" column="1">
              <widget class="QLabel" name="valNoteEnd">
               <property name="text">
-               <string>XXX</string>
+               <string>-</string>
               </property>
              </widget>
             </item>
@@ -161,7 +161,7 @@
             <item row="2" column="1">
              <widget class="QLabel" name="valNoteDuration">
               <property name="text">
-               <string>XXX</string>
+               <string>-</string>
               </property>
              </widget>
             </item>
@@ -175,7 +175,7 @@
             <item row="3" column="1">
              <widget class="QLabel" name="valNote">
               <property name="text">
-               <string>XXX</string>
+               <string>-</string>
               </property>
              </widget>
             </item>
