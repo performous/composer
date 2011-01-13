@@ -80,12 +80,14 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 
 	clear();
+	bool first = true;
 	while (!ts.atEnd()) {
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(m_lowestNote + 12 * m_octaves - 6))));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(m_lowestNote + 12 * m_octaves - 6)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+			first = false;
 		}
 	}
 
@@ -103,12 +105,14 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 	std::cout << "--: " << m_octaves << " " << m_lowestNote << std::endl;
 	setFixedSize(s2px(track.endTime), ndiff2px(m_octaves*12));
 
+	bool first = true;
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
 			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
-				QSize(s2px(it->length()), 0), false));
+				QSize(s2px(it->length()), 0), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+			first = false;
 		}
 	}
 
@@ -118,16 +122,12 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 void NoteGraphWidget::finalizeNewLyrics()
 {
 	// Set first and last to non-floating and put the last one to the end of the song
-	if (m_notes.size() > 0) {
-		Operation floatop1("FLOATING"); floatop1 << (int)0 << false;
-		doOperation(floatop1);
-		if (m_notes.size() > 1) {
-			Operation floatop2("FLOATING"); floatop2 << (int)m_notes.size()-1 << false;
-			doOperation(floatop2);
-			Operation moveop("MOVE");
-			moveop << (int)m_notes.size()-1 << width() - m_notes.back()->width() << m_notes.back()->y();
-			doOperation(moveop);
-		}
+	if (m_notes.size() > 1) {
+		Operation floatop("FLOATING"); floatop << (int)m_notes.size()-1 << false;
+		doOperation(floatop);
+		Operation moveop("MOVE");
+		moveop << (int)m_notes.size()-1 << width() - m_notes.back()->width() << m_notes.back()->y();
+		doOperation(moveop);
 		// Make sure there is enough room
 		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
 	}
@@ -234,22 +234,17 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		QString secondst = child->lyric().right(child->lyric().length() - cutpos);
 		int w1 = relRatio * child->width();
 
-		// Create new labels
-		NoteLabel *newLabel1 = new NoteLabel(Note(firstst.toStdString()), this, child->pos(), QSize(w1, 0));
-		NoteLabel *newLabel2 = new NoteLabel(Note(secondst.toStdString()), this, newLabel1->pos() + QPoint(newLabel1->width(), 0), QSize(child->width() - w1, 0));
-		// Insert them to the list removing the old one
-		NoteLabels::iterator it = std::find(m_notes.begin(), m_notes.end(), child);
-		if (it != m_notes.end()) {
-			m_notes.insert(it, newLabel1);
-			m_notes.insert(it, newLabel2);
-			m_notes.erase(it);
-		} else {
-			m_notes.push_back(newLabel1);
-			m_notes.push_back(newLabel2);
-		}
+		// Create operations for adding the new labels and deleting the old one
+		int id = getNoteLabelId(child);
+		Operation new1("NEW"), new2("NEW");
+		new1 << id << firstst << child->pos().x() << child->pos().y() << w1 << 0 << child->isFloating();
+		new2 << id+1 << secondst << child->pos().x() + w1 << child->pos().y() << child->width() - w1 << 0 << child->isFloating();
+		Operation del("DEL"); del << id+2;
+		Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
+		std::cout << new1.dump() << std::endl << new2.dump() << std::endl << del.dump() << std::endl;
+		doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
 
-		// Delete the old one
-		child->close();
+		m_selectedNote = NULL;
 	}
 }
 
