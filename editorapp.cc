@@ -35,6 +35,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent)
 
 	updateNoteInfo(NULL);
 
+	song.reset(new Song);
+
 	// Some icons to menus to make them prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
 	ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
@@ -116,6 +118,9 @@ void EditorApp::on_actionOpen_triggered()
 		try {
 			song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
 			noteGraph->setLyrics(song->getVocalTrack().notes);
+			updateSongMeta(true);
+			noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
+			ui.tabWidget->setCurrentIndex(1); // Swicth to song properties tab
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
@@ -174,7 +179,7 @@ void EditorApp::on_actionMusicFile_triggered()
 
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
-		ui.tabWidget->setCurrentIndex(1);
+		ui.tabWidget->setCurrentIndex(1); // Swicth to song properties tab
 		// TODO: Do something with the file
 	}
 }
@@ -232,6 +237,35 @@ void EditorApp::on_actionAbout_triggered()
 		);
 }
 
+void EditorApp::updateSongMeta(bool readFromSongToUI)
+{
+	if (!song) return;
+	// TODO: Undo
+	if (!readFromSongToUI) {
+		if (ui.txtTitle->text().toStdString() != song->title) {
+			song->title = ui.txtTitle->text().toStdString();
+		}
+		if (ui.txtArtist->text().toStdString() != song->artist) {
+			song->artist = ui.txtArtist->text().toStdString();
+		}
+		if (ui.txtGenre->text().toStdString() != song->genre) {
+			song->genre = ui.txtGenre->text().toStdString();
+		}
+		if (ui.txtYear->text().toStdString() != song->year) {
+			song->year = ui.txtYear->text().toStdString();
+		}
+	} else {
+		if (!song->title.empty()) ui.txtTitle->setText(QString::fromStdString(song->title));
+		if (!song->artist.empty()) ui.txtArtist->setText(QString::fromStdString(song->artist));
+		if (!song->genre.empty()) ui.txtGenre->setText(QString::fromStdString(song->genre));
+		if (!song->year.empty()) ui.txtYear->setText(QString::fromStdString(song->year));
+	}
+}
+
+void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
+void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }
+void EditorApp::on_txtGenre_editingFinished() { updateSongMeta(); }
+void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {

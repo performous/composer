@@ -38,7 +38,8 @@ class Song {
 	VocalTracks vocalTracks; ///< notes for the sing part
 	VocalTrack dummyVocal; ///< notes for the sing part
   public:
-	/// constructor
+	/// constructors
+	Song(): dummyVocal(TrackName::LEAD_VOCAL) { reload(true); }
 	Song(std::string const& path_, std::string const& filename_): dummyVocal(TrackName::LEAD_VOCAL), path(path_), filename(filename_) { reload(false); }
 	/// reload song
 	void reload(bool errorIgnore = true);
@@ -60,7 +61,7 @@ class Song {
 	void insertVocalTrack(std::string vocalTrack, VocalTrack track) {
 		vocalTracks.erase(vocalTrack);
 		vocalTracks.insert(std::make_pair<std::string, VocalTrack>(vocalTrack, track));
-	};
+	}
 	// Get a selected track, or LEAD_VOCAL if not found or the first one if not found
 	VocalTrack& getVocalTrack(std::string vocalTrack = TrackName::LEAD_VOCAL) {
 		if(vocalTracks.find(vocalTrack) != vocalTracks.end()) {
@@ -101,6 +102,7 @@ class Song {
 	std::string text; ///< songtext
 	std::string creator; ///< creator
 	std::string language; ///< language
+	std::string year; ///< year
 	std::map<std::string,std::string> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
 	std::string cover; ///< cd cover
 	std::string background; ///< background image

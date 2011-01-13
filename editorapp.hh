@@ -14,6 +14,8 @@ class EditorApp: public QMainWindow
 public:
 	EditorApp(QWidget *parent = 0);
 
+	void updateSongMeta(bool readFromSongToUI = false);
+
 public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
@@ -38,6 +40,10 @@ public slots:
 	void on_actionAbout_triggered();
 
 	// Note properties tab
+	void on_txtTitle_editingFinished();
+	void on_txtArtist_editingFinished();
+	void on_txtGenre_editingFinished();
+	void on_txtYear_editingFinished();
 	void on_cmbNoteType_currentIndexChanged(int);
 	void on_chkFloating_stateChanged(int);
 
