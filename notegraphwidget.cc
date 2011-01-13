@@ -10,6 +10,7 @@
 namespace {
 	static Operation opFromNote(const NoteLabel& note, int id) {
 		Operation op("NEW");
+		op << id << note.lyric() << note.x() << note.y() << note.width() << note.height() << note.isFloating();
 		return op;
 	}
 }
