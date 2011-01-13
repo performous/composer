@@ -6,13 +6,13 @@
 #include <iomanip>
 #include <numeric>
 
-static const unsigned FFT_P = 10;  // FFT size setting, will use 2^FFT_P sample FFT
+static const unsigned FFT_P = 11;  // FFT size setting, will use 2^FFT_P sample FFT
 static const std::size_t FFT_N = 1 << FFT_P;  // FFT size in samples
-static const std::size_t FFT_STEP = 256;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
+static const std::size_t FFT_STEP = 512;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
 
 // Limit the range to avoid noise and useless computation
 static const double FFT_MINFREQ = 45.0;
-static const double FFT_MAXFREQ = 5000.0;
+static const double FFT_MAXFREQ = 3000.0;
 
 Tone::Tone():
   freq(0.0),
@@ -132,6 +132,8 @@ void Analyzer::calcTones() {
 	for (Combos::iterator it = combos.begin(), end = combos.end(); it != end; ++it) it->freq /= it->magnitude;
 	// Strongest first
 	std::sort(combos.rbegin(), combos.rend());
+	// Keep only a reasonable amount of strongest frequencies.
+	if (combos.size() > 10) combos.resize(10);
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
@@ -145,7 +147,7 @@ void Analyzer::calcTones() {
 			int score = 0;
 			size_t misses = 0;
 			t.db = 0.0;  // Using db field for magnitude
-			for (std::size_t n = 1; n <= Tone::MAXHARM && misses < 2; ++n) {
+			for (std::size_t n = 1; n <= Tone::MAXHARM && misses < 3; ++n) {
 				double hfreq = n * freq;
 				bool miss = true;
 				for (Combos::const_iterator harm = combos.begin(), harmend = combos.end(); harm != harmend; ++harm) {
