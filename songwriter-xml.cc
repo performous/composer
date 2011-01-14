@@ -1,13 +1,9 @@
 #include "songwriter.hh"
+#include "util.hh"
 #include <QtXml/QDomDocument>
 #include <QTextStream>
 #include <iostream>
 
-namespace {
-	int sec2dur(double sec) {
-		return sec; // FIXME: Implement
-	}
-}
 
 void SingStarXMLWriter::writeXML() {
 	QDomDocument doc("");
@@ -15,9 +11,9 @@ void SingStarXMLWriter::writeXML() {
 	root.setAttribute("xmlns", "http://www.singstargame.com");
 	root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	root.setAttribute("Version", "1");
-	root.setAttribute("Tempo", "120"); // FIXME!
+	root.setAttribute("Tempo", QString::number(tempo));
 	root.setAttribute("FixedTempo", "Yes");
-	root.setAttribute("Resolution", "Demisemiquaver"); //?
+	root.setAttribute("Resolution", "Semiquaver"); // Demisemiquaver = 2x tempo
 	root.setAttribute("Genre", QString::fromStdString(s.genre));
 	root.setAttribute("Year", QString::fromStdString(s.year));
 	root.setAttribute("xsi:schemaLocation", "http://www.singstargame.com http://15GMS-SINGSQL/xml_schema/melody.xsd");
@@ -52,28 +48,34 @@ void SingStarXMLWriter::writeXML() {
 			sentenceElem = doc.createElement("SENTENCE");
 			sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
 			sentenceElem.appendChild(sentenceComment);
+
+		} else { // Regular note handling
+
+			// Construct the note element
+			QDomElement noteElem = doc.createElement("NOTE");
+			noteElem.setAttribute("MidiNote", QString::number(n.note));
+			noteElem.setAttribute("Duration", QString::number(sec2dur(n.length())));
+			noteElem.setAttribute("Lyric", QString::fromStdString(n.syllable));
+			if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
+			if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
+			sentenceElem.appendChild(noteElem);
+
+			// Construct a second note element, indicationg the pause before next note
+			// This is only done if the pause has duration
+			int pauseLen = 0;
+			if (i < notes.size() - 1)
+				pauseLen = sec2dur(notes[i+1].begin - n.end); // Difference to next note
+			if (pauseLen > 0) {
+				QDomElement pauseElem = doc.createElement("NOTE");
+				pauseElem.setAttribute("MidiNote", "0");
+				pauseElem.setAttribute("Duration", QString::number(sec2dur(pauseLen)));
+				pauseElem.setAttribute("Lyric", "");
+				sentenceElem.appendChild(pauseElem);
+			}
 		}
-
-		// Construct the note element
-		QDomElement noteElem = doc.createElement("NOTE");
-		noteElem.setAttribute("MidiNote", QString::number(n.note));
-		noteElem.setAttribute("Duration", QString::number(sec2dur(n.length())));
-		noteElem.setAttribute("Lyric", QString::fromStdString(n.syllable));
-		if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
-		if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
-		sentenceElem.appendChild(noteElem);
-
-		// Construct a second note element, indicationg the pause before next note
-		QDomElement pauseElem = doc.createElement("NOTE");
-		double pauseLen = 1; // FIXME: This should be the duration from last note end to song end
-		if (i < notes.size() - 1)
-			pauseLen = notes[i+1].begin - n.end; // Difference to next note
-		pauseElem.setAttribute("MidiNote", "0");
-		pauseElem.setAttribute("Duration", QString::number(sec2dur(pauseLen)));
-		pauseElem.setAttribute("Lyric", "");
-		sentenceElem.appendChild(pauseElem);
-
 	}
+
+	// TODO: Needs a last dummy sentence
 
 	root.appendChild(trackElem);
 
@@ -85,4 +87,8 @@ void SingStarXMLWriter::writeXML() {
 		QTextStream out(&f);
 		out << xml;
 	} else throw std::runtime_error("Couldn't open target file notes.xml");
+}
+
+int SingStarXMLWriter::sec2dur(double sec) {
+	return round(tempo / 60.0 * sec);
 }
