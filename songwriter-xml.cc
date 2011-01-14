@@ -3,6 +3,12 @@
 #include <QTextStream>
 #include <iostream>
 
+namespace {
+	int sec2dur(double sec) {
+		return sec; // FIXME: Implement
+	}
+}
+
 void SingStarXMLWriter::writeXML() {
 	QDomDocument doc("");
 	QDomElement root = doc.createElement("MELODY");
@@ -24,25 +30,59 @@ void SingStarXMLWriter::writeXML() {
 	root.appendChild(artistComment);
 	root.appendChild(titleComment);
 
-	QString xml = doc.toString(4);
+	int tracknum = 1;
+	QDomElement trackElem = doc.createElement("TRACK");
+	trackElem.setAttribute("Name", "Player1");
+	trackElem.setAttribute("Artist", QString::fromStdString(s.artist));
 
+	int sentencenum = 1;
+	QDomElement sentenceElem = doc.createElement("SENTENCE"); // FIXME: Should there be Singer and Part attributes?
+	QDomComment sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
+	trackElem.appendChild(sentenceComment);
+
+	// Iterate all notes
+	Notes const& notes = s.getVocalTrack().notes;
+	for (unsigned int i = 0; i < notes.size(); ++i) {
+		Note const& n = notes[i];
+
+		// SLEEP notes indicate sentence end
+		if (n.type == Note::SLEEP) {
+			trackElem.appendChild(sentenceElem);
+			++sentencenum;
+			sentenceElem = doc.createElement("SENTENCE");
+			sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
+			sentenceElem.appendChild(sentenceComment);
+		}
+
+		// Construct the note element
+		QDomElement noteElem = doc.createElement("NOTE");
+		noteElem.setAttribute("MidiNote", QString::number(n.note));
+		noteElem.setAttribute("Duration", QString::number(sec2dur(n.length())));
+		noteElem.setAttribute("Lyric", QString::fromStdString(n.syllable));
+		if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
+		if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
+		sentenceElem.appendChild(noteElem);
+
+		// Construct a second note element, indicationg the pause before next note
+		QDomElement pauseElem = doc.createElement("NOTE");
+		double pauseLen = 1; // FIXME: This should be the duration from last note end to song end
+		if (i < notes.size() - 1)
+			pauseLen = notes[i+1].begin - n.end; // Difference to next note
+		pauseElem.setAttribute("MidiNote", "0");
+		pauseElem.setAttribute("Duration", QString::number(sec2dur(pauseLen)));
+		pauseElem.setAttribute("Lyric", "");
+		sentenceElem.appendChild(pauseElem);
+
+	}
+
+	root.appendChild(trackElem);
+
+	// Get the xml data
+	QString xml = doc.toString(4);
+	// Write to file
 	QFile f(path + "/notes.xml");
 	if (f.open(QFile::WriteOnly)) {
 		QTextStream out(&f);
 		out << xml;
 	} else throw std::runtime_error("Couldn't open target file notes.xml");
-
-	// FIXME: The following is just an example and doesn't actually output XML format
-	/*
-	char buf[1024] = {};
-	Notes const& notes = s.getVocalTrack().notes;
-	std::cout << notes.size() << std::endl;
-	for (unsigned int i = 0; i < notes.size(); ++i) {
-		Note const& n = notes[i];
-		buf[0] = 0xFF;
-		buf[1] = n.note; // MIDI note value
-		// Others are n.begin, n.end, n.type etc. (see notes.hh)
-		f.write(buf, 1024);
-	}*/
-
 }
