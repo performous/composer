@@ -7,6 +7,9 @@
 
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
+	static const quint32 PROJECT_SAVE_FILE_MAGIC = 0x50455350;
+	static const quint32 PROJECT_SAVE_FILE_VERSION = 100; // File format version 1.00
+	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
@@ -144,17 +147,26 @@ void EditorApp::on_actionOpen_triggered()
 				if (f.open(QFile::ReadOnly)) {
 					opStack.clear();
 					QDataStream in(&f);
-					while (!in.atEnd()) {
-						Operation op;
-						in >> op;
-						std::cout << "Loaded op: " << op.dump() << std::endl;
-						opStack.push(op);
-					}
-					doOpStack();
-					projectFileName = fileName;
-					updateNoteInfo(NULL); // Title bar
+					quint32 magic; in >> magic;
+					if (magic == PROJECT_SAVE_FILE_MAGIC) {
+						quint32 version; in >> version;
+						if (version == PROJECT_SAVE_FILE_VERSION) {
+							in.setVersion(PROJECT_SAVE_FILE_STREAM_VERSION);
+							while (!in.atEnd()) {
+								Operation op;
+								in >> op;
+								std::cout << "Loaded op: " << op.dump() << std::endl;
+								opStack.push(op);
+							}
+							doOpStack();
+							projectFileName = fileName;
+							updateNoteInfo(NULL); // Title bar
+						} else
+							QMessageBox::critical(this, tr("Error opening file!"), tr("File %1 has unsupported format version.").arg(fileName));
+					} else
+						QMessageBox::critical(this, tr("Error opening file!"), tr("File %1 doesn't look like a project file.").arg(fileName));
 				} else
-					QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for saving.").arg(fileName));
+					QMessageBox::critical(this, tr("Error opening file!"), tr("Couldn't open file %1 for reading.").arg(fileName));
 
 			} else {
 
@@ -197,6 +209,8 @@ void EditorApp::saveProject(QString fileName)
 	QFile f(fileName);
 	if (f.open(QFile::WriteOnly)) {
 		QDataStream out(&f);
+		out.setVersion(PROJECT_SAVE_FILE_STREAM_VERSION);
+		out << PROJECT_SAVE_FILE_MAGIC << PROJECT_SAVE_FILE_VERSION;
 		foreach (Operation op, opStack)
 			out << op;
 		projectFileName = fileName;
