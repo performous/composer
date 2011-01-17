@@ -12,7 +12,7 @@ namespace {
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
-EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
+EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), hasUnsavedChanges()
 {
 	showMaximized();
 	ui.setupUi(this);
@@ -64,7 +64,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
 void EditorApp::operationDone(const Operation &op)
 {
 	//std::cout << "Push op: " << op.dump() << std::endl;
-	if (player) std::cout << player->isMetaDataAvailable() << std::endl;
+	hasUnsavedChanges = true;
 	opStack.push(op);
 	updateMenuStates();
 	redoStack.clear();
@@ -88,6 +88,10 @@ void EditorApp::doOpStack()
 
 void EditorApp::updateMenuStates()
 {
+	// Save menu
+	if (hasUnsavedChanges)
+		ui.actionSave->setEnabled(true);
+	else ui.actionSave->setEnabled(false);
 	// Undo menu
 	if (opStack.isEmpty() || opStack.top().op() == "BLOCK")
 		ui.actionUndo->setEnabled(false);
@@ -96,6 +100,11 @@ void EditorApp::updateMenuStates()
 	if (redoStack.isEmpty())
 		ui.actionRedo->setEnabled(false);
 	else ui.actionRedo->setEnabled(true);
+	// Window title
+	QFileInfo finfo(projectFileName);
+	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
+	if (hasUnsavedChanges) proName += "*";
+	setWindowTitle("Editor - " + proName);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
@@ -119,28 +128,29 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 	}
-	QFileInfo finfo(projectFileName);
-	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
-	setWindowTitle("Editor - " + proName);
 }
 
 void EditorApp::on_actionNew_triggered()
 {
 	// TODO: Check if a save prompt is in order
-	if (true) {
+	if (hasUnsavedChanges) {
 		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
 			tr("There are unsaved changes. Do you wish to save before creating a new project?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		switch(b) {
 		case QMessageBox::Yes:
-			// TODO: Save
+			on_actionSave_triggered();
 		case QMessageBox::No:
-			noteGraph->clear(); break;
+			noteGraph->clear();
+			projectFileName = "";
+			break;
 		default: break;
 		}
 	} else {
 		noteGraph->clear();
+		projectFileName = "";
 	}
+	updateMenuStates();
 }
 
 void EditorApp::on_actionOpen_triggered()
@@ -234,9 +244,10 @@ void EditorApp::saveProject(QString fileName)
 		foreach (Operation op, opStack)
 			out << op;
 		projectFileName = fileName;
-		updateNoteInfo(NULL); // Title bar
+		hasUnsavedChanges = false;
 	} else
 		QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for saving.").arg(fileName));
+	updateMenuStates();
 }
 
 void EditorApp::on_actionSingStarXML_triggered()
@@ -275,13 +286,13 @@ void EditorApp::on_actionFoFMIDI_triggered()
 void EditorApp::on_actionExit_triggered()
 {
 	// TODO: Check if a save prompt is in order
-	if (false) {
+	if (hasUnsavedChanges) {
 		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
 			tr("There are unsaved changes. Do you wish to save before quitting?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		switch(b) {
 		case QMessageBox::Yes:
-			// TODO: Save
+			on_actionSave_triggered();
 		case QMessageBox::No:
 			close(); break;
 		default: break;
@@ -340,7 +351,12 @@ void EditorApp::on_actionMusicFile_triggered()
 		ui.valMusicFile->setText(fileName);
 		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
 		// Metadata is updated when it becomes available (signal)
-		player->setMedia(QUrl::fromLocalFile(fileName));
+		QBuffer stream;
+		stream.open(QBuffer::ReadWrite);
+		player->setMedia(QUrl::fromLocalFile(fileName), &stream);
+		std::cout << stream.size() << std::endl;
+		char lol;
+		stream.getChar(&lol);
 		// FIXME: Temporary test
 		player->setVolume(50);
 		player->play();

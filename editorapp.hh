@@ -65,6 +65,7 @@ private:
 	OperationStack opStack;
 	OperationStack redoStack;
 	QScopedPointer<Song> song;
-	QString projectFileName;
 	QScopedPointer<QMediaPlayer> player;
+	QString projectFileName;
+	bool hasUnsavedChanges;
 };
