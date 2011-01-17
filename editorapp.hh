@@ -37,6 +37,7 @@ public slots:
 
 	// Edit menu
 	void on_actionUndo_triggered();
+	void on_actionRedo_triggered();
 
 	// Insert menu
 	void on_actionMusicFile_triggered();
@@ -59,6 +60,7 @@ private:
 	Ui::EditorApp ui;
 	NoteGraphWidget* noteGraph;
 	OperationStack opStack;
+	OperationStack redoStack;
 	QScopedPointer<Song> song;
 	QString projectFileName;
 };

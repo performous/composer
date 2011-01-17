@@ -65,6 +65,7 @@ void EditorApp::operationDone(const Operation &op)
 	//std::cout << "Push op: " << op.dump() << std::endl;
 	opStack.push(op);
 	updateMenuStates();
+	redoStack.clear();
 }
 
 void EditorApp::doOpStack()
@@ -85,9 +86,14 @@ void EditorApp::doOpStack()
 
 void EditorApp::updateMenuStates()
 {
+	// Undo menu
 	if (opStack.isEmpty() || opStack.top().op() == "BLOCK")
 		ui.actionUndo->setEnabled(false);
 	else ui.actionUndo->setEnabled(true);
+	// Redo menu
+	if (redoStack.isEmpty())
+		ui.actionRedo->setEnabled(false);
+	else ui.actionRedo->setEnabled(true);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
@@ -291,12 +297,34 @@ void EditorApp::on_actionUndo_triggered()
 		updateMenuStates();
 		return;
 	} else if (opStack.top().op() == "COMBINER") {
+		// Special handling to add the ops in the right order
 		int count = opStack.top().i(1);
-		for (int i = 0; i < count; ++i) opStack.pop();
-		// TODO: Redo handling
+		int start = opStack.size() - count - 1;
+		for (int i = start; i < start + count; ++i) {
+			redoStack.push(opStack.at(i));
+		}
+		opStack.remove(start, count);
 	}
-	// TODO: Move popped to redo stack
+	redoStack.push(opStack.top());
 	opStack.pop();
+	doOpStack();
+}
+
+void EditorApp::on_actionRedo_triggered()
+{
+	if (redoStack.isEmpty())
+		return;
+	else if (redoStack.top().op() == "COMBINER") {
+		// Special handling to add the ops in the right order
+		int count = redoStack.top().i(1);
+		int start = redoStack.size() - count - 1;
+		for (int i = start; i < start + count; ++i) {
+			opStack.push(redoStack.at(i));
+		}
+		redoStack.remove(start, count);
+	}
+	opStack.push(redoStack.top());
+	redoStack.pop();
 	doOpStack();
 }
 
