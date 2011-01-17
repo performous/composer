@@ -174,7 +174,10 @@ void EditorApp::on_actionOpen_triggered()
 				song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
 				noteGraph->setLyrics(song->getVocalTrack());
 				updateSongMeta(true);
-				noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
+				// Combine the import into one undo action
+				Operation combiner("COMBINER"); combiner << opStack.size();
+				operationDone(combiner);
+				//noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
 			}
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
@@ -273,6 +276,8 @@ void EditorApp::on_actionExit_triggered()
 
 void EditorApp::on_actionUndo_triggered()
 {
+	if (opStack.isEmpty())
+		return;
 	if (opStack.top().op() == "BLOCK")
 		return;
 	else if (opStack.top().op() == "COMBINER") {
@@ -280,7 +285,6 @@ void EditorApp::on_actionUndo_triggered()
 		for (int i = 0; i < count; ++i) opStack.pop();
 		// TODO: Redo handling
 	}
-
 	// TODO: Move popped to redo stack
 	opStack.pop();
 	doOpStack();
