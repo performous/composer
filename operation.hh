@@ -53,6 +53,7 @@ struct Operation
 	}
 
 	friend QDataStream& operator<<(QDataStream&, const Operation&);
+	friend QDataStream& operator>>(QDataStream& stream, Operation& op);
 
 private:
 	QList<QVariant> m_params;
