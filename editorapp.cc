@@ -64,6 +64,7 @@ void EditorApp::operationDone(const Operation &op)
 {
 	//std::cout << "Push op: " << op.dump() << std::endl;
 	opStack.push(op);
+	updateMenuStates();
 }
 
 void EditorApp::doOpStack()
@@ -79,6 +80,14 @@ void EditorApp::doOpStack()
 			noteGraph->doOperation(*opit, Operation::NO_EMIT);
 		} catch (std::exception& e) { std::cout << e.what() << std::endl; }
 	}
+	updateMenuStates();
+}
+
+void EditorApp::updateMenuStates()
+{
+	if (opStack.isEmpty() || opStack.top().op() == "BLOCK")
+		ui.actionUndo->setEnabled(false);
+	else ui.actionUndo->setEnabled(true);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
@@ -278,9 +287,10 @@ void EditorApp::on_actionUndo_triggered()
 {
 	if (opStack.isEmpty())
 		return;
-	if (opStack.top().op() == "BLOCK")
+	if (opStack.top().op() == "BLOCK") {
+		updateMenuStates();
 		return;
-	else if (opStack.top().op() == "COMBINER") {
+	} else if (opStack.top().op() == "COMBINER") {
 		int count = opStack.top().i(1);
 		for (int i = 0; i < count; ++i) opStack.pop();
 		// TODO: Redo handling

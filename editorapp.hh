@@ -17,6 +17,7 @@ public:
 	void updateSongMeta(bool readFromSongToUI = false);
 	void saveProject(QString fileName);
 	void doOpStack();
+	void updateMenuStates();
 
 public slots:
 	void operationDone(const Operation &op);
