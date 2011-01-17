@@ -258,11 +258,19 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 			m_selectedNote->move(m_selectedNote->pos().x(), n2px(px2n(m_selectedNote->pos().y())));
 			if (m_actionHappened) {
 				// Operation for undo stack & saving
+				int notelabelid = getNoteLabelId(m_selectedNote);
 				Operation op("SETGEOM");
-				op << getNoteLabelId(m_selectedNote)
+				op << notelabelid
 					<< m_selectedNote->x() << m_selectedNote->y()
 					<< m_selectedNote->width() << m_selectedNote->height();
 				doOperation(op, Operation::NO_EXEC);
+				// See if it needs to be unfloated
+				if (m_selectedNote->isFloating()) {
+					Operation fop("FLOATING"); fop << notelabelid << false;
+					Operation combiner("COMBINER"); combiner << 2;
+					doOperation(fop);
+					doOperation(combiner);
+				}
 			}
 		}
 		m_selectedAction = NONE;
@@ -366,7 +374,7 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 {
 	if (!(flags & Operation::NO_EXEC)) {
 		std::string action = op.op().toStdString();
-		if (action == "BLOCK") {
+		if (action == "BLOCK" || action == "COMBINER") {
 			; // No op
 		} else if (action == "NEW") {
 			NoteLabel *newLabel = new NoteLabel(

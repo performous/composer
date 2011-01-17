@@ -97,14 +97,12 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		else
 			resize(event->pos().x(), height());
 		if (ngw) ngw->updateNotes();
-		setFloating(false);
 
 	} else if (!m_hotspot.isNull()) {
 		// Moving
 		QPoint newpos = pos() + event->pos() - m_hotspot;
 		move(newpos);
 		if (ngw) ngw->updateNotes();
-		setFloating(false);
 		// Check if we need a new hotspot, because the note was constrained
 		if (pos().x() != newpos.x()) m_hotspot.rx() = event->x();
 
