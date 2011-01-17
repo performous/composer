@@ -1,11 +1,13 @@
 #pragma once
 
+#include <QtMultimediaKit/QMediaPlayer>
 #include "ui_editor.h"
 #include "operation.hh"
 #include "song.hh"
 
 class NoteLabel;
 class NoteGraphWidget;
+class QMediaPlayer;
 
 class EditorApp: public QMainWindow
 {
@@ -22,6 +24,7 @@ public:
 public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
+	void metaDataChanged();
 
 	// Automatic slots
 
@@ -63,4 +66,5 @@ private:
 	OperationStack redoStack;
 	QScopedPointer<Song> song;
 	QString projectFileName;
+	QScopedPointer<QMediaPlayer> player;
 };

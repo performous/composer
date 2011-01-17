@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <QtMultimediaKit/QMediaPlayer>
 #include <iostream>
 #include "editorapp.hh"
 #include "notelabel.hh"
@@ -44,6 +43,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
 	updateNoteInfo(NULL);
 
 	song.reset(new Song);
+	player.reset(new QMediaPlayer);
+	connect(player.data(), SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 
 	// Some icons to menus to make them prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
@@ -58,19 +59,12 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
-
-	// FIXME: This is temporary test hack
-	QMediaPlayer *player = new QMediaPlayer;
-	//connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
-	player->setMedia(QUrl::fromLocalFile("/tmp/music.mp3"));
-	player->setVolume(50);
-	player->play();
 }
-
 
 void EditorApp::operationDone(const Operation &op)
 {
 	//std::cout << "Push op: " << op.dump() << std::endl;
+	if (player) std::cout << player->isMetaDataAvailable() << std::endl;
 	opStack.push(op);
 	updateMenuStates();
 	redoStack.clear();
@@ -344,8 +338,13 @@ void EditorApp::on_actionMusicFile_triggered()
 
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
-		ui.tabWidget->setCurrentIndex(1); // Swicth to song properties tab
-		// TODO: Do something with the file
+		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
+		// Metadata is updated when it becomes available (signal)
+		player->setMedia(QUrl::fromLocalFile(fileName));
+		// FIXME: Temporary test
+		player->setVolume(50);
+		player->play();
+		// TODO: Extract the raw data and fire up an analyzer
 	}
 }
 
@@ -424,6 +423,21 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 		if (!song->artist.empty()) ui.txtArtist->setText(QString::fromStdString(song->artist));
 		if (!song->genre.empty()) ui.txtGenre->setText(QString::fromStdString(song->genre));
 		if (!song->year.empty()) ui.txtYear->setText(QString::fromStdString(song->year));
+	}
+}
+
+void EditorApp::metaDataChanged()
+{
+	if (!player.isNull()) {
+		if (player->metaData(QtMultimediaKit::Title).isValid())
+			song->title = player->metaData(QtMultimediaKit::Title).toString().toStdString();
+		if (player->metaData(QtMultimediaKit::AlbumArtist).isValid())
+			song->artist = player->metaData(QtMultimediaKit::AlbumArtist).toString().toStdString();
+		if (player->metaData(QtMultimediaKit::Genre).isValid())
+			song->genre = player->metaData(QtMultimediaKit::Genre).toString().toStdString();
+		if (player->metaData(QtMultimediaKit::Year).isValid())
+			song->year = player->metaData(QtMultimediaKit::Year).toString().toStdString();
+		updateSongMeta(true);
 	}
 }
 
