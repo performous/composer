@@ -8,6 +8,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
 if(NOT CMAKE_BUILD_TYPE)
 	message("WARNING: CMAKE_BUILD_TYPE is not defined!\n         Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo. Use ccmake to set a proper value.")
@@ -18,8 +20,9 @@ find_package(Boost 1.36 REQUIRED COMPONENTS regex filesystem system)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 
-find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED) # find and setup Qt4 for this project
+find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtMultimediaKit REQUIRED)
 include(${QT_USE_FILE})
+list(APPEND LIBS ${QT_LIBRARIES})
 
 # Headers that need MOC need to be defined separately
 file(GLOB MOC_HEADER_FILES "editorapp.hh" "notelabel.hh" "notegraphwidget.hh")
@@ -37,4 +40,4 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
-target_link_libraries(editor ${QT_LIBRARIES} ${LIBS})
+target_link_libraries(editor ${LIBS})

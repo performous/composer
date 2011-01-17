@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <QtMultimediaKit/QMediaPlayer>
 #include <iostream>
 #include "editorapp.hh"
 #include "notelabel.hh"
@@ -57,6 +58,13 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName()
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
+
+	// FIXME: This is temporary test hack
+	QMediaPlayer *player = new QMediaPlayer;
+	//connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
+	player->setMedia(QUrl::fromLocalFile("/tmp/music.mp3"));
+	player->setVolume(50);
+	player->play();
 }
 
 
