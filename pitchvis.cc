@@ -1,6 +1,5 @@
 #include "pitchvis.hh"
 
-#include "notes.hh"
 #include "pitch.hh"
 #include <fstream>
 #include <iostream>
@@ -21,14 +20,12 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 	if (!f) throw std::runtime_error("Error reading " + filename);
 }
 
-PitchVis::PitchVis(std::string const& filename): height(1024) {
+PitchVis::PitchVis(std::string const& filename): step(1024), height(768) {
 	std::vector<float> data;
 	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
-	unsigned step = 1024;
 	unsigned width = data.size() / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
-	MusicalScale scale;
 	QProgressDialog progress(tr("Analyzing pitch data..."), tr("&Abort"), 0, width, this);
 	progress.setWindowModality(Qt::WindowModal);
 
@@ -40,7 +37,7 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 		analyzer.process();
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
-			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(peaks[i].freq));
+			unsigned y = freq2px(peaks[i].freq);
 			if (y == 0 || y >= height - 1) continue;
 			float value = 0.003 * (level2dB(peaks[i].level) + 80.0);
 			if (value <= 0.0) continue;
@@ -56,7 +53,7 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 		unsigned int i = 0;
 		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
 			if (it->age < Tone::MINAGE) continue;
-			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freqSlow));
+			unsigned y = freq2px(it->freqSlow);
 			if (y == 0 || y >= height - 1) continue;
 			float value = 0.003 * (level2dB(it->levelSlow) + 80.0);
 			if (value <= 0.0) continue;
@@ -82,4 +79,10 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 	}
 	progress.setValue(width);
 }
+
+unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }
+unsigned PitchVis::note2px(double note) const { return height - static_cast<unsigned>(16.0 * note); }
+double PitchVis::px2note(unsigned px) const { return (height - px) / 16.0; }
+unsigned PitchVis::time2px(double t) const { return t * 44100.0 / step; }
+double PitchVis::px2time(double px) const { return px / 44100.0 * step; }
 

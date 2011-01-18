@@ -1,5 +1,6 @@
 #pragma once
 
+#include "notes.hh"
 #include "util.hh"
 #include <QWidget>
 #include <cmath>
@@ -31,11 +32,18 @@ struct Pixel {
 };
 
 class PitchVis: public QWidget {
+	unsigned step;
 	std::vector<Pixel> img;
+	MusicalScale scale;
 public:
 	const std::size_t height;
 	Pixel& operator()(std::size_t x, std::size_t y) { return img[x * height + y]; }
 	std::size_t width() const { return img.size() / height; }
 	PitchVis(std::string const& filename);
+	unsigned freq2px(double freq) const;
+	unsigned note2px(double note) const;
+	double px2note(unsigned px) const;
+	unsigned time2px(double t) const;
+	double px2time(double px) const;
 };
 

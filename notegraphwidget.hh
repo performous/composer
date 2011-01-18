@@ -33,10 +33,9 @@ public:
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
-	int ndiff2px(int dn) const;
 	int n2px(int note) const;
 	int px2n(int px) const;
-	int h() const { return 12 * m_octaves * noteYStep; }
+	int h() const { return m_pitch.height; }
 
 
 signals:
@@ -53,10 +52,6 @@ protected:
 
 private:
 	void finalizeNewLyrics();
-
-	double m_pixPerSec; ///< Pixels per second
-	int m_lowestNote; ///< Note id / midi pitch of the lowest note in the view
-	int m_octaves; ///< How many octaves are displayed in the view
 
 	int  m_requiredWidth;
 	QPoint m_panHotSpot;

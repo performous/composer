@@ -15,12 +15,8 @@ namespace {
 	}
 }
 
-
-const int NoteGraphWidget::noteYStep = 28;
-
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_pixPerSec(200), m_lowestNote(MusicalScale::getBaseId()), m_octaves(3),
-	m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch("music.raw")
+	: QLabel(parent), m_pitch("music.raw"), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened()
 {
 	unsigned width = m_pitch.width(), height = m_pitch.height;
 	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
@@ -85,7 +81,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(m_lowestNote + 12 * m_octaves - 6)), QSize(), !first));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch.note2px(6)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 			first = false;
 		}
@@ -98,12 +94,7 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	clear();
 
-	// Determine how many octaves are needed and what is the base line
-	int diff = track.noteMax - track.noteMin;
-	m_octaves = std::ceil(diff / 12.0f) + 1;
-	m_lowestNote = clamp(track.noteMin - 6, 0, 1000);
-	//std::cout << "Octaves: " << m_octaves << " Lowest:" << m_lowestNote << std::endl;
-	setFixedSize(s2px(track.endTime), ndiff2px(m_octaves*12));
+	setFixedSize(s2px(track.endTime), h());
 
 	bool first = true;
 	const Notes &notes = track.notes;
@@ -349,12 +340,12 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Up: // Move note up
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_selectedNote->y() - noteYStep);
+			m_selectedNote->move(m_selectedNote->x(), m_pitch.note2px(m_pitch.px2note(m_selectedNote->y()) + 1));
 		}
 		break;
 	case Qt::Key_Down: // Move note down
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_selectedNote->y() + noteYStep);
+			m_selectedNote->move(m_selectedNote->x(), m_pitch.note2px(m_pitch.px2note(m_selectedNote->y()) - 1));
 		}
 		break;
 	case Qt::Key_Delete: // Delete selected note
@@ -417,25 +408,10 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 }
 
 
-int NoteGraphWidget::s2px(double sec) const {
-	return sec * m_pixPerSec;
-}
-double NoteGraphWidget::px2s(int px) const {
-	return px / m_pixPerSec;
-}
-int NoteGraphWidget::ndiff2px(int dn) const {
-	return dn * noteYStep;
-}
-int NoteGraphWidget::n2px(int note) const {
-	int highestNote = m_lowestNote + 12 * m_octaves;
-	return (highestNote - note) * noteYStep;
-}
-int NoteGraphWidget::px2n(int px) const {
-	int highestNote = m_lowestNote + 12 * m_octaves;
-	return highestNote - round(px / (float)noteYStep);
-}
-
-
+int NoteGraphWidget::s2px(double sec) const { return m_pitch.time2px(sec); }
+double NoteGraphWidget::px2s(int px) const { return m_pitch.px2time(px); }
+int NoteGraphWidget::n2px(int note) const { return m_pitch.note2px(note); }
+int NoteGraphWidget::px2n(int px) const { return m_pitch.px2note(px); }
 
 void FloatingGap::addNote(NoteLabel* n)
 {
