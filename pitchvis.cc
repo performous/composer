@@ -20,7 +20,7 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 	if (!f) throw std::runtime_error("Error reading " + filename);
 }
 
-PitchVis::PitchVis(std::string const& filename): step(1024), height(768) {
+PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
 	std::vector<float> data;
 	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
 	unsigned width = data.size() / step;
@@ -57,24 +57,8 @@ PitchVis::PitchVis(std::string const& filename): step(1024), height(768) {
 			if (y == 0 || y >= height - 1) continue;
 			float value = 0.003 * (level2dB(it->levelSlow) + 80.0);
 			if (value <= 0.0) continue;
-			Pixel p(value, value, value);
-			switch(i) {
-				case 0:
-					p.r = 0.0; p.g = 1.0; p.b = 0.0;
-					break;
-				case 1:
-					p.r = 0.15; p.g = 0.15; p.b = 0.0;
-					break;
-				case 2:
-					p.r = 0.05; p.g = 0.05; p.b = 0.0;
-					break;
-			}
-			(*this)(x, y) = p;
-			for(int j = -3 ; j < 4 ; ++j) {
-				if(y + j < 0 || y + j >= height) continue;
-				(*this)(x, y + j) = p;
-			}
-			++i;
+			Pixel p(0.0f, value, 0.0f);
+			for (int j = int(y) - 2; j <= int(y) + 2; ++j) (*this)(x, j) += p;
 		}
 	}
 	progress.setValue(width);
