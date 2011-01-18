@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtMultimediaKit/QMediaPlayer>
+#include <QMessageBox>
 #include "ui_editor.h"
 #include "operation.hh"
 #include "song.hh"
@@ -17,9 +18,12 @@ public:
 	EditorApp(QWidget *parent = 0);
 
 	void updateSongMeta(bool readFromSongToUI = false);
+	void updateMenuStates();
+
+private:
+	bool promptSaving();
 	void saveProject(QString fileName);
 	void doOpStack();
-	void updateMenuStates();
 
 public slots:
 	void operationDone(const Operation &op);

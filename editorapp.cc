@@ -132,21 +132,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 
 void EditorApp::on_actionNew_triggered()
 {
-	// TODO: Check if a save prompt is in order
-	if (hasUnsavedChanges) {
-		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
-			tr("There are unsaved changes. Do you wish to save before creating a new project?"),
-			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		switch(b) {
-		case QMessageBox::Yes:
-			on_actionSave_triggered();
-		case QMessageBox::No:
-			noteGraph->clear();
-			projectFileName = "";
-			break;
-		default: break;
-		}
-	} else {
+	if (promptSaving()) {
 		noteGraph->clear();
 		projectFileName = "";
 	}
@@ -155,6 +141,8 @@ void EditorApp::on_actionNew_triggered()
 
 void EditorApp::on_actionOpen_triggered()
 {
+	if (!promptSaving()) return;
+
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
 			QDir::homePath(),
 			tr("All supported formats") + "(*." + PROJECT_SAVE_FILE_EXTENSION + " *.xml *.mid *.ini *.txt);;" +
@@ -234,6 +222,23 @@ void EditorApp::on_actionSaveAs_triggered()
 	}
 }
 
+bool EditorApp::promptSaving()
+{
+	if (hasUnsavedChanges) {
+		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
+			tr("There are unsaved changes, which would be lost. Save now?"),
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		switch(b) {
+		case QMessageBox::Yes:
+			on_actionSave_triggered();
+		case QMessageBox::No:
+			return true;
+		default: break;
+		}
+	}
+	return false;
+}
+
 void EditorApp::saveProject(QString fileName)
 {
 	QFile f(fileName);
@@ -285,21 +290,7 @@ void EditorApp::on_actionFoFMIDI_triggered()
 
 void EditorApp::on_actionExit_triggered()
 {
-	// TODO: Check if a save prompt is in order
-	if (hasUnsavedChanges) {
-		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
-			tr("There are unsaved changes. Do you wish to save before quitting?"),
-			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		switch(b) {
-		case QMessageBox::Yes:
-			on_actionSave_triggered();
-		case QMessageBox::No:
-			close(); break;
-		default: break;
-		}
-	} else {
-		close();
-	}
+	if (promptSaving()) close();
 }
 
 void EditorApp::on_actionUndo_triggered()
