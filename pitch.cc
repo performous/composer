@@ -15,18 +15,18 @@ static const double FFT_MINFREQ = 45.0;
 static const double FFT_MAXFREQ = 3000.0;
 
 Tone::Tone():
-  freq(0.0),
-  db(-getInf()),
-  stabledb(-getInf()),
+  freq(),
+  freqSlow(),
+  level(),
+  levelSlow(),
   age()
 {
-	for (std::size_t i = 0; i < MAXHARM; ++i)
-	  harmonics[i] = 0.0;
+	for (std::size_t i = 0; i < MAXHARM; ++i) harmonics[i] = 0.0;
 }
 
 void Tone::print() const {
 	if (age < Tone::MINAGE) return;
-	std::cout << std::fixed << std::setprecision(1) << freq << " Hz, age " << age << ", " << db << " dB:";
+	std::cout << std::fixed << std::setprecision(1) << freq << " Hz, age " << age << ", " << level2dB(level) << " dB:";
 	for (std::size_t i = 0; i < 8; ++i) std::cout << " " << harmonics[i];
 	std::cout << std::endl;
 }
@@ -78,15 +78,15 @@ namespace {
 	}
 	struct Combo {
 		double freq;
-		double magnitude;
-		Combo(): freq(), magnitude() {}
+		double level;
+		Combo(): freq(), level() {}
 		void combine(Peak const& p) {
-			freq += p.magnitude * p.freq;  // Multiplication for weighted average
-			magnitude += p.magnitude;
+			freq += p.level * p.freq;  // Multiplication for weighted average
+			level += p.level;
 		}
 		bool match(double freqOther) const { return matchFreq(freq, freqOther); }
 	};
-	bool operator<(Combo const& a, Combo const& b) { return a.magnitude < b.magnitude; }
+	bool operator<(Combo const& a, Combo const& b) { return a.level < b.level; }
 }
 
 void Analyzer::calcTones() {
@@ -98,10 +98,10 @@ void Analyzer::calcTones() {
 	const size_t kMin = std::max(size_t(3), size_t(FFT_MINFREQ / freqPerBin));
 	const size_t kMax = std::min(FFT_N / 2, size_t(FFT_MAXFREQ / freqPerBin));
 	m_peaks.resize(kMax);
-	std::vector<double> magnitudes;
+	std::vector<double> levels;
 	// Process FFT into peaks
 	for (size_t k = 1; k < kMax; ++k) {
-		double magnitude = normCoeff * std::abs(m_fft[k]);
+		double level = normCoeff * std::abs(m_fft[k]);
 		double phase = std::arg(m_fft[k]);
 		// Use the reassignment method for calculating precise frequencies
 		double delta = phase - m_fftLastPhase[k];
@@ -111,25 +111,25 @@ void Analyzer::calcTones() {
 		delta /= phaseStep;  // Calculate how much difference that makes during a step
 		m_peaks[k].freqFFT = k * freqPerBin;  // Calculate the simple FFT frequency
 		m_peaks[k].freq = (k + delta) * freqPerBin;  // Calculate the true frequency
-		m_peaks[k].magnitude = magnitude;
-		magnitudes.push_back(magnitude);
+		m_peaks[k].level = level;
+		levels.push_back(level);
 	}
-	std::sort(magnitudes.begin(), magnitudes.end());
-	double m80 = magnitudes[magnitudes.size() * 80 / 100];  // m80 > 80 % peaks
-	double mmax = magnitudes.back();  // Max magnitude of peaks (note: combos will combine peaks and go higher)
+	std::sort(levels.begin(), levels.end());
+	double l80 = levels[levels.size() * 80 / 100];  // l80 > 80 % peaks
+	double lmax = levels.back();  // Max level of peaks (note: combos will combine peaks and go higher)
 	// Filter peaks and combine adjacent peaks pointing at the same frequency into one
 	typedef std::vector<Combo> Combos;
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		if (p.magnitude < m80) continue;
+		if (p.level < l80) continue;
 		if (p.freq < FFT_MINFREQ || p.freq > FFT_MAXFREQ) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
 		combos.back().combine(p);
 	}
 	// Convert sum frequencies into averages
-	for (Combos::iterator it = combos.begin(), end = combos.end(); it != end; ++it) it->freq /= it->magnitude;
+	for (Combos::iterator it = combos.begin(), end = combos.end(); it != end; ++it) it->freq /= it->level;
 	// Strongest first
 	std::sort(combos.rbegin(), combos.rend());
 	// Keep only a reasonable amount of strongest frequencies.
@@ -137,7 +137,7 @@ void Analyzer::calcTones() {
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
-		if (it->magnitude < 0.1 * mmax) break;
+		if (it->level < 0.1 * lmax) break;
 		Tone bestTone;
 		int bestScore = 0;
 		for (std::size_t div = 1; div <= Tone::MAXHARM; ++div) {
@@ -146,7 +146,7 @@ void Analyzer::calcTones() {
 			double freq = it->freq / div;  // Assumed fundamental frequency
 			int score = 0;
 			size_t misses = 0;
-			t.db = 0.0;  // Using db field for magnitude
+			t.level = 0.0;
 			for (std::size_t n = 1; n <= Tone::MAXHARM && misses < 3; ++n) {
 				double hfreq = n * freq;
 				bool miss = true;
@@ -154,22 +154,20 @@ void Analyzer::calcTones() {
 					if (!harm->match(hfreq)) continue;  // Skip current combo if it doesn't match
 					// Possible matching harmonic found, update t and scoring
 					score += (n == 1 ? 3 : 2);  // Score for finding a harmonic (extra for fundamental)
-					double m = harm->magnitude;
-					t.harmonics[n - 1] += m;
-					t.db += m;  // Magnitudes can be accumulated (decibels cannot)
-					t.freq += m * harm->freq / n;  // The sum of all harmonics' fundies (weighted by m)
+					double l = harm->level;
+					t.harmonics[n - 1] += l;
+					t.level += l;
+					t.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by m)
 				}
 				if (miss) ++misses;
 			}
-			t.freq /= t.db;  // Average instead of sum
-			t.stabledb = t.db = magn2dB(t.db);  // Convert into actual dB
+			t.freqSlow = t.freq /= t.level;  // Average instead of sum
 			if (score > bestScore) {
 				bestScore = score;
 				bestTone = t;
 			}
 		}
 		tones.push_back(bestTone);
-//		std::cerr << "[" << it->freq << " Hz -> best: " << bestTone.freq << " Hz, " << bestScore << " points, " << bestTone.db << " dB]";
 	}
 	// Clean harmonics misdetected as fundamental
 	tones.sort();
@@ -196,13 +194,13 @@ void Analyzer::mergeWithOld(Tones& tones) const {
 		if (it != tones.end() && *it == *oldit) {
 			// Merge the old tone into the new tone
 			it->age = oldit->age + 1;
-			it->stabledb = 0.8 * oldit->stabledb + 0.2 * it->db;
-			it->freq = 0.5 * oldit->freq + 0.5 * it->freq;
-		} else if (oldit->db > -80.0) {
+			it->levelSlow = 0.8 * oldit->levelSlow + 0.2 * it->level;
+			it->freqSlow = 0.8 * oldit->freqSlow + 0.2 * it->freq;
+		} else if (oldit->levelSlow > 1e-8) {
 			// Insert a decayed version of the old tone into new tones
 			Tone& t = *tones.insert(it, *oldit);
-			t.db -= 5.0;
-			t.stabledb -= 0.5;
+			t.level = 0.0;
+			t.levelSlow *= 0.8;
 		}
 	}
 }
@@ -217,7 +215,7 @@ Tone const* Analyzer::findTone(double minfreq, double maxfreq) const {
 	double bestscore = -getInf();
 	for (Tones::const_iterator it = m_tones.begin(); it != m_tones.end(); ++it) {
 		if (it->freq > maxfreq || it->freq < minfreq || it->age < Tone::MINAGE) continue;
-		double score = it->stabledb - std::max(180.0, std::abs(it->freq - 300.0)) / 10.0;
+		double score = it->levelSlow * (400.0 - std::max(180.0, std::abs(it->freq - 300.0)));
 		if (m_oldfreq != 0.0 && std::abs(it->freq/m_oldfreq - 1.0) < 0.10) score += 30.0;  // Stability is a really good thing
 		if (it->harmonics[0] > 0.0) score += 10.0;  // fundamental is always good to have
 		if (it->harmonics[2] > 0.0) score += 10.0;  // third harmonic is nearly always detected for vocals

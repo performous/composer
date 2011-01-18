@@ -7,31 +7,32 @@
 #include <algorithm>
 #include <cmath>
 
-static inline double magn2dB(double magnitude) { return 20.0 * std::log10(magnitude); }
-static inline double dB2magn(double db) { return std::pow(10.0, db / 20.0); }
+static inline double level2dB(double level) { return 20.0 * std::log10(level); }
+static inline double dB2level(double db) { return std::pow(10.0, db / 20.0); }
 
 /// A tone is a collection of a base frequency (freq) and all its harmonics
 struct Tone {
 	static const std::size_t MAXHARM = 16; ///< The maximum number of harmonics tracked
 	static const std::size_t MINAGE = 6; ///< The minimum age required for a tone to be output
 	double freq; ///< Frequency (Hz)
-	double db; ///< Level (dB)
-	double stabledb; ///< Stable level, useful for graphics rendering
+	double freqSlow; ///< Stable frequency
+	double level; ///< Level (linear)
+	double levelSlow; ///< Stable level, useful for graphics rendering
 	double harmonics[MAXHARM]; ///< Harmonics' levels
 	std::size_t age; ///< How many times the tone has been detected in row
 	Tone(); 
 	void print() const; ///< Prints Tone to std::cout
 	bool operator==(double f) const; ///< Compare for rough frequency match
 	/// Less-than compare by levels (instead of frequencies like operator< does)
-	static bool dbCompare(Tone const& l, Tone const& r) { return l.stabledb < r.stabledb; }
+	static bool levelCompare(Tone const& l, Tone const& r) { return l.levelSlow < r.levelSlow; }
 };
 
 /// A peak contains information about a single frequency
 struct Peak {
 	double freqFFT;
 	double freq;
-	double magnitude;
-	Peak(): freqFFT(), freq(), magnitude() {}
+	double level;
+	Peak(): freqFFT(), freq(), level() {}
 };
 
 static inline bool operator==(Tone const& lhs, Tone const& rhs) { return lhs == rhs.freq; }
