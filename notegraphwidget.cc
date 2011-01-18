@@ -325,11 +325,11 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 	switch (event->key()) {
 	case Qt::Key_Left: // Select note on the left
 		// FIXME!
-/*		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
-			for (NoteLabels::reverse_iterator it = m_notes.rbegin(); it != m_notes.rend(); ++it) {
-				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
+		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
+			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
+				if (m_selectedNote == *it) { selectNote(*(--it)); break; }
 			}
-		}*/
+		}
 		break;
 	case Qt::Key_Right: // Select note on the right
 		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
