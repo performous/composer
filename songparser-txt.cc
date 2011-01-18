@@ -95,6 +95,7 @@ bool SongParser::txtParseNote(std::string line, VocalTrack &vocal) {
 			n.notePrev = n.note; // No slide notes in TXT yet.
 			if (m_relative) ts += m_relativeShift;
 			if (iss.get() == ' ') std::getline(iss, n.syllable);
+			boost::trim(n.syllable);
 			n.end = tsTime(ts + length);
 		}
 		break;

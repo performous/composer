@@ -102,7 +102,7 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 	int diff = track.noteMax - track.noteMin;
 	m_octaves = std::ceil(diff / 12.0f) + 1;
 	m_lowestNote = clamp(track.noteMin - 6, 0, 1000);
-	std::cout << "--: " << m_octaves << " " << m_lowestNote << std::endl;
+	//std::cout << "Octaves: " << m_octaves << " Lowest:" << m_lowestNote << std::endl;
 	setFixedSize(s2px(track.endTime), ndiff2px(m_octaves*12));
 
 	bool first = true;
