@@ -13,7 +13,7 @@ void SingStarXMLWriter::writeXML() {
 	root.setAttribute("Version", "1");
 	root.setAttribute("Tempo", QString::number(tempo));
 	root.setAttribute("FixedTempo", "Yes");
-	root.setAttribute("Resolution", "Semiquaver"); // Demisemiquaver = 2x tempo
+	root.setAttribute("Resolution", "Demisemiquaver"); // Demisemiquaver = 2x tempo of Semiquaver
 	root.setAttribute("Genre", QString::fromStdString(s.genre));
 	root.setAttribute("Year", QString::fromStdString(s.year));
 	root.setAttribute("xsi:schemaLocation", "http://www.singstargame.com http://15GMS-SINGSQL/xml_schema/melody.xsd");
@@ -90,5 +90,5 @@ void SingStarXMLWriter::writeXML() {
 }
 
 int SingStarXMLWriter::sec2dur(double sec) {
-	return round(tempo / 60.0 * sec * 4);
+	return round(tempo / 60.0 * sec * 8); // 8 for Demisemiquaver
 }
