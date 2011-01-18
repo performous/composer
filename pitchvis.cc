@@ -42,7 +42,7 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 		for (unsigned i = 0; i < peaks.size(); ++i) {
 			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(peaks[i].freq));
 			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (magn2dB(peaks[i].magnitude) + 80.0);
+			float value = 0.003 * (level2dB(peaks[i].level) + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(0.0f, 0.0f, value);
 			(*this)(x, y) += p;
@@ -56,9 +56,9 @@ PitchVis::PitchVis(std::string const& filename): height(1024) {
 		unsigned int i = 0;
 		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
 			if (it->age < Tone::MINAGE) continue;
-			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freq));
+			unsigned y = height - static_cast<unsigned>(16.0 * scale.getNote(it->freqSlow));
 			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (it->db + 80.0);
+			float value = 0.003 * (level2dB(it->levelSlow) + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(value, value, value);
 			switch(i) {
