@@ -16,7 +16,15 @@ if(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-find_package(Boost 1.36 REQUIRED COMPONENTS regex filesystem system)
+# Find all the libs that don't require extra parameters
+foreach(lib AVFormat SWScale)
+	find_package(${lib} REQUIRED)
+	include_directories(${${lib}_INCLUDE_DIRS})
+	list(APPEND LIBS ${${lib}_LIBRARIES})
+	add_definitions(${${lib}_DEFINITIONS})
+endforeach(lib)
+
+find_package(Boost 1.36 REQUIRED COMPONENTS thread regex filesystem system)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 
@@ -41,6 +49,9 @@ file(GLOB UI_FILES "*.ui")
 QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
 QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
 QT4_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
+
+# Generate config.hh
+configure_file("${CMAKE_SOURCE_DIR}/config.cmake.hh" "${CMAKE_BINARY_DIR}/config.hh" @ONLY)
 
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})

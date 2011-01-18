@@ -1,6 +1,7 @@
 #include "pitchvis.hh"
 
 #include "pitch.hh"
+#include "ffmpeg.hh"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -21,8 +22,30 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 }
 
 PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
+//	std::vector<float> data;
+//	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
+
+	// FIXME: This is rather horrible and needs clean-up
+	const unsigned buffersize = 512;
+	std::vector<float> datas(buffersize);
+	FFmpeg mpeg(false, true, filename, 44100);
+	uint64_t pos = 0;
+	while(std::isnan(mpeg.duration())); // Wait for ffmpeg to be ready
+	usleep(3000000); // Wait some more
+	while (!mpeg.audioQueue.eof(pos)) {
+		// TODO: Should probably analyze buffer-by-buffer
+		mpeg.audioQueue(&datas[pos], &*datas.end(), pos);
+		datas.resize(datas.size() + buffersize);
+		pos += buffersize;
+		usleep(10); // HACKHACK
+	}
+	// We want only one channel
 	std::vector<float> data;
-	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
+	data.reserve(datas.size()/2);
+	for (uint64_t i = 0; i < datas.size() / 2; ++i) {
+		data.push_back(datas[i*2]);
+	}
+
 	unsigned width = data.size() / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");

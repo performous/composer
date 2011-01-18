@@ -15,8 +15,6 @@ class NoteGraphWidget: public QLabel
 
 public:
 
-	static const int noteYStep;
-
 	NoteGraphWidget(QWidget *parent = 0);
 
 	void clear();

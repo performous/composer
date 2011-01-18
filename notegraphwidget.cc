@@ -16,7 +16,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_pitch("music.raw"), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened()
+	: QLabel(parent), m_pitch("music.ogg"), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened()
 {
 	unsigned width = m_pitch.width(), height = m_pitch.height;
 	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
@@ -37,7 +37,6 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 	// FIXME: Width should come from song length * pixPerSec
 	setFixedSize(std::max(width, (unsigned)1024), h());
-
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 
@@ -232,7 +231,6 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		new2 << id+1 << secondst << child->pos().x() + w1 << child->pos().y() << child->width() - w1 << 0 << child->isFloating();
 		Operation del("DEL"); del << id+2;
 		Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
-		std::cout << new1.dump() << std::endl << new2.dump() << std::endl << del.dump() << std::endl;
 		doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
 
 		m_selectedNote = NULL;

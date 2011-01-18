@@ -77,7 +77,7 @@ void EditorApp::doOpStack()
 	// Re-apply all operations in the stack
 	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
 	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
-		std::cout << "Doing op: " << opit->dump() << std::endl;
+		//std::cout << "Doing op: " << opit->dump() << std::endl;
 		// FIXME: This should check from the operation what class will implement it
 		// and call the appropriate object. QObject meta info could be very useful.
 		try {
