@@ -89,7 +89,7 @@ FOREACH(module QT3SUPPORT QTOPENGL QTASSISTANT QTDESIGNER QTMOTIF QTNSPLUGIN
         SET(QT_USE_${depend_module}_DEPENDS 1)
       ENDFOREACH(depend_module ${QT_${module}_MODULE_DEPENDS})
     ELSE (QT_${module}_FOUND)
-      MESSAGE("Qt ${module} library not found.")
+      MESSAGE(FATAL_ERROR "Qt ${module} library not found.")
     ENDIF (QT_${module}_FOUND)
   ENDIF (QT_USE_${module} OR QT_USE_${module}_DEPENDS)
   
