@@ -37,9 +37,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	moveop << (int)noteGraph->noteLabels().size()-1 << 600 - noteGraph->noteLabels().back()->width() << noteGraph->noteLabels().back()->y();
 	noteGraph->doOperation(moveop);
 	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
-
 	noteGraph->updateNotes();
-
 	updateNoteInfo(NULL);
 
 	song.reset(new Song);
@@ -59,6 +57,9 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
+
+	hasUnsavedChanges = false;
+	updateMenuStates();
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -233,10 +234,11 @@ bool EditorApp::promptSaving()
 			on_actionSave_triggered();
 		case QMessageBox::No:
 			return true;
-		default: break;
+		default:
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
 
 void EditorApp::saveProject(QString fileName)
