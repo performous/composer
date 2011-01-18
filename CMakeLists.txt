@@ -24,6 +24,12 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtMultimediaKit REQUIRE
 include(${QT_USE_FILE})
 list(APPEND LIBS ${QT_LIBRARIES})
 
+# Not used directly but is a dep of QtMultimediaKit
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+	find_package(LibPulse REQUIRED)
+	list(APPEND LIBS ${LibPulse_LIBRARIES})
+endif()
+
 # Headers that need MOC need to be defined separately
 file(GLOB MOC_HEADER_FILES "editorapp.hh" "notelabel.hh" "notegraphwidget.hh")
 
