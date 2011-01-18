@@ -22,9 +22,10 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 }
 
 PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
-//	std::vector<float> data;
-//	try { readVec(filename, data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
-
+#if 0 // Change this to 1 to use old raw loading
+	std::vector<float> data;
+	try { readVec("music.raw", data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
+#else
 	// FIXME: This is rather horrible and needs clean-up
 	const unsigned buffersize = 512;
 	std::vector<float> datas(buffersize);
@@ -45,7 +46,7 @@ PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
 	for (uint64_t i = 0; i < datas.size() / 2; ++i) {
 		data.push_back(datas[i*2]);
 	}
-
+#endif
 	unsigned width = data.size() / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
