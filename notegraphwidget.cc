@@ -81,7 +81,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch.note2px(6)), QSize(), !first));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch.note2px(24)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 			first = false;
 		}
