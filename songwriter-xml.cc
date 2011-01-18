@@ -90,5 +90,5 @@ void SingStarXMLWriter::writeXML() {
 }
 
 int SingStarXMLWriter::sec2dur(double sec) {
-	return round(tempo / 60.0 * sec);
+	return round(tempo / 60.0 * sec * 4);
 }
