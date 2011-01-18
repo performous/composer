@@ -60,6 +60,7 @@ public:
 		bool overflow = false;
 		while (begin != end) {
 			float s = *begin++;  // Read input sample
+			if (sizeof(*begin) == 2) s /= 32767.0;  // Integer samples (normalize)
 			// Peak level calculation
 			float p = s * s;
 			if (p > m_level) m_level = p; else m_level *= 0.9995;
