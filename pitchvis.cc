@@ -22,42 +22,35 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 }
 
 PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent), step(512), height(768) {
-#if 0 // Change this to 1 to use old raw loading
-	std::vector<float> data;
-	try { readVec("music.raw", data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
-#else
-	// FIXME: This is rather horrible and needs clean-up
-	const unsigned buffersize = 512;
-	std::vector<float> datas(buffersize);
+	QProgressDialog progress(tr("Initializing audio decoding..."), tr("&Abort"), 0, 1, this);
+	progress.setWindowModality(Qt::WindowModal);
+	progress.setValue(0);
+
+	// Initialize FFmpeg decoding
 	FFmpeg mpeg(false, true, filename, 44100);
-	uint64_t pos = 0;
 	while(std::isnan(mpeg.duration())); // Wait for ffmpeg to be ready
-	usleep(3000000); // Wait some more
-	while (!mpeg.audioQueue.eof(pos)) {
-		// TODO: Should probably analyze buffer-by-buffer
-		mpeg.audioQueue(&datas[pos], &*datas.end(), pos);
-		datas.resize(datas.size() + buffersize);
-		pos += buffersize;
-		usleep(10); // HACKHACK
-	}
-	// We want only one channel
-	std::vector<float> data;
-	data.reserve(datas.size()/2);
-	for (uint64_t i = 0; i < datas.size() / 2; ++i) {
-		data.push_back(datas[i*2]);
-	}
-#endif
-	unsigned width = data.size() / step;
+	usleep(1000000); // Wait some more
+
+	unsigned width = mpeg.duration() * 44100 / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
-	QProgressDialog progress(tr("Analyzing pitch data..."), tr("&Abort"), 0, width, this);
-	progress.setWindowModality(Qt::WindowModal);
 
+	progress.setMaximum(width);
+	progress.setLabelText(tr("Analyzing pitch data..."));
 	for (unsigned x = 0; x < width; ++x) {
 		progress.setValue(x);
 		if (progress.wasCanceled()) return;
 
-		analyzer.input(data.begin() + x * step, data.begin() + (x + 1) * step);
+		// Get decoded samples from ffmpeg
+		std::vector<float> data(step*2);
+		mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2);
+
+		// Sample iterators for getting only one channel
+		da::step_iterator<float> beginIt(&*data.begin(), 2);
+		da::step_iterator<float> endIt(&*data.end(), 2);
+
+		// Analyze
+		analyzer.input(beginIt, endIt);
 		analyzer.process();
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
