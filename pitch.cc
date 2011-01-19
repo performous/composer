@@ -194,13 +194,13 @@ void Analyzer::mergeWithOld(Tones& tones) const {
 		if (it != tones.end() && *it == *oldit) {
 			// Merge the old tone into the new tone
 			it->age = oldit->age + 1;
-			it->levelSlow = 0.8 * oldit->levelSlow + 0.2 * it->level;
-			it->freqSlow = 0.8 * oldit->freqSlow + 0.2 * it->freq;
+			it->levelSlow = 0.5 * oldit->levelSlow + 0.5 * it->level;
+			it->freqSlow = 0.5 * oldit->freqSlow + 0.5 * it->freq;
 		} else if (oldit->levelSlow > 1e-8) {
 			// Insert a decayed version of the old tone into new tones
 			Tone& t = *tones.insert(it, *oldit);
 			t.level = 0.0;
-			t.levelSlow *= 0.8;
+			t.levelSlow *= 0.01;
 		}
 	}
 }

@@ -13,7 +13,7 @@ static inline double dB2level(double db) { return std::pow(10.0, db / 20.0); }
 /// A tone is a collection of a base frequency (freq) and all its harmonics
 struct Tone {
 	static const std::size_t MAXHARM = 16; ///< The maximum number of harmonics tracked
-	static const std::size_t MINAGE = 6; ///< The minimum age required for a tone to be output
+	static const std::size_t MINAGE = 2; ///< The minimum age required for a tone to be output
 	double freq; ///< Frequency (Hz)
 	double freqSlow; ///< Stable frequency
 	double level; ///< Level (linear)
