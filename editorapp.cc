@@ -46,7 +46,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 
 	song.reset(new Song);
 
-	// Some icons to menus to make them prettier
+	// Some icons to make menus etc prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
 	ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
 	ui.actionSave->setIcon(QIcon::fromTheme("document-save"));
@@ -59,6 +59,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
+	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 
 	hasUnsavedChanges = false;
 	updateMenuStates();
@@ -354,7 +356,6 @@ void EditorApp::on_actionMusicFile_triggered()
 
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
-		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
 		// Metadata is updated when it becomes available (signal)
 		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
 		// Fire up analyzer
@@ -463,12 +464,19 @@ void EditorApp::audioTick(qint64 time)
 void EditorApp::on_cmdPlay_toggled(bool checked)
 {
 	if (player) {
-		if (checked) {
-			player->play();
-			ui.cmdPlay->setText(tr("Playing..."));
+		if (player->currentSource().type() == Phonon::MediaSource::Empty
+			|| player->currentSource().type() == Phonon::MediaSource::Invalid) {
+			on_actionMusicFile_triggered();
 		} else {
-			player->pause();
-			ui.cmdPlay->setText(tr("Play"));
+			if (checked) {
+				player->play();
+				ui.cmdPlay->setText(tr("Playing..."));
+				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause"));
+			} else {
+				player->pause();
+				ui.cmdPlay->setText(tr("Play"));
+				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+			}
 		}
 	}
 }
