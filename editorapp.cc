@@ -64,11 +64,12 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	// Audio stuff
 	player = new Phonon::MediaObject(this);
 	audioOutput = new Phonon::AudioOutput(this);
-	player->setTickInterval(500);
+	player->setTickInterval(100);
 	Phonon::createPath(player, audioOutput);
 	// Audio signals
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
+	connect(noteGraph, SIGNAL(seek(qint64)), player, SLOT(seek(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -457,8 +458,7 @@ void EditorApp::metaDataChanged()
 
 void EditorApp::audioTick(qint64 time)
 {
-	// TODO: Update a cursor in NoteGraphWidget
-	// (the cursor needs to be first implemented)
+	if (noteGraph) noteGraph->updateMusicPos(time);
 }
 
 

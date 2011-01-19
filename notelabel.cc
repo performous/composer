@@ -77,7 +77,7 @@ void NoteLabel::createPixmap(QSize size)
 
 	setPixmap(QPixmap::fromImage(image));
 
-	setStatusTip(QString("Lyric: ") + lyric());
+	setStatusTip(tr("Lyric: ") + lyric());
 	updateNote();
 }
 

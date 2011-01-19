@@ -16,7 +16,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch()
+	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
 {
 	// FIXME: Temporary hack to make testing quicker
 	analyzeMusic("music.ogg");
@@ -186,16 +186,30 @@ void NoteGraphWidget::updateNotes()
 	}
 }
 
+void NoteGraphWidget::updateMusicPos(qint64 time)
+{
+	int x = s2px(time / 1000.0) - m_seekHandle.width() / 2;
+	m_seekHandle.move(x, 0);
+}
+
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child) {
-		// Left click empty area = pan
-		if (event->button() == Qt::LeftButton)
+		SeekHandle *seekh = qobject_cast<SeekHandle*>(childAt(event->pos()));
+		if (!seekh) {
+			// Left click empty area = pan
+			if (event->button() == Qt::LeftButton)
+				m_panHotSpot = event->pos();
+			// Right click empty area = deselect
+			if (event->button() == Qt::RightButton)
+				selectNote(NULL);
+		} else {
+			// Seeking
+			m_seeking = true;
 			m_panHotSpot = event->pos();
-		// Right click empty area = deselect
-		if (event->button() == Qt::RightButton)
-			selectNote(NULL);
+			setCursor(QCursor(Qt::SizeHorCursor));
+		}
 		return;
 	}
 	if (child->isHidden()) return;
@@ -263,6 +277,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 	}
 	m_actionHappened = false;
 	m_panHotSpot = QPoint();
+	m_seeking = false;
 	setCursor(QCursor());
 	updateNotes();
 }
@@ -302,8 +317,15 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
+	// Seeking
+	if (m_seeking) {
+		QPoint diff = event->pos() - m_panHotSpot;
+		std::cout << diff.x() << " " << event->pos().x() << " " << m_panHotSpot.x() << std::endl;
+		m_seekHandle.move(m_panHotSpot.x() + diff.x(), 0);
+		emit seek(1000 * px2s(m_seekHandle.x()));
+	}
 	// Pan
-	if (!m_panHotSpot.isNull()) {
+	else if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
 		QScrollArea *scrollArea = NULL;
 		if (parentWidget())
@@ -421,6 +443,38 @@ int NoteGraphWidget::s2px(double sec) const { return m_pitch->time2px(sec); }
 double NoteGraphWidget::px2s(int px) const { return m_pitch->px2time(px); }
 int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note); }
 int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px); }
+
+
+
+SeekHandle::SeekHandle(QWidget *parent)
+	: QLabel(parent)
+{
+	// FIXME: height from notegraph
+	QImage image(8, 768, QImage::Format_ARGB32_Premultiplied);
+	image.fill(qRgba(0, 0, 0, 0));
+	QLinearGradient gradient(0, 0, image.width()-1, 0);
+	gradient.setColorAt(0.0, QColor(255,255,0,50));
+	gradient.setColorAt(0.5, QColor(255,255,0,200));
+	gradient.setColorAt(1.0, QColor(255,255,0,50));
+
+	QPainter painter;
+	painter.begin(&image);
+	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setBrush(gradient);
+	painter.drawRect(QRect(0, 0, image.width(), image.height()));
+
+	setPixmap(QPixmap::fromImage(image));
+
+	setStatusTip(tr("Seek by dragging"));
+}
+
+void SeekHandle::mouseMoveEvent(QMouseEvent *event)
+{
+	setCursor(QCursor(Qt::SizeHorCursor));
+	event->ignore();
+}
+
+
 
 void FloatingGap::addNote(NoteLabel* n)
 {

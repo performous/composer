@@ -10,6 +10,16 @@
 class NoteLabel;
 typedef QList<NoteLabel*> NoteLabels;
 
+
+class SeekHandle: public QLabel
+{
+	Q_OBJECT
+public:
+	SeekHandle(QWidget *parent = 0);
+	void mouseMoveEvent(QMouseEvent *event);
+};
+
+
 class NoteGraphWidget: public QLabel
 {
 	Q_OBJECT
@@ -23,8 +33,9 @@ public:
 	void setLyrics(const VocalTrack &track);
 	void analyzeMusic(QString filepath);
 	void updateNotes();
+	void updateMusicPos(qint64 time);
 
-	void selectNote(NoteLabel* note);
+	void selectNote(NoteLabel *note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
 
 	int getNoteLabelId(NoteLabel* note) const;
@@ -41,12 +52,13 @@ public:
 signals:
 	void updateNoteInfo(NoteLabel*);
 	void operationDone(const Operation&);
+	void seek(qint64 time);
 
 protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void wheelEvent(QWheelEvent *event);
-	void mouseDoubleClickEvent(QMouseEvent * event);
+	void mouseDoubleClickEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent * event);
 	void keyPressEvent(QKeyEvent *event);
 
@@ -57,9 +69,11 @@ private:
 	QPoint m_panHotSpot;
 	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
+	bool m_seeking;
 	bool m_actionHappened;
 	NoteLabels m_notes;
 	QScopedPointer<PitchVis> m_pitch;
+	SeekHandle m_seekHandle;
 };
 
 
