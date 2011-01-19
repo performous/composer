@@ -344,12 +344,18 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Up: // Move note up
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_pitch->note2px(m_pitch->px2note(m_selectedNote->y()) + 1));
+			Operation op("MOVE");
+			op << getNoteLabelId(m_selectedNote);
+			op << m_selectedNote->x() << n2px(px2n(m_selectedNote->y()) + 1);
+			doOperation(op);
 		}
 		break;
 	case Qt::Key_Down: // Move note down
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_pitch->note2px(m_pitch->px2note(m_selectedNote->y()) - 1));
+			Operation op("MOVE");
+			op << getNoteLabelId(m_selectedNote);
+			op << m_selectedNote->x() << n2px(px2n(m_selectedNote->y()) - 1);
+			doOperation(op);
 		}
 		break;
 	case Qt::Key_Delete: // Delete selected note
@@ -407,8 +413,10 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 		}
 		updateNotes();
 	}
-	if (!(flags & Operation::NO_EMIT))
+	if (!(flags & Operation::NO_EMIT)) {
 		emit operationDone(op);
+		emit updateNoteInfo(m_selectedNote);
+	}
 }
 
 
