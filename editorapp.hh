@@ -34,6 +34,9 @@ public slots:
 
 	// Automatic slots
 
+	void on_cmdPlay_toggled(bool checked);
+	void on_cmdStop_clicked();
+
 	// File menu
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();

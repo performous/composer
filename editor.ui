@@ -76,9 +76,6 @@
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget">
-          <property name="currentIndex">
-           <number>1</number>
-          </property>
           <widget class="QWidget" name="tabNote">
            <attribute name="title">
             <string>&amp;Note properties</string>
@@ -313,6 +310,36 @@
               </property>
               <property name="text">
                <string>Load music...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabTools">
+           <attribute name="title">
+            <string>&amp;Tools</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="cmdPlay">
+              <property name="toolTip">
+               <string>Start playing the music file.</string>
+              </property>
+              <property name="text">
+               <string>Play</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="cmdStop">
+              <property name="toolTip">
+               <string>Stop the music.</string>
+              </property>
+              <property name="text">
+               <string>Stop</string>
               </property>
              </widget>
             </item>

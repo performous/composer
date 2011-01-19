@@ -357,9 +357,6 @@ void EditorApp::on_actionMusicFile_triggered()
 		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
 		// Metadata is updated when it becomes available (signal)
 		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
-		// FIXME: Temporary test
-		audioOutput->setVolume(50);
-		player->play();
 		// Fire up analyzer
 		noteGraph->analyzeMusic(fileName);
 	}
@@ -463,6 +460,25 @@ void EditorApp::audioTick(qint64 time)
 	if (noteGraph) noteGraph->updateMusicPos(time);
 }
 
+void EditorApp::on_cmdPlay_toggled(bool checked)
+{
+	if (player) {
+		if (checked) {
+			player->play();
+			ui.cmdPlay->setText(tr("Playing..."));
+		} else {
+			player->pause();
+			ui.cmdPlay->setText(tr("Play"));
+		}
+	}
+}
+
+void EditorApp::on_cmdStop_clicked()
+{
+	if (player) player->stop();
+	if (noteGraph) noteGraph->updateMusicPos(0);
+	ui.cmdPlay->setChecked(false);
+}
 
 void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }
