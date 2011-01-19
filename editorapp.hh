@@ -1,14 +1,15 @@
 #pragma once
 
-#include <QtMultimediaKit/QMediaPlayer>
-#include <QMessageBox>
 #include "ui_editor.h"
 #include "operation.hh"
 #include "song.hh"
 
 class NoteLabel;
 class NoteGraphWidget;
-class QMediaPlayer;
+namespace Phonon {
+	class MediaObject;
+	class AudioOutput;
+}
 
 class EditorApp: public QMainWindow
 {
@@ -29,6 +30,7 @@ public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
 	void metaDataChanged();
+	void audioTick(qint64 time);
 
 	// Automatic slots
 
@@ -65,11 +67,12 @@ public slots:
 
 private:
 	Ui::EditorApp ui;
-	NoteGraphWidget* noteGraph;
+	NoteGraphWidget *noteGraph;
 	OperationStack opStack;
 	OperationStack redoStack;
 	QScopedPointer<Song> song;
-	QScopedPointer<QMediaPlayer> player;
+	Phonon::MediaObject *player;
+	Phonon::AudioOutput *audioOutput;
 	QString projectFileName;
 	bool hasUnsavedChanges;
 };

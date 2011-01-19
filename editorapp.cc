@@ -1,4 +1,6 @@
 #include <QtGui>
+#include <phonon/MediaObject>
+#include <phonon/AudioOutput>
 #include <iostream>
 #include "editorapp.hh"
 #include "notelabel.hh"
@@ -41,8 +43,6 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	updateNoteInfo(NULL);
 
 	song.reset(new Song);
-	player.reset(new QMediaPlayer);
-	connect(player.data(), SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 
 	// Some icons to menus to make them prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
@@ -60,6 +60,15 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 
 	hasUnsavedChanges = false;
 	updateMenuStates();
+
+	// Audio stuff
+	player = new Phonon::MediaObject(this);
+	audioOutput = new Phonon::AudioOutput(this);
+	player->setTickInterval(500);
+	Phonon::createPath(player, audioOutput);
+	// Audio signals
+	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
+	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -344,14 +353,9 @@ void EditorApp::on_actionMusicFile_triggered()
 		ui.valMusicFile->setText(fileName);
 		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
 		// Metadata is updated when it becomes available (signal)
-		QBuffer stream;
-		stream.open(QBuffer::ReadWrite);
-		player->setMedia(QUrl::fromLocalFile(fileName), &stream);
-		std::cout << stream.size() << std::endl;
-		char lol;
-		stream.getChar(&lol);
+		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
 		// FIXME: Temporary test
-		player->setVolume(50);
+		audioOutput->setVolume(50);
 		player->play();
 		// TODO: Extract the raw data and fire up an analyzer
 	}
@@ -437,18 +441,25 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 
 void EditorApp::metaDataChanged()
 {
-	if (!player.isNull()) {
-		if (player->metaData(QtMultimediaKit::Title).isValid())
-			song->title = player->metaData(QtMultimediaKit::Title).toString().toStdString();
-		if (player->metaData(QtMultimediaKit::AlbumArtist).isValid())
-			song->artist = player->metaData(QtMultimediaKit::AlbumArtist).toString().toStdString();
-		if (player->metaData(QtMultimediaKit::Genre).isValid())
-			song->genre = player->metaData(QtMultimediaKit::Genre).toString().toStdString();
-		if (player->metaData(QtMultimediaKit::Year).isValid())
-			song->year = player->metaData(QtMultimediaKit::Year).toString().toStdString();
+	if (player) {
+		if (!player->metaData(Phonon::TitleMetaData).isEmpty())
+			song->title = player->metaData(Phonon::TitleMetaData).join(", ").toStdString();
+		if (!player->metaData(Phonon::ArtistMetaData).isEmpty())
+			song->artist = player->metaData(Phonon::ArtistMetaData).join(", ").toStdString();
+		if (!player->metaData(Phonon::GenreMetaData).isEmpty())
+			song->genre = player->metaData(Phonon::GenreMetaData).join(", ").toStdString();
+		if (!player->metaData("DATE").isEmpty())
+			song->year = player->metaData("DATE").join(", ").toStdString();
 		updateSongMeta(true);
 	}
 }
+
+void EditorApp::audioTick(qint64 time)
+{
+	// TODO: Update a cursor in NoteGraphWidget
+	// (the cursor needs to be first implemented)
+}
+
 
 void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }
