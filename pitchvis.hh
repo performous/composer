@@ -37,9 +37,9 @@ class PitchVis: public QWidget {
 	MusicalScale scale;
 public:
 	const std::size_t height;
-	Pixel& operator()(std::size_t x, std::size_t y) { return img[x * height + y]; }
+	Pixel& pixel(std::size_t x, std::size_t y) { return img[x * height + y]; }
 	std::size_t width() const { return img.size() / height; }
-	PitchVis(std::string const& filename);
+	PitchVis(std::string const& filename, QWidget *parent = NULL);
 	unsigned freq2px(double freq) const;
 	unsigned note2px(double note) const;
 	double px2note(unsigned px) const;

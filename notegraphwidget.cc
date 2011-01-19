@@ -16,27 +16,11 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_pitch("music.ogg"), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened()
+	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch()
 {
-	unsigned width = m_pitch.width(), height = m_pitch.height;
-	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
-	progress.setWindowModality(Qt::WindowModal);
+	// FIXME: Temporary hack to make testing quicker
+	analyzeMusic("music.ogg");
 
-	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
-	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-	for (unsigned x = 0; x < width; ++x) {
-		progress.setValue(x);
-		if (progress.wasCanceled()) break;
-
-		for (unsigned y = 0; y < height; ++y) {
-			rgba[y * width + x] = m_pitch(x, y).rgba();
-		}
-	}
-	setPixmap(QPixmap::fromImage(image));
-	progress.setValue(width);
-
-	// FIXME: Width should come from song length * pixPerSec
-	setFixedSize(std::max(width, (unsigned)1024), h());
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 
@@ -58,7 +42,7 @@ void NoteGraphWidget::selectNote(NoteLabel* note)
 	emit updateNoteInfo(m_selectedNote);
 }
 
-void NoteGraphWidget::clear()
+void NoteGraphWidget::clearNotes()
 {
 	selectNote(NULL);
 	// Clear NoteLabels
@@ -74,13 +58,13 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 
-	clear();
+	clearNotes();
 	bool first = true;
 	while (!ts.atEnd()) {
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch.note2px(24)), QSize(), !first));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch->note2px(24)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 			first = false;
 		}
@@ -91,7 +75,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 
 void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
-	clear();
+	clearNotes();
 
 	setFixedSize(s2px(track.endTime), h());
 
@@ -123,6 +107,29 @@ void NoteGraphWidget::finalizeNewLyrics()
 	}
 	// Calculate floating note positions
 	updateNotes();
+}
+
+void NoteGraphWidget::analyzeMusic(QString filepath)
+{
+	m_pitch.reset(new PitchVis(filepath.toStdString(), this));
+	unsigned width = m_pitch->width(), height = m_pitch->height;
+	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
+	progress.setWindowModality(Qt::WindowModal);
+
+	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+	for (unsigned x = 0; x < width; ++x) {
+		progress.setValue(x);
+		if (progress.wasCanceled()) break;
+
+		for (unsigned y = 0; y < height; ++y) {
+			rgba[y * width + x] = m_pitch->pixel(x, y).rgba();
+		}
+	}
+	setPixmap(QPixmap::fromImage(image));
+	progress.setValue(width);
+
+	setFixedSize(width, height);
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
@@ -337,12 +344,12 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Up: // Move note up
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_pitch.note2px(m_pitch.px2note(m_selectedNote->y()) + 1));
+			m_selectedNote->move(m_selectedNote->x(), m_pitch->note2px(m_pitch->px2note(m_selectedNote->y()) + 1));
 		}
 		break;
 	case Qt::Key_Down: // Move note down
 		if (m_selectedNote) {
-			m_selectedNote->move(m_selectedNote->x(), m_pitch.note2px(m_pitch.px2note(m_selectedNote->y()) - 1));
+			m_selectedNote->move(m_selectedNote->x(), m_pitch->note2px(m_pitch->px2note(m_selectedNote->y()) - 1));
 		}
 		break;
 	case Qt::Key_Delete: // Delete selected note
@@ -405,10 +412,10 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 }
 
 
-int NoteGraphWidget::s2px(double sec) const { return m_pitch.time2px(sec); }
-double NoteGraphWidget::px2s(int px) const { return m_pitch.px2time(px); }
-int NoteGraphWidget::n2px(int note) const { return m_pitch.note2px(note); }
-int NoteGraphWidget::px2n(int px) const { return m_pitch.px2note(px); }
+int NoteGraphWidget::s2px(double sec) const { return m_pitch->time2px(sec); }
+double NoteGraphWidget::px2s(int px) const { return m_pitch->px2time(px); }
+int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note); }
+int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px); }
 
 void FloatingGap::addNote(NoteLabel* n)
 {

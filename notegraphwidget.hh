@@ -5,6 +5,7 @@
 #include "operation.hh"
 #include <QLabel>
 #include <QList>
+#include <QScopedPointer>
 
 class NoteLabel;
 typedef QList<NoteLabel*> NoteLabels;
@@ -17,9 +18,10 @@ public:
 
 	NoteGraphWidget(QWidget *parent = 0);
 
-	void clear();
+	void clearNotes();
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
+	void analyzeMusic(QString filepath);
 	void updateNotes();
 
 	void selectNote(NoteLabel* note);
@@ -33,7 +35,7 @@ public:
 	double px2s(int px) const;
 	int n2px(int note) const;
 	int px2n(int px) const;
-	int h() const { return m_pitch.height; }
+	int h() const { return m_pitch->height; }
 
 
 signals:
@@ -57,7 +59,7 @@ private:
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	bool m_actionHappened;
 	NoteLabels m_notes;
-	PitchVis m_pitch;
+	QScopedPointer<PitchVis> m_pitch;
 };
 
 

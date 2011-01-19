@@ -21,7 +21,7 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 	if (!f) throw std::runtime_error("Error reading " + filename);
 }
 
-PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
+PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent), step(512), height(768) {
 #if 0 // Change this to 1 to use old raw loading
 	std::vector<float> data;
 	try { readVec("music.raw", data); } catch(std::exception& e) { std::cerr << e.what() << std::endl; return; }
@@ -66,12 +66,12 @@ PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
 			float value = 0.003 * (level2dB(peaks[i].level) + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(0.0f, 0.0f, value);
-			(*this)(x, y) += p;
+			pixel(x, y) += p;
 			p.r *= 0.5;
 			p.g *= 0.5;
 			p.b *= 0.5;
-			(*this)(x, y + 1) += p;
-			(*this)(x, y - 1) += p;
+			pixel(x, y + 1) += p;
+			pixel(x, y - 1) += p;
 		}
 		Analyzer::Tones tones = analyzer.getTones();
 		unsigned int i = 0;
@@ -82,7 +82,7 @@ PitchVis::PitchVis(std::string const& filename): step(512), height(768) {
 			float value = 0.003 * (level2dB(it->levelSlow) + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(0.0f, value, 0.0f);
-			for (int j = int(y) - 2; j <= int(y) + 2; ++j) (*this)(x, j) += p;
+			for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
 		}
 	}
 	progress.setValue(width);

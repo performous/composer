@@ -82,7 +82,7 @@ void EditorApp::operationDone(const Operation &op)
 
 void EditorApp::doOpStack()
 {
-	noteGraph->clear();
+	noteGraph->clearNotes();
 	// Re-apply all operations in the stack
 	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
 	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
@@ -143,7 +143,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 void EditorApp::on_actionNew_triggered()
 {
 	if (promptSaving()) {
-		noteGraph->clear();
+		noteGraph->clearNotes();
 		projectFileName = "";
 	}
 	updateMenuStates();
@@ -357,7 +357,8 @@ void EditorApp::on_actionMusicFile_triggered()
 		// FIXME: Temporary test
 		audioOutput->setVolume(50);
 		player->play();
-		// TODO: Extract the raw data and fire up an analyzer
+		// Fire up analyzer
+		noteGraph->analyzeMusic(fileName);
 	}
 }
 
