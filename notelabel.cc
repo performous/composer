@@ -40,20 +40,21 @@ void NoteLabel::createPixmap(QSize size)
 	image.fill(qRgba(0, 0, 0, 0));
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
-	gradient.setColorAt(0.0, Qt::white);
-	float ff = m_floating ? 1.0f : 0.5f;
+	float ff = m_floating ? 1.0f : 0.6f;
+	int alpha = m_floating ? 160 : ( m_selected ? 80 : 220 );
+	gradient.setColorAt(0.0, m_floating ? QColor(255, 255, 255, alpha) : QColor(50, 50, 50, alpha));
 	if (m_note.type == Note::NORMAL) {
-		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff));
-		gradient.setColorAt(0.8, QColor(100 * ff, 100 * ff, 255 * ff));
-		gradient.setColorAt(1.0, QColor(100 * ff, 100 * ff, 200 * ff));
+		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff, alpha));
+		gradient.setColorAt(0.8, QColor(100 * ff, 100 * ff, 255 * ff, alpha));
+		gradient.setColorAt(1.0, QColor(100 * ff, 100 * ff, 200 * ff, alpha));
 	} else if (m_note.type == Note::GOLDEN) {
-		gradient.setColorAt(0.2, QColor(255 * ff, 255 * ff, 100 * ff));
-		gradient.setColorAt(0.8, QColor(255 * ff, 255 * ff, 100 * ff));
-		gradient.setColorAt(1.0, QColor(160 * ff, 160 * ff, 100 * ff));
+		gradient.setColorAt(0.2, QColor(255 * ff, 255 * ff, 100 * ff, alpha));
+		gradient.setColorAt(0.8, QColor(255 * ff, 255 * ff, 100 * ff, alpha));
+		gradient.setColorAt(1.0, QColor(160 * ff, 160 * ff, 100 * ff, alpha));
 	} else if (m_note.type == Note::FREESTYLE) {
-		gradient.setColorAt(0.2, QColor(100 * ff, 180 * ff, 100 * ff));
-		gradient.setColorAt(0.8, QColor(100 * ff, 180 * ff, 100 * ff));
-		gradient.setColorAt(1.0, QColor(100 * ff, 120 * ff, 100 * ff));
+		gradient.setColorAt(0.2, QColor(100 * ff, 180 * ff, 100 * ff, alpha));
+		gradient.setColorAt(0.8, QColor(100 * ff, 180 * ff, 100 * ff, alpha));
+		gradient.setColorAt(1.0, QColor(100 * ff, 120 * ff, 100 * ff, alpha));
 	}
 
 	QPainter painter;
