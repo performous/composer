@@ -13,18 +13,18 @@ static inline double dB2level(double db) { return std::pow(10.0, db / 20.0); }
 /// A tone is a collection of a base frequency (freq) and all its harmonics
 struct Tone {
 	static const std::size_t MAXHARM = 16; ///< The maximum number of harmonics tracked
-	static const std::size_t MINAGE = 2; ///< The minimum age required for a tone to be output
 	double freq; ///< Frequency (Hz)
-	double freqSlow; ///< Stable frequency
 	double level; ///< Level (linear)
-	double levelSlow; ///< Stable level, useful for graphics rendering
 	double harmonics[MAXHARM]; ///< Harmonics' levels
-	std::size_t age; ///< How many times the tone has been detected in row
 	Tone(); 
-	void print() const; ///< Prints Tone to std::cout
 	bool operator==(double f) const; ///< Compare for rough frequency match
-	/// Less-than compare by levels (instead of frequencies like operator< does)
-	static bool levelCompare(Tone const& l, Tone const& r) { return l.levelSlow < r.levelSlow; }
+	// Linked list of a contin
+};
+
+struct Moment {
+	typedef std::list<Tone> Tones;
+	Tones tones;
+	double time;
 };
 
 /// A peak contains information about a single frequency
@@ -52,6 +52,7 @@ public:
 	typedef std::vector<std::complex<float> > Fourier;  ///< FFT vector (the first level of detection)
 	typedef std::vector<Peak> Peaks;  ///< Peaks (the second level of detection)
 	typedef std::list<Tone> Tones; ///< Tones (the final level of detection)
+	typedef std::list<Moment> Moments; ///< Time-serie history of time and tones
 	/// constructor
 	Analyzer(double rate, std::string id);
 	/** Add input data to buffer. This is thread-safe (against other functions). **/
@@ -82,7 +83,7 @@ public:
 	/** Get the peak level in dB (negative value, 0.0 means clipping, sometimes clipping may occur at lower levels too). **/
 	double getLevel() const { return 10.0 * log10(m_level); }
 	/** Get a list of all tones detected. **/
-	Tones const& getTones() const { return m_tones; }
+	Tones const& getTones() const;
 	/** Find a tone within the singing range; prefers strong tones around 200-400 Hz. **/
 	Tone const* findTone(double minfreq = 70.0, double maxfreq = 700.0) const;
 	std::string const& getId() const { return m_id; }
@@ -97,10 +98,10 @@ private:
 	std::vector<float> m_fftLastPhase;
 	double m_level;
 	Peaks m_peaks;
-	Tones m_tones;
+	Moments m_moments;
 	mutable double m_oldfreq;
 	bool calcFFT();
 	void calcTones();
-	void mergeWithOld(Tones& tones) const;
+	void mergeWithSeries(Tones const& tones);
 };
 
