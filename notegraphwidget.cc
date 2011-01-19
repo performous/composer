@@ -252,19 +252,11 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 			m_selectedNote->move(m_selectedNote->pos().x(), n2px(px2n(m_selectedNote->pos().y())));
 			if (m_actionHappened) {
 				// Operation for undo stack & saving
-				int notelabelid = getNoteLabelId(m_selectedNote);
 				Operation op("SETGEOM");
-				op << notelabelid
+				op <<  getNoteLabelId(m_selectedNote)
 					<< m_selectedNote->x() << m_selectedNote->y()
 					<< m_selectedNote->width() << m_selectedNote->height();
 				doOperation(op, Operation::NO_EXEC);
-				// See if it needs to be unfloated
-				if (m_selectedNote->isFloating()) {
-					Operation fop("FLOATING"); fop << notelabelid << false;
-					Operation combiner("COMBINER"); combiner << 2;
-					doOperation(fop);
-					doOperation(combiner);
-				}
 			}
 		}
 		m_selectedAction = NONE;
@@ -301,7 +293,14 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	m_actionHappened = true; // We have movement, so resize/move can be accepted
+	if (!m_actionHappened) {
+		m_actionHappened = true; // We have movement, so resize/move can be accepted
+		// See if the note needs to be unfloated
+		if (m_selectedAction != NONE && m_selectedNote && m_selectedNote->isFloating()) {
+			Operation op("FLOATING"); op << getNoteLabelId(m_selectedNote) << false;
+			doOperation(op);
+		}
+	}
 
 	// Pan
 	if (!m_panHotSpot.isNull()) {
