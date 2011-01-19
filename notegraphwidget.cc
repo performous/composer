@@ -79,14 +79,12 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 
 	setFixedSize(s2px(track.endTime), h());
 
-	bool first = true;
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
 			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
-				QSize(s2px(it->length()), 0), !first));
+				QSize(s2px(it->length()), 0), false));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
-			first = false;
 		}
 	}
 
