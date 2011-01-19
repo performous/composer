@@ -29,6 +29,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	// Custom signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	// Duplicate/reused signals/slots
+	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 
 	// We must set the initial lyrics here, because constructor doesn't have
 	// signals yet ready, which leads to empty undo stack

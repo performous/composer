@@ -77,7 +77,7 @@
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabNote">
            <attribute name="title">
@@ -305,6 +305,16 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="2" column="3">
+             <widget class="QPushButton" name="cmdMusicFile">
+              <property name="toolTip">
+               <string>Change music file...</string>
+              </property>
+              <property name="text">
+               <string>Load music...</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
