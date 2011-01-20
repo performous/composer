@@ -12,7 +12,7 @@ static const std::size_t FFT_STEP = 512;  // Step size in samples, should be <= 
 static const double FFT_MINFREQ = 45.0;
 static const double FFT_MAXFREQ = 3000.0;
 
-Tone::Tone(): freq(), level() {
+Tone::Tone(): freq(), level(), prev(), next() {
 	for (std::size_t i = 0; i < MAXHARM; ++i) harmonics[i] = 0.0;
 }
 
@@ -168,28 +168,21 @@ void Analyzer::calcTones() {
 }
 
 void Analyzer::temporalMerge(Tones& tones) {
-	/*Tones::iterator oldit;
-	for (Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
-		if () oldit = std::find(
-	}
-	// Iterate over old tones
-	for (ToneSeries::reverse_iterator oldit = m_toneSeries.rbegin(); oldit != m_toneSeries.rend(); ++oldit) {
-		if (
-		// Try to find a matching new tone
-		while (it != tones.end() && *it < *oldit) ++it;
-		// If match found
-		if (it != tones.end() && *it == *oldit) {
-			// Merge the old tone into the new tone
-			it->age = oldit->age + 1;
-			it->levelSlow = 0.5 * oldit->levelSlow + 0.5 * it->level;
-			it->freqSlow = 0.5 * oldit->freqSlow + 0.5 * it->freq;
-		} else if (oldit->levelSlow > 1e-8) {
-			// Insert a decayed version of the old tone into new tones
-			Tone& t = *tones.insert(it, *oldit);
-			t.level = 0.0;
-			t.levelSlow *= 0.01;
+	if (!m_moments.empty()) {
+		Tones& old = m_moments.back().m_tones;
+		Tones::iterator it = tones.begin();
+		// Iterate over old tones
+		for (Tones::iterator oldit = old.begin(); oldit != old.end(); ++oldit) {
+			// Try to find a matching new tone
+			while (it != tones.end() && *it < *oldit) ++it;
+			// If match found
+			if (it != tones.end() && *it == *oldit) {
+				// Link together the old and the new tones
+				oldit->next = &*it;
+				it->prev = &*oldit;
+			}
 		}
-	}*/
+	}
 	m_moments.push_back(Moment(0.0, tones));
 }
 

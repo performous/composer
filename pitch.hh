@@ -18,7 +18,9 @@ struct Tone {
 	double harmonics[MAXHARM]; ///< Harmonics' levels
 	Tone(); 
 	bool operator==(double f) const; ///< Compare for rough frequency match
-	// Linked list of a contin
+	// Linked list of a continuous tone
+	Tone* prev;
+	Tone* next;
 };
 
 struct Moment {
