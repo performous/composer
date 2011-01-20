@@ -40,13 +40,16 @@ class PitchVis: public QWidget, public QThread {
 	QString fileName;
 	QImage image;
 	bool moreAvailable;
+	bool cancelled;
 	QMutex mutex;
 public:
 	const std::size_t height;
 
 	PitchVis(QString const& filename, QWidget *parent = NULL);
+	~PitchVis() { stop(); wait(); }
 
 	void run(); // Thread runs here
+	void stop() { cancelled = true; }
 
 	QImage getImage() { QMutexLocker locker(&mutex); moreAvailable = false; return image; }
 	bool newDataAvailable() const { return moreAvailable; }

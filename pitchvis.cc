@@ -51,6 +51,8 @@ void PitchVis::run()
 	}
 
 	for (unsigned x = 0; x < width; ++x) {
+		if (cancelled) return;
+
 		// Get decoded samples from ffmpeg
 		std::vector<float> data(step*2);
 		mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2);
@@ -60,6 +62,7 @@ void PitchVis::run()
 		da::step_iterator<float> endIt(&*data.end(), 2);
 
 		// Analyze
+		if (cancelled) return;
 		analyzer.input(beginIt, endIt);
 		analyzer.process();
 
@@ -93,6 +96,7 @@ void PitchVis::run()
 
 		// Draw
 		{
+			if (cancelled) return;
 			QMutexLocker locker(&mutex);
 			unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
 			for (unsigned y = 0; y < height; ++y) {
