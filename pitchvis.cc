@@ -23,7 +23,7 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 }
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QWidget(parent), QThread(), mutex(), step(512), height(768), fileName(filename), moreAvailable()
+	: QWidget(parent), QThread(), mutex(), step(512), height(768), fileName(filename), moreAvailable(), curX()
 {
 	start(); // Launch the thread
 }
@@ -52,6 +52,7 @@ void PitchVis::run()
 
 	for (unsigned x = 0; x < width; ++x) {
 		if (cancelled) return;
+		curX = x;
 
 		// Get decoded samples from ffmpeg
 		std::vector<float> data(step*2);

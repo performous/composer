@@ -62,6 +62,10 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
 	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 
+	statusbarProgress = new QProgressBar(NULL);
+	ui.statusbar->addPermanentWidget(statusbarProgress);
+	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
+
 	hasUnsavedChanges = false;
 	updateMenuStates();
 
@@ -143,6 +147,19 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNote->setText("-");
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
+	}
+}
+
+void EditorApp::analyzeProgress(int value, int maximum)
+{
+	if (statusbarProgress) {
+		if (value == maximum) {
+			statusbarProgress->hide();
+		} else {
+			statusbarProgress->setMaximum(maximum);
+			statusbarProgress->setValue(value);
+			statusbarProgress->show();
+		}
 	}
 }
 

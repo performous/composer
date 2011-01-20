@@ -5,6 +5,7 @@
 #include "operation.hh"
 #include "song.hh"
 
+class QProgressBar;
 class NoteLabel;
 class NoteGraphWidget;
 namespace Phonon {
@@ -30,6 +31,7 @@ private:
 public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
+	void analyzeProgress(int value, int maximum);
 	void metaDataChanged();
 	void audioTick(qint64 time);
 	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
@@ -78,6 +80,7 @@ private:
 	QScopedPointer<Song> song;
 	Phonon::MediaObject *player;
 	Phonon::AudioOutput *audioOutput;
+	QProgressBar *statusbarProgress;
 	QString projectFileName;
 	bool hasUnsavedChanges;
 };

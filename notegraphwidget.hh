@@ -55,6 +55,7 @@ public:
 
 signals:
 	void updateNoteInfo(NoteLabel*);
+	void analyzeProgress(int, int);
 	void operationDone(const Operation&);
 	void seek(qint64 time);
 
