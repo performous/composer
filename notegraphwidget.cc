@@ -110,24 +110,6 @@ void NoteGraphWidget::finalizeNewLyrics()
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath.toStdString(), this));
-	unsigned width = m_pitch->width(), height = m_pitch->height;
-	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
-	progress.setWindowModality(Qt::WindowModal);
-
-	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
-	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-	for (unsigned x = 0; x < width; ++x) {
-		progress.setValue(x);
-		if (progress.wasCanceled()) break;
-
-		for (unsigned y = 0; y < height; ++y) {
-			rgba[y * width + x] = m_pitch->pixel(x, y).rgba();
-		}
-	}
-	setPixmap(QPixmap::fromImage(image));
-	progress.setValue(width);
-
-	setFixedSize(width, height);
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
