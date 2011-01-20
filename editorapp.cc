@@ -512,6 +512,11 @@ void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstat
 	(void)oldstate;
 	if (newstate != Phonon::PlayingState) {
 		noteGraph->stopMusic();
+		if (newstate == Phonon::ErrorState) {
+			QString errst(tr("Error playing audio!"));
+			if (player) errst += " " + player->errorString();
+			QMessageBox::critical(this, tr("Playback error"), errst);
+		}
 	}
 }
 

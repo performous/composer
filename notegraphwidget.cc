@@ -115,7 +115,7 @@ void NoteGraphWidget::finalizeNewLyrics()
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath, this));
-	m_analyzeTimer = startTimer(1000);
+	m_analyzeTimer = startTimer(2000);
 }
 
 void NoteGraphWidget::timerEvent(QTimerEvent *event)
