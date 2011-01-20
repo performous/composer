@@ -118,7 +118,7 @@ void Analyzer::calcTones() {
 	// Strongest first
 	std::sort(combos.rbegin(), combos.rend());
 	// Keep only a reasonable amount of strongest frequencies.
-	if (combos.size() > 10) combos.resize(10);
+	//if (combos.size() > 10) combos.resize(10);
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
