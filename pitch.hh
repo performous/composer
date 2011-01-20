@@ -23,8 +23,9 @@ struct Tone {
 
 struct Moment {
 	typedef std::list<Tone> Tones;
-	Tones tones;
-	double time;
+	Tones m_tones;
+	double m_time;
+	Moment(double t, Tones& tones);
 };
 
 /// A peak contains information about a single frequency
@@ -83,9 +84,9 @@ public:
 	/** Get the peak level in dB (negative value, 0.0 means clipping, sometimes clipping may occur at lower levels too). **/
 	double getLevel() const { return 10.0 * log10(m_level); }
 	/** Get a list of all tones detected. **/
-	Tones const& getTones() const;
+	Tones const& getTones() const { return m_moments.back().m_tones; /* FIXME */ }
 	/** Find a tone within the singing range; prefers strong tones around 200-400 Hz. **/
-	Tone const* findTone(double minfreq = 70.0, double maxfreq = 700.0) const;
+	//Tone const* findTone(double minfreq = 70.0, double maxfreq = 700.0) const;
 	std::string const& getId() const { return m_id; }
 
 private:
@@ -102,6 +103,6 @@ private:
 	mutable double m_oldfreq;
 	bool calcFFT();
 	void calcTones();
-	void mergeWithSeries(Tones const& tones);
+	void temporalMerge(Tones& tones);
 };
 

@@ -2,8 +2,6 @@
 
 #include "libda/fft.hpp"
 #include <cmath>
-#include <iostream>
-#include <iomanip>
 #include <numeric>
 
 static const unsigned FFT_P = 11;  // FFT size setting, will use 2^FFT_P sample FFT
@@ -14,21 +12,8 @@ static const std::size_t FFT_STEP = 512;  // Step size in samples, should be <= 
 static const double FFT_MINFREQ = 45.0;
 static const double FFT_MAXFREQ = 3000.0;
 
-Tone::Tone():
-  freq(),
-  freqSlow(),
-  level(),
-  levelSlow(),
-  age()
-{
+Tone::Tone(): freq(), level() {
 	for (std::size_t i = 0; i < MAXHARM; ++i) harmonics[i] = 0.0;
-}
-
-void Tone::print() const {
-	if (age < Tone::MINAGE) return;
-	std::cout << std::fixed << std::setprecision(1) << freq << " Hz, age " << age << ", " << level2dB(level) << " dB:";
-	for (std::size_t i = 0; i < 8; ++i) std::cout << " " << harmonics[i];
-	std::cout << std::endl;
 }
 
 bool Tone::operator==(double f) const {
@@ -161,7 +146,7 @@ void Analyzer::calcTones() {
 				}
 				if (miss) ++misses;
 			}
-			t.freqSlow = t.freq /= t.level;  // Average instead of sum
+			t.freq /= t.level;  // Average instead of sum
 			if (score > bestScore) {
 				bestScore = score;
 				bestTone = t;
@@ -179,15 +164,17 @@ void Analyzer::calcTones() {
 			else ++it2;
 		}
 	}
-//	std::cerr << std::endl;
-	mergeWithOld(tones);
-	m_tones.swap(tones);
+	temporalMerge(tones);
 }
 
-void Analyzer::mergeWithOld(Tones& tones) const {
-	Tones::iterator it = tones.begin();
+void Analyzer::temporalMerge(Tones& tones) {
+	/*Tones::iterator oldit;
+	for (Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
+		if () oldit = std::find(
+	}
 	// Iterate over old tones
-	for (Tones::const_iterator oldit = m_tones.begin(); oldit != m_tones.end(); ++oldit) {
+	for (ToneSeries::reverse_iterator oldit = m_toneSeries.rbegin(); oldit != m_toneSeries.rend(); ++oldit) {
+		if (
 		// Try to find a matching new tone
 		while (it != tones.end() && *it < *oldit) ++it;
 		// If match found
@@ -202,7 +189,8 @@ void Analyzer::mergeWithOld(Tones& tones) const {
 			t.level = 0.0;
 			t.levelSlow *= 0.01;
 		}
-	}
+	}*/
+	m_moments.push_back(Moment(0.0, tones));
 }
 
 void Analyzer::process() {
@@ -210,7 +198,7 @@ void Analyzer::process() {
 	while (calcFFT()) calcTones();
 }
 
-Tone const* Analyzer::findTone(double minfreq, double maxfreq) const {
+/*Tone const* Analyzer::findTone(double minfreq, double maxfreq) const {
 	Tone const* best = NULL;
 	double bestscore = -getInf();
 	for (Tones::const_iterator it = m_tones.begin(); it != m_tones.end(); ++it) {
@@ -226,5 +214,9 @@ Tone const* Analyzer::findTone(double minfreq, double maxfreq) const {
 	}
 	m_oldfreq = (best ? best->freq : 0.0);
 	return best;
+}*/
+
+Moment::Moment(double t, Tones& tones): m_time(t) {
+	m_tones.swap(tones);
 }
 
