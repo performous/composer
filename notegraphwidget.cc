@@ -109,7 +109,15 @@ void NoteGraphWidget::finalizeNewLyrics()
 
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
-	m_pitch.reset(new PitchVis(filepath.toStdString(), this));
+	m_pitch.reset(new PitchVis(filepath, this));
+	m_analyzeTimer = startTimer(2000);
+}
+
+void NoteGraphWidget::timerEvent(QTimerEvent *event)
+{
+	if (!m_pitch.isNull() && m_pitch->newDataAvailable()) {
+		setPixmap(QPixmap::fromImage(m_pitch->getImage()));
+	}
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const

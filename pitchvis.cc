@@ -22,26 +22,35 @@ template <typename T> void readVec(std::string const& filename, std::vector<T>& 
 	if (!f) throw std::runtime_error("Error reading " + filename);
 }
 
-PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent), step(512), height(768) {
-	QProgressDialog progress(tr("Initializing audio decoding..."), tr("&Abort"), 0, 1, this);
-	progress.setWindowModality(Qt::WindowModal);
-	progress.setValue(0);
+PitchVis::PitchVis(QString const& filename, QWidget *parent)
+	: QWidget(parent), QThread(), mutex(), step(512), height(768), fileName(filename), moreAvailable()
+{
+	start(); // Launch the thread
+}
 
+void PitchVis::run()
+{
 	// Initialize FFmpeg decoding
-	FFmpeg mpeg(false, true, filename, 44100);
+	FFmpeg mpeg(false, true, fileName.toStdString(), 44100);
 	while(std::isnan(mpeg.duration())); // Wait for ffmpeg to be ready
-	usleep(1000000); // Wait some more
+	msleep(1000); // Wait some more
 
 	unsigned width = mpeg.duration() * 44100 / step;
 	img.resize(width * height);
 	Analyzer analyzer(44100, "");
 
-	progress.setMaximum(width);
-	progress.setLabelText(tr("Analyzing pitch data..."));
-	for (unsigned x = 0; x < width; ++x) {
-		progress.setValue(x);
-		if (progress.wasCanceled()) break;
+	QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
+	if (ngw) {
+		ngw->setFixedSize(width, height);
+	} else return;
 
+	// Create image
+	{
+		QMutexLocker locker(&mutex);
+		image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
+	}
+
+	for (unsigned x = 0; x < width; ++x) {
 		// Get decoded samples from ffmpeg
 		std::vector<float> data(step*2);
 		mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2);
@@ -53,6 +62,8 @@ PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent
 		// Analyze
 		analyzer.input(beginIt, endIt);
 		analyzer.process();
+
+		// Peaks
 		Analyzer::Peaks peaks = analyzer.getPeaks();
 		for (unsigned i = 0; i < peaks.size(); ++i) {
 			unsigned y = freq2px(peaks[i].freq);
@@ -67,6 +78,8 @@ PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent
 			pixel(x, y + 1) += p;
 			pixel(x, y - 1) += p;
 		}
+
+		// Tones
 		Analyzer::Tones tones = analyzer.getTones();
 		unsigned int i = 0;
 		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
@@ -78,31 +91,17 @@ PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent
 			Pixel p(0.0f, value, 0.0f);
 			for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
 		}
-	}
-	progress.setValue(width);
 
-	QProgressDialog progress2(tr("Rendering pitch data..."), tr("&Abort"), 0, 1, this);
-	progress2.setWindowModality(Qt::WindowModal);
-
-	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
-	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-	for (unsigned x = 0; x < width; ++x) {
-		progress2.setValue(x);
-		if (progress2.wasCanceled()) break;
-
-		for (unsigned y = 0; y < height; ++y) {
-			rgba[y * width + x] = pixel(x, y).rgba();
+		// Draw
+		{
+			QMutexLocker locker(&mutex);
+			unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+			for (unsigned y = 0; y < height; ++y) {
+				rgba[y * width + x] = pixel(x, y).rgba();
+			}
+			moreAvailable = true;
 		}
 	}
-
-	progress2.setLabelText(tr("Applying image..."));
-	QLabel *ngw = qobject_cast<QLabel*>(parent);
-	if (ngw) {
-		ngw->setPixmap(QPixmap::fromImage(image));
-		ngw->setFixedSize(width, height);
-	}
-
-	progress2.setValue(width);
 }
 
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }

@@ -65,6 +65,7 @@ protected:
 	void mouseDoubleClickEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent * event);
 	void keyPressEvent(QKeyEvent *event);
+	void timerEvent(QTimerEvent *event);
 
 private:
 	void finalizeNewLyrics();
@@ -78,6 +79,7 @@ private:
 	NoteLabels m_notes;
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
+	int m_analyzeTimer;
 };
 
 

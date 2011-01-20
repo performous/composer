@@ -3,6 +3,8 @@
 #include "notes.hh"
 #include "util.hh"
 #include <QWidget>
+#include <QThread>
+#include <QMutex>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -31,15 +33,27 @@ struct Pixel {
 	}
 };
 
-class PitchVis: public QWidget {
+class PitchVis: public QWidget, public QThread {
 	unsigned step;
 	std::vector<Pixel> img;
 	MusicalScale scale;
+	QString fileName;
+	QImage image;
+	bool moreAvailable;
+	QMutex mutex;
 public:
 	const std::size_t height;
+
+	PitchVis(QString const& filename, QWidget *parent = NULL);
+
+	void run(); // Thread runs here
+
+	QImage getImage() { QMutexLocker locker(&mutex); moreAvailable = false; return image; }
+	bool newDataAvailable() const { return moreAvailable; }
+
 	Pixel& pixel(std::size_t x, std::size_t y) { return img[x * height + y]; }
 	std::size_t width() const { return img.size() / height; }
-	PitchVis(std::string const& filename, QWidget *parent = NULL);
+
 	unsigned freq2px(double freq) const;
 	unsigned note2px(double note) const;
 	double px2note(unsigned px) const;
