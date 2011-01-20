@@ -84,7 +84,7 @@ public:
 	/** Get the peak level in dB (negative value, 0.0 means clipping, sometimes clipping may occur at lower levels too). **/
 	double getLevel() const { return 10.0 * log10(m_level); }
 	/** Get a list of all tones detected. **/
-	Tones const& getTones() const { return m_moments.back().m_tones; /* FIXME */ }
+	Tones getTones() const { return m_moments.empty() ? Tones() : m_moments.back().m_tones; /* FIXME */ }
 	/** Find a tone within the singing range; prefers strong tones around 200-400 Hz. **/
 	//Tone const* findTone(double minfreq = 70.0, double maxfreq = 700.0) const;
 	std::string const& getId() const { return m_id; }
