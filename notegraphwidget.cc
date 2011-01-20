@@ -120,8 +120,14 @@ void NoteGraphWidget::analyzeMusic(QString filepath)
 
 void NoteGraphWidget::timerEvent(QTimerEvent *event)
 {
-	if (!m_pitch.isNull() && m_pitch->newDataAvailable()) {
-		setPixmap(QPixmap::fromImage(m_pitch->getImage()));
+	(void)event;
+	if (!m_pitch.isNull()) {
+		if (m_pitch->newDataAvailable())
+			setPixmap(QPixmap::fromImage(m_pitch->getImage()));
+		if (m_pitch->isFinished()) {
+			killTimer(m_analyzeTimer);
+			emit analyzeProgress(width(), width());
+		} else emit analyzeProgress(m_pitch->getXValue(), width());
 	}
 }
 
@@ -195,6 +201,12 @@ void NoteGraphWidget::stopMusic()
 	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
 }
 
+void NoteGraphWidget::seek(int x)
+{
+	m_seekHandle.move(x - m_seekHandle.width()/2, 0);
+	emit seeked(1000 * px2s(x));
+}
+
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
@@ -210,7 +222,6 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		} else {
 			// Seeking
 			m_seeking = true;
-			m_panHotSpot = event->pos();
 			setCursor(QCursor(Qt::SizeHorCursor));
 		}
 		return;
@@ -293,8 +304,11 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
-	if (!child)
+	if (!child) {
+		// Double click empty space = seek there
+		seek(event->x());
 		return;
+	}
 
 	// Spawn an input dialog
 	bool ok;
@@ -321,11 +335,9 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	// Seeking
-	if (m_seeking) {
-		QPoint diff = event->pos() - m_panHotSpot;
-		m_seekHandle.move(m_panHotSpot.x() + diff.x(), 0);
-		emit seek(1000 * px2s(m_seekHandle.x()));
-	}
+	if (m_seeking)
+		seek(event->x());
+
 	// Pan
 	else if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
@@ -456,19 +468,20 @@ SeekHandle::SeekHandle(QWidget *parent)
 	image.fill(qRgba(0, 0, 0, 0));
 	QLinearGradient gradient(0, 0, image.width()-1, 0);
 	gradient.setColorAt(0.00, QColor(255,255,0,0));
-	gradient.setColorAt(0.25, QColor(255,255,0,50));
+	gradient.setColorAt(0.25, QColor(255,255,0,0));
 	gradient.setColorAt(0.50, QColor(255,255,0,200));
-	gradient.setColorAt(0.75, QColor(255,255,0,50));
+	gradient.setColorAt(0.75, QColor(255,255,0,0));
 	gradient.setColorAt(1.00, QColor(255,255,0,0));
 
 	QPainter painter;
 	painter.begin(&image);
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.setBrush(gradient);
+	painter.setPen(Qt::NoPen);
 	painter.drawRect(QRect(0, 0, image.width(), image.height()));
 
 	setPixmap(QPixmap::fromImage(image));
-
+	setMouseTracking(true);
 	setStatusTip(tr("Seek by dragging"));
 }
 
@@ -480,7 +493,19 @@ void SeekHandle::mouseMoveEvent(QMouseEvent *event)
 
 void SeekHandle::timerEvent(QTimerEvent *event)
 {
+	(void)event;
 	move(x() + 1, 0);
+
+	// Make handle always visible in the ScrollArea
+	if (parentWidget() && parentWidget()->parentWidget()) {
+		QScrollArea *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget()->parent());
+		if (scrollArea) {
+			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
+			int y = 0;
+			if (scrollVer) y = scrollVer->value();
+			scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);
+		}
+	}
 }
 
 

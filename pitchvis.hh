@@ -41,6 +41,7 @@ class PitchVis: public QWidget, public QThread {
 	QImage image;
 	bool moreAvailable;
 	bool cancelled;
+	int curX;
 	QMutex mutex;
 public:
 	const std::size_t height;
@@ -53,6 +54,7 @@ public:
 
 	QImage getImage() { QMutexLocker locker(&mutex); moreAvailable = false; return image; }
 	bool newDataAvailable() const { return moreAvailable; }
+	int getXValue() const { return curX; }
 
 	Pixel& pixel(std::size_t x, std::size_t y) { return img[x * height + y]; }
 	std::size_t width() const { return img.size() / height; }

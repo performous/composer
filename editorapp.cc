@@ -62,6 +62,10 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
 	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 
+	statusbarProgress = new QProgressBar(NULL);
+	ui.statusbar->addPermanentWidget(statusbarProgress);
+	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
+
 	hasUnsavedChanges = false;
 	updateMenuStates();
 
@@ -74,7 +78,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
-	connect(noteGraph, SIGNAL(seek(qint64)), player, SLOT(seek(qint64)));
+	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -143,6 +147,19 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNote->setText("-");
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
+	}
+}
+
+void EditorApp::analyzeProgress(int value, int maximum)
+{
+	if (statusbarProgress) {
+		if (value == maximum) {
+			statusbarProgress->hide();
+		} else {
+			statusbarProgress->setMaximum(maximum);
+			statusbarProgress->setValue(value);
+			statusbarProgress->show();
+		}
 	}
 }
 
@@ -495,6 +512,11 @@ void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstat
 	(void)oldstate;
 	if (newstate != Phonon::PlayingState) {
 		noteGraph->stopMusic();
+		if (newstate == Phonon::ErrorState) {
+			QString errst(tr("Error playing audio!"));
+			if (player) errst += " " + player->errorString();
+			QMessageBox::critical(this, tr("Playback error"), errst);
+		}
 	}
 }
 
