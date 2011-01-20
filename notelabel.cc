@@ -103,7 +103,10 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		// Moving
 		QPoint newpos = pos() + event->pos() - m_hotspot;
 		move(newpos);
-		if (ngw) ngw->updateNotes();
+		if (ngw) {
+			move(x(), ngw->n2px(ngw->px2n(y())));
+			ngw->updateNotes();
+		}
 		// Check if we need a new hotspot, because the note was constrained
 		if (pos().x() != newpos.x()) m_hotspot.rx() = event->x();
 

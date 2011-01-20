@@ -18,6 +18,11 @@ namespace {
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
 {
+	// Determine NoteLabel height
+	NoteLabel templabel(Note(" "), NULL);
+	m_noteHalfHeight = templabel.height()/2;
+	templabel.close();
+
 	// FIXME: Temporary hack to make testing quicker
 	analyzeMusic("music.ogg");
 
@@ -174,8 +179,6 @@ void NoteGraphWidget::updateNotes()
 			gap = FloatingGap(child->x() + child->width());
 		}
 	}
-	if (!m_notes.isEmpty())
-		m_noteHalfHeight = m_notes.front()->height()/2;
 }
 
 void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
