@@ -299,8 +299,12 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
-	if (!child)
+	if (!child) {
+		// Double click empty space = seek there
+		m_seekHandle.move(event->x() - m_seekHandle.width() / 2, 0);
+		emit seek(1000 * px2s(event->x()));
 		return;
+	}
 
 	// Spawn an input dialog
 	bool ok;
@@ -329,8 +333,8 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	// Seeking
 	if (m_seeking) {
 		QPoint diff = event->pos() - m_panHotSpot;
-		m_seekHandle.move(m_panHotSpot.x() + diff.x(), 0);
-		emit seek(1000 * px2s(m_seekHandle.x()));
+		m_seekHandle.move(m_panHotSpot.x() + diff.x() - m_seekHandle.width()/2, 0);
+		emit seek(1000 * px2s(event->pos().x()));
 	}
 	// Pan
 	else if (!m_panHotSpot.isNull()) {
@@ -462,19 +466,20 @@ SeekHandle::SeekHandle(QWidget *parent)
 	image.fill(qRgba(0, 0, 0, 0));
 	QLinearGradient gradient(0, 0, image.width()-1, 0);
 	gradient.setColorAt(0.00, QColor(255,255,0,0));
-	gradient.setColorAt(0.25, QColor(255,255,0,50));
+	gradient.setColorAt(0.25, QColor(255,255,0,0));
 	gradient.setColorAt(0.50, QColor(255,255,0,200));
-	gradient.setColorAt(0.75, QColor(255,255,0,50));
+	gradient.setColorAt(0.75, QColor(255,255,0,0));
 	gradient.setColorAt(1.00, QColor(255,255,0,0));
 
 	QPainter painter;
 	painter.begin(&image);
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.setBrush(gradient);
+	painter.setPen(Qt::NoPen);
 	painter.drawRect(QRect(0, 0, image.width(), image.height()));
 
 	setPixmap(QPixmap::fromImage(image));
-
+	setMouseTracking(true);
 	setStatusTip(tr("Seek by dragging"));
 }
 
