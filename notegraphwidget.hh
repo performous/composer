@@ -39,6 +39,7 @@ public:
 
 	void updateMusicPos(qint64 time, bool smoothing);
 	void stopMusic();
+	void seek(int x);
 
 	void selectNote(NoteLabel *note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
@@ -57,7 +58,7 @@ signals:
 	void updateNoteInfo(NoteLabel*);
 	void analyzeProgress(int, int);
 	void operationDone(const Operation&);
-	void seek(qint64 time);
+	void seeked(qint64 time);
 
 protected:
 	void mousePressEvent(QMouseEvent *event);

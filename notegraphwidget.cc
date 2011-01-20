@@ -201,6 +201,12 @@ void NoteGraphWidget::stopMusic()
 	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
 }
 
+void NoteGraphWidget::seek(int x)
+{
+	m_seekHandle.move(x - m_seekHandle.width()/2, 0);
+	emit seeked(1000 * px2s(x));
+}
+
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
@@ -216,7 +222,6 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		} else {
 			// Seeking
 			m_seeking = true;
-			m_panHotSpot = event->pos();
 			setCursor(QCursor(Qt::SizeHorCursor));
 		}
 		return;
@@ -301,8 +306,7 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child) {
 		// Double click empty space = seek there
-		m_seekHandle.move(event->x() - m_seekHandle.width() / 2, 0);
-		emit seek(1000 * px2s(event->x()));
+		seek(event->x());
 		return;
 	}
 
@@ -331,11 +335,9 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	// Seeking
-	if (m_seeking) {
-		QPoint diff = event->pos() - m_panHotSpot;
-		m_seekHandle.move(m_panHotSpot.x() + diff.x() - m_seekHandle.width()/2, 0);
-		emit seek(1000 * px2s(event->pos().x()));
-	}
+	if (m_seeking)
+		seek(event->x());
+
 	// Pan
 	else if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));

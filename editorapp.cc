@@ -78,7 +78,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
-	connect(noteGraph, SIGNAL(seek(qint64)), player, SLOT(seek(qint64)));
+	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
