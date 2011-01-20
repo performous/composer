@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <phonon/MediaObject>
 #include <phonon/AudioOutput>
 #include <iostream>
 #include "editorapp.hh"
@@ -29,6 +28,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	// Custom signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	// Duplicate/reused signals/slots
+	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 
 	// We must set the initial lyrics here, because constructor doesn't have
 	// signals yet ready, which leads to empty undo stack
@@ -44,7 +45,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 
 	song.reset(new Song);
 
-	// Some icons to menus to make them prettier
+	// Some icons to make menus etc prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
 	ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
 	ui.actionSave->setIcon(QIcon::fromTheme("document-save"));
@@ -57,6 +58,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
+	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop"));
 
 	hasUnsavedChanges = false;
 	updateMenuStates();
@@ -64,11 +67,13 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	// Audio stuff
 	player = new Phonon::MediaObject(this);
 	audioOutput = new Phonon::AudioOutput(this);
-	player->setTickInterval(500);
+	player->setTickInterval(100);
 	Phonon::createPath(player, audioOutput);
 	// Audio signals
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
+	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
+	connect(noteGraph, SIGNAL(seek(qint64)), player, SLOT(seek(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -351,12 +356,8 @@ void EditorApp::on_actionMusicFile_triggered()
 
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
-		ui.tabWidget->setCurrentIndex(1); // Switch to song properties tab
 		// Metadata is updated when it becomes available (signal)
 		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
-		// FIXME: Temporary test
-		audioOutput->setVolume(50);
-		player->play();
 		// Fire up analyzer
 		noteGraph->analyzeMusic(fileName);
 	}
@@ -405,7 +406,7 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 void EditorApp::on_actionWhatsThis_triggered()
 {
-	QWhatsThis::enterWhatsThisMode ();
+	QWhatsThis::enterWhatsThisMode();
 }
 
 void EditorApp::on_actionAbout_triggered()
@@ -455,12 +456,46 @@ void EditorApp::metaDataChanged()
 	}
 }
 
-void EditorApp::audioTick(qint64 time)
+void EditorApp::on_cmdPlay_toggled(bool checked)
 {
-	// TODO: Update a cursor in NoteGraphWidget
-	// (the cursor needs to be first implemented)
+	if (player) {
+		if (player->currentSource().type() == Phonon::MediaSource::Empty
+			|| player->currentSource().type() == Phonon::MediaSource::Invalid) {
+			on_actionMusicFile_triggered();
+		} else {
+			if (checked) {
+				player->play();
+				ui.cmdPlay->setText(tr("Playing..."));
+				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause"));
+			} else {
+				player->pause();
+				ui.cmdPlay->setText(tr("Play"));
+				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+			}
+		}
+	}
 }
 
+void EditorApp::on_cmdStop_clicked()
+{
+	if (player) player->stop();
+	if (noteGraph) noteGraph->updateMusicPos(0, false);
+	ui.cmdPlay->setChecked(false);
+}
+
+void EditorApp::audioTick(qint64 time)
+{
+	if (noteGraph && player)
+		noteGraph->updateMusicPos(time, (player->state() == Phonon::PlayingState ? true : false));
+}
+
+void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)
+{
+	(void)oldstate;
+	if (newstate != Phonon::PlayingState) {
+		noteGraph->stopMusic();
+	}
+}
 
 void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }

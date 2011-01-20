@@ -10,6 +10,18 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>500</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Editor</string>
   </property>
@@ -64,9 +76,6 @@
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget">
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
           <widget class="QWidget" name="tabNote">
            <attribute name="title">
             <string>&amp;Note properties</string>
@@ -293,6 +302,46 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="2" column="3">
+             <widget class="QPushButton" name="cmdMusicFile">
+              <property name="toolTip">
+               <string>Change music file...</string>
+              </property>
+              <property name="text">
+               <string>Load music...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabTools">
+           <attribute name="title">
+            <string>&amp;Tools</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="cmdPlay">
+              <property name="toolTip">
+               <string>Start playing the music file.</string>
+              </property>
+              <property name="text">
+               <string>Play</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="cmdStop">
+              <property name="toolTip">
+               <string>Stop the music.</string>
+              </property>
+              <property name="text">
+               <string>Stop</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

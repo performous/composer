@@ -16,7 +16,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_actionHappened(), m_pitch()
+	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
 {
 	// FIXME: Temporary hack to make testing quicker
 	analyzeMusic("music.ogg");
@@ -79,14 +79,12 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 
 	setFixedSize(s2px(track.endTime), h());
 
-	bool first = true;
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
 			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
-				QSize(s2px(it->length()), 0), !first));
+				QSize(s2px(it->length()), 0), false));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
-			first = false;
 		}
 	}
 
@@ -112,24 +110,6 @@ void NoteGraphWidget::finalizeNewLyrics()
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath.toStdString(), this));
-	unsigned width = m_pitch->width(), height = m_pitch->height;
-	QProgressDialog progress(tr("Rendering pitch data..."), tr("&Abort"), 0, width, this);
-	progress.setWindowModality(Qt::WindowModal);
-
-	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
-	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-	for (unsigned x = 0; x < width; ++x) {
-		progress.setValue(x);
-		if (progress.wasCanceled()) break;
-
-		for (unsigned y = 0; y < height; ++y) {
-			rgba[y * width + x] = m_pitch->pixel(x, y).rgba();
-		}
-	}
-	setPixmap(QPixmap::fromImage(image));
-	progress.setValue(width);
-
-	setFixedSize(width, height);
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
@@ -188,16 +168,38 @@ void NoteGraphWidget::updateNotes()
 	}
 }
 
+void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
+{
+	int x = s2px(time / 1000.0) - m_seekHandle.width() / 2;
+	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
+	m_seekHandle.move(x, 0);
+	if (smoothing)
+		m_seekHandle.moveTimerId = m_seekHandle.startTimer(px2s(1) * 1000);
+}
+
+void NoteGraphWidget::stopMusic()
+{
+	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
+}
+
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
 	if (!child) {
-		// Left click empty area = pan
-		if (event->button() == Qt::LeftButton)
+		SeekHandle *seekh = qobject_cast<SeekHandle*>(childAt(event->pos()));
+		if (!seekh) {
+			// Left click empty area = pan
+			if (event->button() == Qt::LeftButton)
+				m_panHotSpot = event->pos();
+			// Right click empty area = deselect
+			if (event->button() == Qt::RightButton)
+				selectNote(NULL);
+		} else {
+			// Seeking
+			m_seeking = true;
 			m_panHotSpot = event->pos();
-		// Right click empty area = deselect
-		if (event->button() == Qt::RightButton)
-			selectNote(NULL);
+			setCursor(QCursor(Qt::SizeHorCursor));
+		}
 		return;
 	}
 	if (child->isHidden()) return;
@@ -254,25 +256,18 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 			m_selectedNote->move(m_selectedNote->pos().x(), n2px(px2n(m_selectedNote->pos().y())));
 			if (m_actionHappened) {
 				// Operation for undo stack & saving
-				int notelabelid = getNoteLabelId(m_selectedNote);
 				Operation op("SETGEOM");
-				op << notelabelid
+				op <<  getNoteLabelId(m_selectedNote)
 					<< m_selectedNote->x() << m_selectedNote->y()
 					<< m_selectedNote->width() << m_selectedNote->height();
 				doOperation(op, Operation::NO_EXEC);
-				// See if it needs to be unfloated
-				if (m_selectedNote->isFloating()) {
-					Operation fop("FLOATING"); fop << notelabelid << false;
-					Operation combiner("COMBINER"); combiner << 2;
-					doOperation(fop);
-					doOperation(combiner);
-				}
 			}
 		}
 		m_selectedAction = NONE;
 	}
 	m_actionHappened = false;
 	m_panHotSpot = QPoint();
+	m_seeking = false;
 	setCursor(QCursor());
 	updateNotes();
 }
@@ -303,10 +298,23 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	m_actionHappened = true; // We have movement, so resize/move can be accepted
+	if (!m_actionHappened) {
+		m_actionHappened = true; // We have movement, so resize/move can be accepted
+		// See if the note needs to be unfloated
+		if (m_selectedAction != NONE && m_selectedNote && m_selectedNote->isFloating()) {
+			Operation op("FLOATING"); op << getNoteLabelId(m_selectedNote) << false;
+			doOperation(op);
+		}
+	}
 
+	// Seeking
+	if (m_seeking) {
+		QPoint diff = event->pos() - m_panHotSpot;
+		m_seekHandle.move(m_panHotSpot.x() + diff.x(), 0);
+		emit seek(1000 * px2s(m_seekHandle.x()));
+	}
 	// Pan
-	if (!m_panHotSpot.isNull()) {
+	else if (!m_panHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
 		QScrollArea *scrollArea = NULL;
 		if (parentWidget())
@@ -424,6 +432,45 @@ int NoteGraphWidget::s2px(double sec) const { return m_pitch->time2px(sec); }
 double NoteGraphWidget::px2s(int px) const { return m_pitch->px2time(px); }
 int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note); }
 int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px); }
+
+
+
+SeekHandle::SeekHandle(QWidget *parent)
+	: QLabel(parent)
+{
+	// FIXME: height from notegraph
+	QImage image(16, 768, QImage::Format_ARGB32_Premultiplied);
+	image.fill(qRgba(0, 0, 0, 0));
+	QLinearGradient gradient(0, 0, image.width()-1, 0);
+	gradient.setColorAt(0.00, QColor(255,255,0,0));
+	gradient.setColorAt(0.25, QColor(255,255,0,50));
+	gradient.setColorAt(0.50, QColor(255,255,0,200));
+	gradient.setColorAt(0.75, QColor(255,255,0,50));
+	gradient.setColorAt(1.00, QColor(255,255,0,0));
+
+	QPainter painter;
+	painter.begin(&image);
+	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setBrush(gradient);
+	painter.drawRect(QRect(0, 0, image.width(), image.height()));
+
+	setPixmap(QPixmap::fromImage(image));
+
+	setStatusTip(tr("Seek by dragging"));
+}
+
+void SeekHandle::mouseMoveEvent(QMouseEvent *event)
+{
+	setCursor(QCursor(Qt::SizeHorCursor));
+	event->ignore();
+}
+
+void SeekHandle::timerEvent(QTimerEvent *event)
+{
+	move(x() + 1, 0);
+}
+
+
 
 void FloatingGap::addNote(NoteLabel* n)
 {

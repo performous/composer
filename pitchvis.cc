@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <QProgressDialog>
+#include <QLabel>
 
 /** Read the entire file into a vector of some type.
 The file needs to be in the machine-native endianess. **/
@@ -39,7 +40,7 @@ PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent
 	progress.setLabelText(tr("Analyzing pitch data..."));
 	for (unsigned x = 0; x < width; ++x) {
 		progress.setValue(x);
-		if (progress.wasCanceled()) return;
+		if (progress.wasCanceled()) break;
 
 		// Get decoded samples from ffmpeg
 		std::vector<float> data(step*2);
@@ -78,6 +79,29 @@ PitchVis::PitchVis(std::string const& filename, QWidget *parent): QWidget(parent
 		}
 	}
 	progress.setValue(width);
+
+	QProgressDialog progress2(tr("Rendering pitch data..."), tr("&Abort"), 0, 1, this);
+	progress2.setWindowModality(Qt::WindowModal);
+
+	QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+	unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+	for (unsigned x = 0; x < width; ++x) {
+		progress2.setValue(x);
+		if (progress2.wasCanceled()) break;
+
+		for (unsigned y = 0; y < height; ++y) {
+			rgba[y * width + x] = pixel(x, y).rgba();
+		}
+	}
+
+	progress2.setLabelText(tr("Applying image..."));
+	QLabel *ngw = qobject_cast<QLabel*>(parent);
+	if (ngw) {
+		ngw->setPixmap(QPixmap::fromImage(image));
+		ngw->setFixedSize(width, height);
+	}
+
+	progress2.setValue(width);
 }
 
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }

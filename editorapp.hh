@@ -1,5 +1,6 @@
 #pragma once
 
+#include <phonon/MediaObject>
 #include "ui_editor.h"
 #include "operation.hh"
 #include "song.hh"
@@ -31,8 +32,12 @@ public slots:
 	void updateNoteInfo(NoteLabel *note);
 	void metaDataChanged();
 	void audioTick(qint64 time);
+	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
 
 	// Automatic slots
+
+	void on_cmdPlay_toggled(bool checked);
+	void on_cmdStop_clicked();
 
 	// File menu
 	void on_actionNew_triggered();
