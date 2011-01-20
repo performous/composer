@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <phonon/MediaObject>
 #include <phonon/AudioOutput>
 #include <iostream>
 #include "editorapp.hh"
@@ -72,6 +71,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	Phonon::createPath(player, audioOutput);
 	// Audio signals
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
+	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 	connect(noteGraph, SIGNAL(seek(qint64)), player, SLOT(seek(qint64)));
 }
@@ -406,7 +406,7 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 void EditorApp::on_actionWhatsThis_triggered()
 {
-	QWhatsThis::enterWhatsThisMode ();
+	QWhatsThis::enterWhatsThisMode();
 }
 
 void EditorApp::on_actionAbout_triggered()
@@ -456,11 +456,6 @@ void EditorApp::metaDataChanged()
 	}
 }
 
-void EditorApp::audioTick(qint64 time)
-{
-	if (noteGraph) noteGraph->updateMusicPos(time);
-}
-
 void EditorApp::on_cmdPlay_toggled(bool checked)
 {
 	if (player) {
@@ -484,8 +479,22 @@ void EditorApp::on_cmdPlay_toggled(bool checked)
 void EditorApp::on_cmdStop_clicked()
 {
 	if (player) player->stop();
-	if (noteGraph) noteGraph->updateMusicPos(0);
+	if (noteGraph) noteGraph->updateMusicPos(0, false);
 	ui.cmdPlay->setChecked(false);
+}
+
+void EditorApp::audioTick(qint64 time)
+{
+	if (noteGraph && player)
+		noteGraph->updateMusicPos(time, (player->state() == Phonon::PlayingState ? true : false));
+}
+
+void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)
+{
+	(void)oldstate;
+	if (newstate != Phonon::PlayingState) {
+		noteGraph->stopMusic();
+	}
 }
 
 void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }

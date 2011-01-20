@@ -186,10 +186,18 @@ void NoteGraphWidget::updateNotes()
 	}
 }
 
-void NoteGraphWidget::updateMusicPos(qint64 time)
+void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
 {
 	int x = s2px(time / 1000.0) - m_seekHandle.width() / 2;
+	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
 	m_seekHandle.move(x, 0);
+	if (smoothing)
+		m_seekHandle.moveTimerId = m_seekHandle.startTimer(px2s(1) * 1000);
+}
+
+void NoteGraphWidget::stopMusic()
+{
+	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
 }
 
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
@@ -320,7 +328,6 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	// Seeking
 	if (m_seeking) {
 		QPoint diff = event->pos() - m_panHotSpot;
-		std::cout << diff.x() << " " << event->pos().x() << " " << m_panHotSpot.x() << std::endl;
 		m_seekHandle.move(m_panHotSpot.x() + diff.x(), 0);
 		emit seek(1000 * px2s(m_seekHandle.x()));
 	}
@@ -472,6 +479,11 @@ void SeekHandle::mouseMoveEvent(QMouseEvent *event)
 {
 	setCursor(QCursor(Qt::SizeHorCursor));
 	event->ignore();
+}
+
+void SeekHandle::timerEvent(QTimerEvent *event)
+{
+	move(x() + 1, 0);
 }
 
 
