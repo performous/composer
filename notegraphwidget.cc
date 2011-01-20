@@ -457,12 +457,14 @@ SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
 	// FIXME: height from notegraph
-	QImage image(8, 768, QImage::Format_ARGB32_Premultiplied);
+	QImage image(16, 768, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 	QLinearGradient gradient(0, 0, image.width()-1, 0);
-	gradient.setColorAt(0.0, QColor(255,255,0,50));
-	gradient.setColorAt(0.5, QColor(255,255,0,200));
-	gradient.setColorAt(1.0, QColor(255,255,0,50));
+	gradient.setColorAt(0.00, QColor(255,255,0,0));
+	gradient.setColorAt(0.25, QColor(255,255,0,50));
+	gradient.setColorAt(0.50, QColor(255,255,0,200));
+	gradient.setColorAt(0.75, QColor(255,255,0,50));
+	gradient.setColorAt(1.00, QColor(255,255,0,0));
 
 	QPainter painter;
 	painter.begin(&image);
