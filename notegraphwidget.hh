@@ -70,7 +70,8 @@ protected:
 private:
 	void finalizeNewLyrics();
 
-	int  m_requiredWidth;
+	int m_requiredWidth;
+	int m_noteHalfHeight;
 	QPoint m_panHotSpot;
 	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;

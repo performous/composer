@@ -16,7 +16,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
+	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
 {
 	// FIXME: Temporary hack to make testing quicker
 	analyzeMusic("music.ogg");
@@ -64,7 +64,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, m_pitch->note2px(24)), QSize(), !first));
+			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(24)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 			first = false;
 		}
@@ -174,6 +174,8 @@ void NoteGraphWidget::updateNotes()
 			gap = FloatingGap(child->x() + child->width());
 		}
 	}
+	if (!m_notes.isEmpty())
+		m_noteHalfHeight = m_notes.front()->height()/2;
 }
 
 void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
@@ -438,8 +440,8 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 
 int NoteGraphWidget::s2px(double sec) const { return m_pitch->time2px(sec); }
 double NoteGraphWidget::px2s(int px) const { return m_pitch->px2time(px); }
-int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note); }
-int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px); }
+int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note) - m_noteHalfHeight; }
+int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px + m_noteHalfHeight); }
 
 
 
