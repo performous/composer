@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <phonon/AudioOutput>
 #include <iostream>
+#include "config.hh"
 #include "editorapp.hh"
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -119,7 +120,7 @@ void EditorApp::updateMenuStates()
 	QFileInfo finfo(projectFileName);
 	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
 	if (hasUnsavedChanges) proName += "*";
-	setWindowTitle("Editor - " + proName);
+	setWindowTitle(QString(PACKAGE) + " - " + proName);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
