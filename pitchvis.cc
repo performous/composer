@@ -83,10 +83,9 @@ void PitchVis::run()
 		Analyzer::Tones tones = analyzer.getTones();
 		unsigned int i = 0;
 		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
-			if (it->age < Tone::MINAGE) continue;
-			unsigned y = freq2px(it->freqSlow);
+			unsigned y = freq2px(it->freq);
 			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (level2dB(it->levelSlow) + 80.0);
+			float value = 0.003 * (level2dB(it->level) + 80.0);
 			if (value <= 0.0) continue;
 			Pixel p(0.0f, value, 0.0f);
 			for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
