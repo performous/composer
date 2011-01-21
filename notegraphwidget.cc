@@ -1,4 +1,10 @@
-#include <QtGui>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QPainter>
 #include <iostream>
 #include <algorithm>
 #include <cmath>

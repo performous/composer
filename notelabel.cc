@@ -1,4 +1,7 @@
-#include <QtGui>
+#include <QMouseEvent>
+#include <QResizeEvent>
+#include <QToolTip>
+#include <QPainter>
 #include <iostream>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
