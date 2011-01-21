@@ -27,6 +27,7 @@ private:
 	bool promptSaving();
 	void saveProject(QString fileName);
 	void doOpStack();
+	void playButton();
 
 public slots:
 	void operationDone(const Operation &op);
@@ -38,7 +39,7 @@ public slots:
 
 	// Automatic slots
 
-	void on_cmdPlay_toggled(bool checked);
+	void on_cmdPlay_clicked();
 	void on_cmdStop_clicked();
 
 	// File menu

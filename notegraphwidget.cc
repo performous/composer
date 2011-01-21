@@ -310,15 +310,22 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 		return;
 	}
 
+	editLyric(child);
+}
+
+void NoteGraphWidget::editLyric(NoteLabel *note) {
+	if (!note) return;
+
 	// Spawn an input dialog
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("Edit lyric"),
 										tr("Lyric:"), QLineEdit::Normal,
-										child->lyric(), &ok);
+										note->lyric(), &ok);
 	if (ok && !text.isEmpty()) {
-		child->setLyric(text);
+		note->setLyric(text);
+		// Create undo operation
 		Operation op("LYRIC");
-		op << getNoteLabelId(child) << text;
+		op << getNoteLabelId(note) << text;
 		doOperation(op, Operation::NO_EXEC);
 	}
 }
@@ -361,6 +368,9 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
  {
 	switch (event->key()) {
+	case Qt::Key_Return: // Edit lyric
+		editLyric(m_selectedNote);
+		break;
 	case Qt::Key_Left: // Select note on the left
 		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
 			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {

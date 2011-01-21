@@ -257,6 +257,7 @@ void EditorApp::on_actionSaveAs_triggered()
 
 bool EditorApp::promptSaving()
 {
+	updateSongMeta(); // Make sure the stuff in textboxes is updated
 	if (hasUnsavedChanges) {
 		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
 			tr("There are unsaved changes, which would be lost. Save now?"),
@@ -376,6 +377,7 @@ void EditorApp::on_actionMusicFile_triggered()
 		ui.valMusicFile->setText(fileName);
 		// Metadata is updated when it becomes available (signal)
 		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
+		noteGraph->updateMusicPos(0, false);
 		// Fire up analyzer
 		noteGraph->analyzeMusic(fileName);
 	}
@@ -474,22 +476,26 @@ void EditorApp::metaDataChanged()
 	}
 }
 
-void EditorApp::on_cmdPlay_toggled(bool checked)
+void EditorApp::playButton()
+{
+	if (player && player->state() == Phonon::PlayingState) {
+		ui.cmdPlay->setText(tr("Pause"));
+		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause"));
+	} else {
+		ui.cmdPlay->setText(tr("Play"));
+		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+	}
+}
+
+void EditorApp::on_cmdPlay_clicked()
 {
 	if (player) {
 		if (player->currentSource().type() == Phonon::MediaSource::Empty
 			|| player->currentSource().type() == Phonon::MediaSource::Invalid) {
 			on_actionMusicFile_triggered();
 		} else {
-			if (checked) {
-				player->play();
-				ui.cmdPlay->setText(tr("Playing..."));
-				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause"));
-			} else {
-				player->pause();
-				ui.cmdPlay->setText(tr("Play"));
-				ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
-			}
+			if (player && player->state() == Phonon::PlayingState) player->pause();
+			else player->play();
 		}
 	}
 }
@@ -498,7 +504,6 @@ void EditorApp::on_cmdStop_clicked()
 {
 	if (player) player->stop();
 	if (noteGraph) noteGraph->updateMusicPos(0, false);
-	ui.cmdPlay->setChecked(false);
 }
 
 void EditorApp::audioTick(qint64 time)
@@ -510,6 +515,7 @@ void EditorApp::audioTick(qint64 time)
 void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)
 {
 	(void)oldstate;
+	playButton();
 	if (newstate != Phonon::PlayingState) {
 		noteGraph->stopMusic();
 		if (newstate == Phonon::ErrorState) {
