@@ -1,5 +1,5 @@
-#include "pitchvis.hh"
 
+#include "pitchvis.hh"
 #include "pitch.hh"
 #include "ffmpeg.hh"
 #include <fstream>
@@ -30,82 +30,89 @@ PitchVis::PitchVis(QString const& filename, QWidget *parent)
 
 void PitchVis::run()
 {
-	// Initialize FFmpeg decoding
-	FFmpeg mpeg(false, true, fileName.toStdString(), 44100);
-	while(std::isnan(mpeg.duration())); // Wait for ffmpeg to be ready
-	msleep(1000); // Wait some more
+	try {
+		unsigned int rate = 44100;
+		// Initialize FFmpeg decoding
+		FFmpeg mpeg(false, true, fileName.toStdString(), rate);
+		while(std::isnan(mpeg.duration())) msleep(1000); // Wait for ffmpeg to be ready
+		msleep(1000); // Wait some more
 
-	unsigned width = mpeg.duration() * 44100 / step;
-	img.resize(width * height);
-	Analyzer analyzer(44100, "");
+		unsigned width = mpeg.duration() * rate / step;
+		img.resize(width * height);
+		Analyzer analyzer(rate, "");
 
-	QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
-	if (ngw) {
-		ngw->setFixedSize(width, height);
-	} else return;
+		QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
+		if (ngw) {
+			ngw->setFixedSize(width, height);
+		} else return;
 
-	// Create image
-	{
-		QMutexLocker locker(&mutex);
-		image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
-	}
-
-	for (unsigned x = 0; x < width; ++x) {
-		if (cancelled) return;
-		curX = x;
-
-		// Get decoded samples from ffmpeg
-		std::vector<float> data(step*2);
-		mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2);
-
-		// Sample iterators for getting only one channel
-		da::step_iterator<float> beginIt(&*data.begin(), 2);
-		da::step_iterator<float> endIt(&*data.end(), 2);
-
-		// Analyze
-		if (cancelled) return;
-		analyzer.input(beginIt, endIt);
-		analyzer.process();
-
-		// Peaks
-		Analyzer::Peaks peaks = analyzer.getPeaks();
-		for (unsigned i = 0; i < peaks.size(); ++i) {
-			unsigned y = freq2px(peaks[i].freq);
-			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (level2dB(peaks[i].level) + 80.0);
-			if (value <= 0.0) continue;
-			Pixel p(0.0f, 0.0f, value);
-			pixel(x, y) += p;
-			p.r *= 0.5;
-			p.g *= 0.5;
-			p.b *= 0.5;
-			pixel(x, y + 1) += p;
-			pixel(x, y - 1) += p;
-		}
-
-		// Tones
-		Analyzer::Tones tones = analyzer.getTones();
-		unsigned int i = 0;
-		for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend && i < 3; ++it) {
-			unsigned y = freq2px(it->freq);
-			if (y == 0 || y >= height - 1) continue;
-			float value = 0.003 * (level2dB(it->level) + 80.0);
-			if (value <= 0.0) continue;
-			Pixel p(0.0f, value, 0.0f);
-			for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
-		}
-
-		// Draw
+		// Create image
 		{
-			if (cancelled) return;
 			QMutexLocker locker(&mutex);
-			unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-			for (unsigned y = 0; y < height; ++y) {
-				rgba[y * width + x] = pixel(x, y).rgba();
-			}
-			moreAvailable = true;
+			image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
 		}
+
+		for (unsigned x = 0; x < width; ++x) {
+			if (cancelled) return;
+			curX = x;
+
+			// Get decoded samples from ffmpeg
+			std::vector<float> data(step*2);
+			if (!mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2)) break;
+
+			// Sample iterators for getting only one channel
+			da::step_iterator<float> beginIt(&*data.begin(), 2);
+			da::step_iterator<float> endIt(&*data.end(), 2);
+
+			// Analyze
+			if (cancelled) return;
+			analyzer.input(beginIt, endIt);
+			analyzer.process();
+
+			// Peaks
+			Analyzer::Peaks peaks = analyzer.getPeaks();
+			for (unsigned i = 0; i < peaks.size(); ++i) {
+				unsigned y = freq2px(peaks[i].freq);
+				if (y == 0 || y >= height - 1) continue;
+				float value = 0.003 * (level2dB(peaks[i].level) + 80.0);
+				if (value <= 0.0) continue;
+				Pixel p(0.0f, 0.0f, value);
+				pixel(x, y) += p;
+				p.r *= 0.5;
+				p.g *= 0.5;
+				p.b *= 0.5;
+				pixel(x, y + 1) += p;
+				pixel(x, y - 1) += p;
+			}
+
+			// Tones
+			Analyzer::Tones tones = analyzer.getTones();
+			for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
+				unsigned y = freq2px(it->freq);
+				if (y == 0 || y >= height - 1) continue;
+				float value = 0.003 * (level2dB(it->level) + 80.0);
+				if (value <= 0.0) continue;
+				Pixel p(0.0f, value, 0.0f);
+				for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
+			}
+
+			// Draw
+			{
+				if (cancelled) return;
+				QMutexLocker locker(&mutex);
+				unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+				for (unsigned y = 0; y < height; ++y) {
+					rgba[y * width + x] = pixel(x, y).rgba();
+				}
+				moreAvailable = true;
+			}
+		}
+	} catch (std::exception& e) {
+		std::cerr << std::string("Error loading audio: ") + e.what() + '\n' << std::flush;
 	}
+	QMutexLocker locker(&mutex);
+	moreAvailable = true;
+	curX = width();
 }
 
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }

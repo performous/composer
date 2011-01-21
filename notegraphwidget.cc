@@ -128,12 +128,10 @@ void NoteGraphWidget::timerEvent(QTimerEvent *event)
 {
 	(void)event;
 	if (!m_pitch.isNull()) {
-		if (m_pitch->newDataAvailable())
-			setPixmap(QPixmap::fromImage(m_pitch->getImage()));
-		if (m_pitch->isFinished()) {
-			killTimer(m_analyzeTimer);
-			emit analyzeProgress(width(), width());
-		} else emit analyzeProgress(m_pitch->getXValue(), width());
+		QMutexLocker locker(&m_pitch->mutex);
+		if (m_pitch->newDataAvailable()) setPixmap(QPixmap::fromImage(m_pitch->getImage()));
+		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
+		emit analyzeProgress(m_pitch->getXValue(), width());
 	}
 }
 
