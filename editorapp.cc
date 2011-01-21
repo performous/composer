@@ -1,4 +1,10 @@
-#include <QtGui>
+#include <QProgressBar>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QClipboard>
+#include <QMimeData>
+#include <QWhatsThis>
+#include <QUrl>
 #include <phonon/AudioOutput>
 #include <iostream>
 #include "config.hh"
