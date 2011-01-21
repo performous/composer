@@ -47,6 +47,7 @@ public:
 	int getNoteLabelId(NoteLabel* note) const;
 	NoteLabels& noteLabels() { return m_notes; }
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
+	void editLyric(NoteLabel *note);
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
