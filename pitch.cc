@@ -4,9 +4,9 @@
 #include <cmath>
 #include <numeric>
 
-static const unsigned FFT_P = 11;  // FFT size setting, will use 2^FFT_P sample FFT
+static const unsigned FFT_P = 12;  // FFT size setting, will use 2^FFT_P sample FFT
 static const std::size_t FFT_N = 1 << FFT_P;  // FFT size in samples
-static const std::size_t FFT_STEP = 512;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
+static const std::size_t FFT_STEP = 1024;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
 
 // Limit the range to avoid noise and useless computation
 static const double FFT_MINFREQ = 45.0;
@@ -118,7 +118,7 @@ void Analyzer::calcTones() {
 	// Strongest first
 	std::sort(combos.rbegin(), combos.rend());
 	// Keep only a reasonable amount of strongest frequencies.
-	//if (combos.size() > 10) combos.resize(10);
+	if (combos.size() > 10) combos.resize(10);
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
@@ -183,7 +183,8 @@ void Analyzer::temporalMerge(Tones& tones) {
 			}
 		}
 	}
-	m_moments.push_back(Moment(0.0, tones));
+	m_moments.push_back(Moment(0.0));
+	m_moments.back().stealTones(tones);  // No pointers are invalidated
 }
 
 void Analyzer::process() {
@@ -191,25 +192,9 @@ void Analyzer::process() {
 	while (calcFFT()) calcTones();
 }
 
-/*Tone const* Analyzer::findTone(double minfreq, double maxfreq) const {
-	Tone const* best = NULL;
-	double bestscore = -getInf();
-	for (Tones::const_iterator it = m_tones.begin(); it != m_tones.end(); ++it) {
-		if (it->freq > maxfreq || it->freq < minfreq || it->age < Tone::MINAGE) continue;
-		double score = it->levelSlow * (400.0 - std::max(180.0, std::abs(it->freq - 300.0)));
-		if (m_oldfreq != 0.0 && std::abs(it->freq/m_oldfreq - 1.0) < 0.10) score += 30.0;  // Stability is a really good thing
-		if (it->harmonics[0] > 0.0) score += 10.0;  // fundamental is always good to have
-		if (it->harmonics[2] > 0.0) score += 10.0;  // third harmonic is nearly always detected for vocals
-		if (score > bestscore) {
-			best = &*it;
-			bestscore = score;
-		}
-	}
-	m_oldfreq = (best ? best->freq : 0.0);
-	return best;
-}*/
+Moment::Moment(double t): m_time(t) {}
 
-Moment::Moment(double t, Tones& tones): m_time(t) {
+void Moment::stealTones(Tones& tones) {
 	m_tones.swap(tones);
 }
 

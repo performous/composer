@@ -8,66 +8,85 @@
 #include <QProgressDialog>
 #include <QLabel>
 
-/** Read the entire file into a vector of some type.
-The file needs to be in the machine-native endianess. **/
-template <typename T> void readVec(std::string const& filename, std::vector<T>& c) {
-	std::ifstream f(filename.c_str(), std::ios::binary);
-	if (!f) throw std::runtime_error("Cannot open " + filename);
-	f.seekg(0, std::ios::end);
-	unsigned size = f.tellg();
-	if (size > 1e+8) throw std::runtime_error("File too large: " + filename);
-	f.seekg(0);
-	c.resize(size / sizeof(T));
-	f.read(reinterpret_cast<char*>(&c[0]), c.size() * sizeof(T));
-	if (!f) throw std::runtime_error("Error reading " + filename);
-}
-
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QWidget(parent), QThread(), mutex(), step(512), height(768), fileName(filename), moreAvailable(), curX()
+	: QWidget(parent), QThread(), mutex(), step(1024), height(768), fileName(filename), moreAvailable(), cancelled(), curX(), m_width()
 {
 	start(); // Launch the thread
+}
+
+void PitchVis::setWidth(std::size_t w) {
+	m_width = w;
+	QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
+	if (ngw) ngw->setFixedSize(w, height);
 }
 
 void PitchVis::run()
 {
 	try {
+
 		unsigned int rate = 44100;
-		// Initialize FFmpeg decoding
-		FFmpeg mpeg(false, true, fileName.toStdString(), rate);
-		while(std::isnan(mpeg.duration())) msleep(1000); // Wait for ffmpeg to be ready
-		msleep(1000); // Wait some more
-
-		unsigned width = mpeg.duration() * rate / step;
-		img.resize(width * height);
 		Analyzer analyzer(rate, "");
-
-		QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
-		if (ngw) {
-			ngw->setFixedSize(width, height);
-		} else return;
-
+		{
+			// Initialize FFmpeg decoding
+			FFmpeg mpeg(false, true, fileName.toStdString(), rate);
+			while(std::isnan(mpeg.duration())) msleep(1000); // Wait for ffmpeg to be ready
+			msleep(1000); // Wait some more
+			setWidth(mpeg.duration() * rate / step); // Estimation
+			
+			curX = 0;
+			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
+				// Mix stereo into mono
+				for (unsigned i = 0; i < step; ++i) data[i] = 0.5 * (data[2*i] + data[2*i + 1]);
+				// Process
+				analyzer.input(&data[0], &data[step]);
+				analyzer.process();
+				if (cancelled) return;
+			}
+		}
+		// Draw, TODO: Draw somewhere else (on demand) without a huge bitmap
+		Analyzer::Moments const& moments = analyzer.getMoments();
+		setWidth(moments.size());
 		// Create image
 		{
 			QMutexLocker locker(&mutex);
-			image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
+			image = QImage(width(), height, QImage::Format_ARGB32_Premultiplied);
+			memset(image.bits(), 0, width() * height * 4);
+		}
+		curX = 0;
+		for (Analyzer::Moments::const_iterator it = moments.begin(), itend = moments.end(); it != itend && curX < width(); ++it, ++curX) {
+			QMutexLocker locker(&mutex);
+			unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
+			moreAvailable = true;
+			Moment::Tones const& tones = it->m_tones;
+			for (Moment::Tones::const_iterator it2 = tones.begin(), it2end = tones.end(); it2 != it2end; ++it2) {
+				if (it2->prev) continue;  // The tone doesn't begin at this moment, skip
+				std::vector<Tone const*> tones;
+				for (Tone const* n = &*it2; n; n = n->next) tones.push_back(n);
+				if (tones.size() < 5) continue;  // Too short tone, ignored
+				// Render
+				for (unsigned i = 0; i < tones.size(); ++i) {
+					unsigned x = curX + i;
+					if (x >= width()) throw std::logic_error("Tone past the end of moments");
+					float value = 0.003 * (level2dB(tones[i]->level) + 80.0);
+					if (value <= 0.0) continue;
+					unsigned int pix = Pixel(0.0f, value, 0.0f).rgba();
+					unsigned y = freq2px(tones[i]->freq);
+					for (int j = std::max<int>(0, int(y) - 2), jend = std::min<int>(height, int(y) + 3); j < jend; ++j) rgba[j * width() + x] = pix;
+				}
+			}
 		}
 
+	} catch (std::exception& e) {
+		std::cerr << std::string("Error loading audio: ") + e.what() + '\n' << std::flush;
+	}
+	QMutexLocker locker(&mutex);
+	moreAvailable = true;
+	curX = width();
+		
+#if 0
 		for (unsigned x = 0; x < width; ++x) {
 			if (cancelled) return;
 			curX = x;
-
-			// Get decoded samples from ffmpeg
-			std::vector<float> data(step*2);
-			if (!mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2)) break;
-
-			// Sample iterators for getting only one channel
-			da::step_iterator<float> beginIt(&*data.begin(), 2);
-			da::step_iterator<float> endIt(&*data.end(), 2);
-
-			// Analyze
-			if (cancelled) return;
-			analyzer.input(beginIt, endIt);
-			analyzer.process();
 
 			// Peaks
 			Analyzer::Peaks peaks = analyzer.getPeaks();
@@ -85,38 +104,12 @@ void PitchVis::run()
 				pixel(x, y - 1) += p;
 			}
 
-			// Tones
-			Analyzer::Tones tones = analyzer.getTones();
-			for (Analyzer::Tones::const_iterator it = tones.begin(), itend = tones.end(); it != itend; ++it) {
-				unsigned y = freq2px(it->freq);
-				if (y == 0 || y >= height - 1) continue;
-				float value = 0.003 * (level2dB(it->level) + 80.0);
-				if (value <= 0.0) continue;
-				Pixel p(0.0f, value, 0.0f);
-				for (int j = int(y) - 2; j <= int(y) + 2; ++j) pixel(x, j) += p;
-			}
-
-			// Draw
-			{
-				if (cancelled) return;
-				QMutexLocker locker(&mutex);
-				unsigned* rgba = reinterpret_cast<unsigned*>(image.bits());
-				for (unsigned y = 0; y < height; ++y) {
-					rgba[y * width + x] = pixel(x, y).rgba();
-				}
-				moreAvailable = true;
-			}
 		}
-	} catch (std::exception& e) {
-		std::cerr << std::string("Error loading audio: ") + e.what() + '\n' << std::flush;
-	}
-	QMutexLocker locker(&mutex);
-	moreAvailable = true;
-	curX = width();
+#endif
 }
 
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }
-unsigned PitchVis::note2px(double note) const { return height - static_cast<unsigned>(16.0 * note); }
+unsigned PitchVis::note2px(double tone) const { return height - static_cast<unsigned>(16.0 * tone); }
 double PitchVis::px2note(unsigned px) const { return (height - px) / 16.0; }
 unsigned PitchVis::time2px(double t) const { return t * 44100.0 / step; }
 double PitchVis::px2time(double px) const { return px / 44100.0 * step; }

@@ -35,13 +35,14 @@ struct Pixel {
 
 class PitchVis: public QWidget, public QThread {
 	unsigned step;
-	std::vector<Pixel> img;
 	MusicalScale scale;
 	QString fileName;
 	QImage image;
 	bool moreAvailable;
 	bool cancelled;
 	int curX;
+	std::size_t m_width;
+	void setWidth(std::size_t w);
 public:
 	QMutex mutex;
 	const std::size_t height;
@@ -56,8 +57,7 @@ public:
 	bool newDataAvailable() const { return moreAvailable; }
 	int getXValue() const { return curX; }
 
-	Pixel& pixel(std::size_t x, std::size_t y) { return img[x * height + y]; }
-	std::size_t width() const { return img.size() / height; }
+	std::size_t width() const { return m_width; }
 
 	unsigned freq2px(double freq) const;
 	unsigned note2px(double note) const;
