@@ -66,19 +66,19 @@ void SingStarXMLWriter::writeXML() {
 			if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
 			if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
 			sentenceElem.appendChild(noteElem);
+		}
 
-			// Construct a second note element, indicationg the pause before next note
-			// This is only done if the pause has duration
-			int pauseLen = 0;
-			if (i < notes.size() - 1)
-				pauseLen = sec2dur(notes[i+1].begin - n.end); // Difference to next note
-			if (pauseLen > 0) {
-				QDomElement pauseElem = doc.createElement("NOTE");
-				pauseElem.setAttribute("MidiNote", "0");
-				pauseElem.setAttribute("Duration", QString::number(pauseLen));
-				pauseElem.setAttribute("Lyric", "");
-				sentenceElem.appendChild(pauseElem);
-			}
+		// Construct a note element, indicationg the pause before next note
+		// This is only done if the pause has duration
+		int pauseLen = 0;
+		if (i < notes.size() - 1)
+			pauseLen = sec2dur(notes[i+1].begin - n.end); // Difference to next note
+		if (pauseLen > 0) {
+			QDomElement pauseElem = doc.createElement("NOTE");
+			pauseElem.setAttribute("MidiNote", "0");
+			pauseElem.setAttribute("Duration", QString::number(pauseLen));
+			pauseElem.setAttribute("Lyric", "");
+			sentenceElem.appendChild(pauseElem);
 		}
 	}
 
