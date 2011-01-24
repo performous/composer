@@ -1,6 +1,8 @@
 #include "songparser.hh"
 #include <QtXml/QDomDocument>
-#include <QTextStream>
+#include <QFile>
+#include <QtGlobal>
+#include <iostream>
 
 
 
@@ -11,17 +13,113 @@ int sleepts = -1;
 /// 'Magick' to check if this file looks like correct format
 bool SongParser::xmlCheck(std::vector<char> const& data)
 {
-	return data[0] == '<' && data[1] == '?' && data[2] == 'x' && data[3] == 'm' && data[4] == 'l';
+	return (data[0] == '<' && data[1] == '?' && data[2] == 'x' && data[3] == 'm' && data[4] == 'l')
+			|| (data[0] == '<' && data[1] == 'M' && data[2] == 'E' && data[3] == 'L');
 }
 
 void SongParser::xmlParseHeader()
 {
+	// Build DOM tree from the xml file
+	QDomDocument doc("MELODY");
+	QFile file(QString::fromStdString(m_song.path) + QString::fromStdString(m_song.filename));
+	if (!file.open(QIODevice::ReadOnly))
+		throw std::runtime_error(QT_TR_NOOP("Couldn't open file"));
+	if (!doc.setContent(&file)) {
+		throw std::runtime_error(QT_TR_NOOP("XML parse error"));	}
+	file.close();
 
+	VocalTrack vocal(TrackName::LEAD_VOCAL);
+	Notes& notes = vocal.notes;
+
+	// Parse meta
+	QDomElement root = doc.documentElement();
+	m_bpm = root.attribute("Tempo").toInt();
+	if (m_bpm == 0)
+		throw std::runtime_error(QT_TR_NOOP("Invalid tempo"));
+	if (root.attribute("Resolution") == QString("Demisemiquaver"))
+		m_bpm *= 2;
+	addBPM(0, m_bpm);
+	m_song.genre = root.attribute("Genre").toStdString();
+	m_song.year = root.attribute("Year").toStdString();
+
+	bool track_found = false; // FIXME: HACK: We only parse the first track
+
+	// Loop through the child elements
+	QDomElement elem = root.firstChildElement();
+	while (!elem.isNull()) {
+
+		if (elem.tagName() == "TRACK") {
+			// Track found
+			if (track_found) break; // FIXME: HACK: We only parse the first track
+			track_found = true;
+			m_song.artist = elem.attribute("Artist").toStdString();
+
+		} else if (elem.tagName() == "SENTENCE") {
+			// Sentence found
+			// Loop through the notes in the sentence
+			QDomElement noteElem = elem.firstChildElement();
+			while (!noteElem.isNull()) {
+
+				// We are only interested in NOTE elements
+				if (noteElem.tagName() == "NOTE") {
+					// Note found
+					int length = noteElem.attribute("Duration").toInt();
+					unsigned int ts = m_prevts;
+
+					// See if it is an actual note and not sleep
+					if (noteElem.attribute("MidiNote") != "0" || !noteElem.attribute("Lyric").isEmpty()) {
+						// TODO: Prettify lyric? (as ss_extract)
+						Note n(noteElem.attribute("Lyric").toStdString());
+						if (noteElem.attribute("Bonus") == QString("Yes"))
+							n.type = Note::GOLDEN;
+						else if (noteElem.attribute("FreeStyle") == QString("Yes"))
+							n.type = Note::FREESTYLE;
+						else
+							n.type = Note::NORMAL;
+
+						n.note = noteElem.attribute("MidiNote").toInt();
+						n.notePrev = n.note; // No slide notes
+						n.begin = tsTime(ts);
+						n.end = tsTime(ts + length);
+
+						// Track note meta
+						vocal.noteMin = std::min(vocal.noteMin, n.note);
+						vocal.noteMax = std::max(vocal.noteMax, n.note);
+
+						// Save note
+						notes.push_back(n);
+					}
+
+					// Update time
+					m_prevts += length;
+					m_prevtime = tsTime(ts + length);
+				}
+				noteElem = noteElem.nextSiblingElement();
+			}
+
+			// Now add sentence end indicators
+			if (!notes.empty()) notes.back().lineBreak = true;
+			Note n;
+			n.type = Note::SLEEP;
+			n.note = 0;
+			n.begin = m_prevtime;
+			n.end = n.begin;
+			notes.push_back(n);
+		}
+		elem = elem.nextSiblingElement();
+	}
+
+	if (!notes.empty()) {
+		vocal.beginTime = notes.front().begin;
+		vocal.endTime = notes.back().end;
+		// Insert notes
+		m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
+	} else throw std::runtime_error(QT_TR_NOOP("Couldn't find any notes"));
 }
 
 void SongParser::xmlParse()
 {
-
+	// No op: everything is done in ParseHeader
 }
 
 
