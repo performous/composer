@@ -31,11 +31,17 @@ class SongParser {
 	double m_gap;
 	double m_bpm;
 
+	// UltraStar TXT
 	bool txtCheck(std::vector<char> const& data);
 	void txtParseHeader();
 	void txtParse();
 	bool txtParseField(std::string const& line);
 	bool txtParseNote(std::string line, VocalTrack &vocal);
+
+	// SingStar XML
+	bool xmlCheck(std::vector<char> const& data);
+	void xmlParseHeader();
+	void xmlParse();
 
 	// FIXME: Dummy funcs
 	bool iniCheck(std::vector<char> const& data) { (void)data; return false; }
