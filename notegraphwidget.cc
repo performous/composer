@@ -130,8 +130,10 @@ void NoteGraphWidget::timerEvent(QTimerEvent *event)
 	if (!m_pitch.isNull()) {
 		QMutexLocker locker(&m_pitch->mutex);
 		if (m_pitch->newDataAvailable()) setPixmap(QPixmap::fromImage(m_pitch->getImage()));
-		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
-		emit analyzeProgress(m_pitch->getXValue(), width());
+		if (m_pitch->isFinished()) {
+			killTimer(m_analyzeTimer);
+			emit analyzeProgress(0, 0); // Reset progressbar
+		} else emit analyzeProgress(m_pitch->getXValue(), width());
 	}
 }
 
