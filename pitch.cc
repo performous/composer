@@ -61,18 +61,14 @@ namespace {
 		for (std::size_t n = 1; n < Tone::MAXHARM; ++n) if (matchFreq(n*ff, hf)) return true;
 		return false;
 	}
-	struct Combo {
-		double freq;
-		double level;
-		Combo(): freq(), level() {}
-		void combine(Peak const& p) {
-			freq += p.level * p.freq;  // Multiplication for weighted average
-			level += p.level;
-		}
-		bool match(double freqOther) const { return matchFreq(freq, freqOther); }
-	};
-	bool operator<(Combo const& a, Combo const& b) { return a.level < b.level; }
 }
+
+void Combo::combine(Peak const& p) {
+	freq += p.level * p.freq;  // Multiplication for weighted average
+	level += p.level;
+}
+
+bool Combo::match(double freqOther) const { return matchFreq(freq, freqOther); }
 
 void Analyzer::calcTones() {
 	// Precalculated constants
@@ -116,9 +112,9 @@ void Analyzer::calcTones() {
 	// Convert sum frequencies into averages
 	for (Combos::iterator it = combos.begin(), end = combos.end(); it != end; ++it) it->freq /= it->level;
 	// Strongest first
-	std::sort(combos.rbegin(), combos.rend());
+	std::sort(combos.rbegin(), combos.rend(), Combo::cmpByLevel);
 	// Keep only a reasonable amount of strongest frequencies.
-	if (combos.size() > 10) combos.resize(10);
+	//if (combos.size() > 10) combos.resize(10);
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
@@ -142,7 +138,7 @@ void Analyzer::calcTones() {
 					double l = harm->level;
 					t.harmonics[n - 1] += l;
 					t.level += l;
-					t.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by m)
+					t.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
 				}
 				if (miss) ++misses;
 			}

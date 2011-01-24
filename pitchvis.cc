@@ -40,7 +40,7 @@ void PitchVis::run()
 			curX = 0;
 			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
 				// Mix stereo into mono
-				for (unsigned i = 0; i < step; ++i) data[i] = 0.5 * (data[2*i] + data[2*i + 1]);
+				for (unsigned i = 0; i < step; ++i) data[i] = data[2*i]; //0.5 * (data[2*i] + data[2*i + 1]);
 				// Process
 				analyzer.input(&data[0], &data[step]);
 				analyzer.process();
@@ -64,16 +64,19 @@ void PitchVis::run()
 			Moment::Tones const& tones = it->m_tones;
 			for (Moment::Tones::const_iterator it2 = tones.begin(), it2end = tones.end(); it2 != it2end; ++it2) {
 				if (it2->prev) continue;  // The tone doesn't begin at this moment, skip
+				// Copy the linked list into vector for easier access and calculate max level
 				std::vector<Tone const*> tones;
-				for (Tone const* n = &*it2; n; n = n->next) tones.push_back(n);
-				if (tones.size() < 5) continue;  // Too short tone, ignored
+				double lmax = 0.0;
+				for (Tone const* n = &*it2; n; n = n->next) { tones.push_back(n); lmax = std::max(lmax, n->level); }
+				if (tones.size() < 5) continue;  // Too short or weak tone, ignored
+				std::cout << tones.size() << ", " << lmax << std::endl;
 				// Render
 				for (unsigned i = 0; i < tones.size(); ++i) {
 					unsigned x = curX + i;
 					if (x >= width()) throw std::logic_error("Tone past the end of moments");
-					float value = 0.003 * (level2dB(tones[i]->level) + 80.0);
+					float value = 0.006 * (level2dB(tones[i]->level) + 60.0);
 					if (value <= 0.0) continue;
-					unsigned int pix = Pixel(0.0f, value, 0.0f).rgba();
+					unsigned int pix = Pixel(0.0f, 1.0f, 0.0f, value).rgba();
 					unsigned y = freq2px(tones[i]->freq);
 					for (int j = std::max<int>(0, int(y) - 2), jend = std::min<int>(height, int(y) + 3); j < jend; ++j) rgba[j * width() + x] = pix;
 				}

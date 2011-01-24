@@ -14,7 +14,7 @@ struct Pixel {
 	Pixel(float r, float g, float b, float a = 1.0f): r(r), g(g), b(b), a(a) {}
 	Pixel(): r(), g(), b(), a(1.0f) {}
 	static unsigned char conv(float c, float a) {
-		return static_cast<unsigned char>(255.0 * a * std::sqrt(c)); // sqrt(c) is gamma correction
+		return static_cast<unsigned char>(0.5 + 255.0 * clamp(a * std::sqrt(c))); // sqrt(c) is gamma correction
 	}
 	unsigned rgba() const {
 		unsigned char red = conv(r, a);
@@ -25,10 +25,10 @@ struct Pixel {
 	}
 	float& operator[](unsigned idx) { return (&r)[idx]; }
 	Pixel& operator+=(Pixel const& pix) {
-		r = clamp(r + pix.r);
-		g = clamp(g + pix.g);
-		b = clamp(b + pix.b);
-		a = clamp(a + pix.a);
+		r = r + pix.r;
+		g = g + pix.g;
+		b = b + pix.b;
+		a = a + pix.a;
 		return *this;
 	}
 };

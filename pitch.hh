@@ -23,6 +23,13 @@ struct Tone {
 	Tone* next;
 };
 
+static inline bool operator==(Tone const& lhs, Tone const& rhs) { return lhs == rhs.freq; }
+static inline bool operator!=(Tone const& lhs, Tone const& rhs) { return !(lhs == rhs); }
+static inline bool operator<=(Tone const& lhs, Tone const& rhs) { return lhs.freq < rhs.freq || lhs == rhs; }
+static inline bool operator>=(Tone const& lhs, Tone const& rhs) { return lhs.freq > rhs.freq || lhs == rhs; }
+static inline bool operator<(Tone const& lhs, Tone const& rhs) { return lhs.freq < rhs.freq && lhs != rhs; }
+static inline bool operator>(Tone const& lhs, Tone const& rhs) { return lhs.freq > rhs.freq && lhs != rhs; }
+
 struct Moment {
 	typedef std::list<Tone> Tones;
 	Tones m_tones;
@@ -39,12 +46,16 @@ struct Peak {
 	Peak(): freqFFT(), freq(), level() {}
 };
 
-static inline bool operator==(Tone const& lhs, Tone const& rhs) { return lhs == rhs.freq; }
-static inline bool operator!=(Tone const& lhs, Tone const& rhs) { return !(lhs == rhs); }
-static inline bool operator<=(Tone const& lhs, Tone const& rhs) { return lhs.freq < rhs.freq || lhs == rhs; }
-static inline bool operator>=(Tone const& lhs, Tone const& rhs) { return lhs.freq > rhs.freq || lhs == rhs; }
-static inline bool operator<(Tone const& lhs, Tone const& rhs) { return lhs.freq < rhs.freq && lhs != rhs; }
-static inline bool operator>(Tone const& lhs, Tone const& rhs) { return lhs.freq > rhs.freq && lhs != rhs; }
+/// A combo combines multiple FFT peaks that all display the same frequency into one
+struct Combo {
+	double freq;
+	double level;
+	Combo(): freq(), level() {}
+	void combine(Peak const& p);
+	bool match(double freqOther) const;
+	static bool cmpByLevel(Combo const& a, Combo const& b) { return a.level < b.level; }
+};
+
 
 static const std::size_t BUF_N = 100000;  // Ringbuffer size in samples, major b0rkage will happen if this is too small; it won't cause latency, only wasted RAM
 
