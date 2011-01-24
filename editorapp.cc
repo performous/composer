@@ -1,6 +1,7 @@
 #include <QProgressBar>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QDesktopServices>
 #include <QClipboard>
 #include <QMimeData>
 #include <QWhatsThis>
@@ -376,8 +377,8 @@ void EditorApp::on_actionRedo_triggered()
 void EditorApp::on_actionMusicFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			"",
-			tr("Music files (*.mp3 *.ogg)"));
+			QDesktopServices::storageLocation(QDesktopServices::MusicLocation),
+			tr("Music files") + " (*.mp3 *.ogg *.wav *.wma *.flac)");
 
 	if (!fileName.isNull()) {
 		ui.valMusicFile->setText(fileName);
@@ -392,7 +393,7 @@ void EditorApp::on_actionMusicFile_triggered()
 void EditorApp::on_actionLyricsFromFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			"",
+			QDir::homePath(),
 			tr("Text files (*.txt)"));
 
 	if (!fileName.isNull()) {
