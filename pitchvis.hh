@@ -25,10 +25,10 @@ struct Pixel {
 	}
 	float& operator[](unsigned idx) { return (&r)[idx]; }
 	Pixel& operator+=(Pixel const& pix) {
-		r = r + pix.r;
-		g = g + pix.g;
-		b = b + pix.b;
-		a = a + pix.a;
+		r += pix.r;
+		g += pix.g;
+		b += pix.b;
+		a += pix.a;
 		return *this;
 	}
 };
