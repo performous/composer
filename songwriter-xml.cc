@@ -30,11 +30,12 @@ void SingStarXMLWriter::writeXML() {
 	QDomElement trackElem = doc.createElement("TRACK");
 	trackElem.setAttribute("Name", "Player1");
 	trackElem.setAttribute("Artist", QString::fromStdString(s.artist));
+	root.appendChild(trackElem);
 
 	int sentencenum = 1;
 	QDomElement sentenceElem = doc.createElement("SENTENCE"); // FIXME: Should there be Singer and Part attributes?
 	QDomComment sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
-	trackElem.appendChild(sentenceComment);
+	sentenceElem.appendChild(sentenceComment);
 
 	// Iterate all notes
 	Notes const& notes = s.getVocalTrack().notes;
@@ -43,7 +44,7 @@ void SingStarXMLWriter::writeXML() {
 
 		// SLEEP notes indicate sentence end
 		if (n.type == Note::SLEEP) {
-			trackElem.appendChild(sentenceElem);
+			root.appendChild(sentenceElem);
 			++sentencenum;
 			sentenceElem = doc.createElement("SENTENCE");
 			sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
@@ -77,7 +78,7 @@ void SingStarXMLWriter::writeXML() {
 
 	// TODO: Needs a last dummy sentence
 
-	root.appendChild(trackElem);
+	root.appendChild(sentenceElem);
 
 	// Get the xml data
 	QString xml = doc.toString(4);
