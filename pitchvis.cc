@@ -40,7 +40,7 @@ void PitchVis::run()
 			curX = 0;
 			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
 				// Mix stereo into mono
-				for (unsigned i = 0; i < step; ++i) data[i] = data[2*i]; //0.5 * (data[2*i] + data[2*i + 1]);
+				for (unsigned i = 0; i < step; ++i) data[i] = 0.5 * (data[2*i] + data[2*i + 1]);
 				// Process
 				analyzer.input(&data[0], &data[step]);
 				analyzer.process();
