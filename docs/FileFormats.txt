@@ -1,0 +1,35 @@
+Editor file format support
+==========================
+
+This document describes to what extent various file formats are supported by the editor.
+
+
+Own project files
+-----------------
+Native save/load format. Preserves operation history (undo buffer). Currently only saves notes, not metadata.
+
+
+SingStar XML
+------------
+Import and export. Round-trip is not perfect: All XML elements except MELODY, TRACK, SENTENCE and NOTE are ignored as are all attributes of SENTENCE-element. Exporter writes some useful comments.
+
+
+UltraStar TXT
+-------------
+Import only, export planned.
+
+
+Frets on Fire MIDI/INI
+----------------------
+No support, but both import and export are planned.
+
+
+Plain text lyrics
+-----------------
+Raw lyrics without any timing data can be read from a file or copied from clipboard. A note is created for each word and a line break indicates sentence end.
+
+
+Music files
+-----------
+The pitch analysis can be performed to any file that FFmpeg can decode. Playback and metadata reading support depends on Phonon media library back-end.
+
