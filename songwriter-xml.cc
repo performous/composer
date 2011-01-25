@@ -14,22 +14,22 @@ void SingStarXMLWriter::writeXML() {
 	root.setAttribute("Tempo", QString::number(tempo));
 	root.setAttribute("FixedTempo", "Yes");
 	root.setAttribute("Resolution", "Demisemiquaver"); // Demisemiquaver = 2x tempo of Semiquaver
-	root.setAttribute("Genre", QString::fromStdString(s.genre));
-	root.setAttribute("Year", QString::fromStdString(s.year));
+	root.setAttribute("Genre", s.genre);
+	root.setAttribute("Year", s.year);
 	root.setAttribute("xsi:schemaLocation", "http://www.singstargame.com http://15GMS-SINGSQL/xml_schema/melody.xsd");
 	root.setAttribute("m2xVersion", "060110"); //?
 	root.setAttribute("audioVersion", "2"); //?
 	doc.appendChild(root);
 
-	QDomComment artistComment = doc.createComment(QString("Artist: ") + QString::fromStdString(s.artist));
-	QDomComment titleComment = doc.createComment(QString("Title: ") + QString::fromStdString(s.title));
+	QDomComment artistComment = doc.createComment(QString("Artist: ") + s.artist);
+	QDomComment titleComment = doc.createComment(QString("Title: ") + s.title);
 	root.appendChild(artistComment);
 	root.appendChild(titleComment);
 
 	int tracknum = 1;
 	QDomElement trackElem = doc.createElement("TRACK");
 	trackElem.setAttribute("Name", "Player1");
-	trackElem.setAttribute("Artist", QString::fromStdString(s.artist));
+	trackElem.setAttribute("Artist", s.artist);
 	root.appendChild(trackElem);
 
 	int sentencenum = 1;
@@ -62,7 +62,7 @@ void SingStarXMLWriter::writeXML() {
 			QDomElement noteElem = doc.createElement("NOTE");
 			noteElem.setAttribute("MidiNote", QString::number(n.note));
 			noteElem.setAttribute("Duration", QString::number(sec2dur(n.length())));
-			noteElem.setAttribute("Lyric", QString::fromStdString(n.syllable));
+			noteElem.setAttribute("Lyric", n.syllable);
 			if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
 			if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
 			sentenceElem.appendChild(noteElem);

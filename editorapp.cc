@@ -143,7 +143,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteBegin->setText(QString::number(note->note().begin) + tr(" s"));
 		ui.valNoteEnd->setText(QString::number(note->note().end) + tr(" s"));
 		ui.valNoteDuration->setText(QString::number(note->note().length()) + tr(" s"));
-		ui.valNote->setText(QString::fromStdString(ms.getNoteStr(ms.getNoteFreq(note->note().note)))
+		ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
 			+ " (" + QString::number(note->note().note) + ")");
 		ui.cmbNoteType->setEnabled(true);
 		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
@@ -228,7 +228,7 @@ void EditorApp::on_actionOpen_triggered()
 			} else {
 
 				// Song import
-				song.reset(new Song(QString(finfo.path()+"/").toStdString(), finfo.fileName().toStdString()));
+				song.reset(new Song(QString(finfo.path()+"/"), finfo.fileName()));
 				noteGraph->setLyrics(song->getVocalTrack());
 				updateSongMeta(true);
 				// Combine the import into one undo action
@@ -450,23 +450,23 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 	if (!song) return;
 	// TODO: Undo
 	if (!readFromSongToUI) {
-		if (ui.txtTitle->text().toStdString() != song->title) {
-			song->title = ui.txtTitle->text().toStdString();
+		if (ui.txtTitle->text() != song->title) {
+			song->title = ui.txtTitle->text();
 		}
-		if (ui.txtArtist->text().toStdString() != song->artist) {
-			song->artist = ui.txtArtist->text().toStdString();
+		if (ui.txtArtist->text() != song->artist) {
+			song->artist = ui.txtArtist->text();
 		}
-		if (ui.txtGenre->text().toStdString() != song->genre) {
-			song->genre = ui.txtGenre->text().toStdString();
+		if (ui.txtGenre->text() != song->genre) {
+			song->genre = ui.txtGenre->text();
 		}
-		if (ui.txtYear->text().toStdString() != song->year) {
-			song->year = ui.txtYear->text().toStdString();
+		if (ui.txtYear->text() != song->year) {
+			song->year = ui.txtYear->text();
 		}
 	} else {
-		if (!song->title.empty()) ui.txtTitle->setText(QString::fromStdString(song->title));
-		if (!song->artist.empty()) ui.txtArtist->setText(QString::fromStdString(song->artist));
-		if (!song->genre.empty()) ui.txtGenre->setText(QString::fromStdString(song->genre));
-		if (!song->year.empty()) ui.txtYear->setText(QString::fromStdString(song->year));
+		if (!song->title.isEmpty()) ui.txtTitle->setText(song->title);
+		if (!song->artist.isEmpty()) ui.txtArtist->setText(song->artist);
+		if (!song->genre.isEmpty()) ui.txtGenre->setText(song->genre);
+		if (!song->year.isEmpty()) ui.txtYear->setText(song->year);
 	}
 }
 
@@ -474,13 +474,13 @@ void EditorApp::metaDataChanged()
 {
 	if (player) {
 		if (!player->metaData(Phonon::TitleMetaData).isEmpty())
-			song->title = player->metaData(Phonon::TitleMetaData).join(", ").toStdString();
+			song->title = player->metaData(Phonon::TitleMetaData).join(", ");
 		if (!player->metaData(Phonon::ArtistMetaData).isEmpty())
-			song->artist = player->metaData(Phonon::ArtistMetaData).join(", ").toStdString();
+			song->artist = player->metaData(Phonon::ArtistMetaData).join(", ");
 		if (!player->metaData(Phonon::GenreMetaData).isEmpty())
-			song->genre = player->metaData(Phonon::GenreMetaData).join(", ").toStdString();
+			song->genre = player->metaData(Phonon::GenreMetaData).join(", ");
 		if (!player->metaData("DATE").isEmpty())
-			song->year = player->metaData("DATE").join(", ").toStdString();
+			song->year = player->metaData("DATE").join(", ");
 		updateSongMeta(true);
 	}
 }

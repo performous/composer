@@ -2,19 +2,20 @@
 
 #include "util.hh"
 #include <QtGlobal>
+#include <QTextStream>
 #include <cmath>
-#include <sstream>
 #include <stdexcept>
 
-std::string MusicalScale::getNoteStr(double freq) const {
+QString MusicalScale::getNoteStr(double freq) const {
 	int id = getNoteId(freq);
-	if (id == -1) return std::string();
+	if (id == -1) return QString();
 	static const char * note[12] = {"C ","C#","D ","D#","E ","F ","F#","G ","G#","A ","A#","B "};
-	std::ostringstream oss;
+	QString buf;
+	QTextStream ts(&buf);
 	// Acoustical Society of America Octave Designation System
 	//int octave = 2 + id / 12;
-	oss << note[id%12] << " " << int(round(freq)) << " Hz";
-	return oss.str();
+	ts << note[id%12] << " " << int(round(freq)) << " Hz";
+	return ts.readAll();
 }
 
 unsigned int MusicalScale::getNoteNum(int id) const {
@@ -58,7 +59,7 @@ Duration::Duration(): begin(getNaN()), end(getNaN()) {}
 
 const Note::Type Note::types[] = { NORMAL, GOLDEN, FREESTYLE, SLIDE, SLEEP, TAP, HOLDBEGIN, HOLDEND, ROLL, MINE, LIFT };
 
-Note::Note(std::string lyric): syllable(lyric), begin(), end(), phase(getNaN()), type(NORMAL), note(), notePrev(), lineBreak() {}
+Note::Note(QString lyric): syllable(lyric), begin(), end(), phase(getNaN()), type(NORMAL), note(), notePrev(), lineBreak() {}
 
 double Note::diff(double note, double n) { return remainder(n - note, 12.0); }
 
@@ -73,7 +74,7 @@ int Note::getTypeInt() const {
 	}
 }
 
-std::string Note::typeString() const {
+QString Note::typeString() const {
 	switch (type) {
 		case NORMAL:    return QT_TR_NOOP("Normal");
 		case GOLDEN:    return QT_TR_NOOP("Bonus");
@@ -85,7 +86,7 @@ std::string Note::typeString() const {
 }
 
 
-VocalTrack::VocalTrack(std::string name) : name(name) {reload();}
+VocalTrack::VocalTrack(QString name) : name(name) {reload();}
 
 void VocalTrack::reload() {
 	notes.clear();

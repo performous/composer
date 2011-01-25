@@ -15,8 +15,8 @@ public:
 	NoteLabel(const Note &note, QWidget *parent, const QPoint &position = QPoint(), const QSize &size = QSize(), bool floating = true);
 
 	void createPixmap(QSize size = QSize());
-	QString lyric() const { return QString::fromStdString(m_note.syllable); }
-	void setLyric(const QString &text) { m_note.syllable = text.toStdString(); createPixmap(size()); }
+	QString lyric() const { return m_note.syllable; }
+	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(size()); }
 
 	void setSelected(bool state = true) {
 		if (m_selected != state) {

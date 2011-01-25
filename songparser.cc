@@ -1,34 +1,18 @@
 #include "songparser.hh"
 
-#include <fstream>
+#include <QFile>
+#include <QFileInfo>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 
 
 namespace SongParserUtil {
-	void assign(int& var, std::string const& str) {
-		try {
-			var = boost::lexical_cast<int>(str);
-		} catch (...) {
-			throw std::runtime_error("\"" + str + "\" is not valid integer value");
-		}
-	}
-	void assign(double& var, std::string str) {
-		std::replace(str.begin(), str.end(), ',', '.'); // Fix decimal separators
-		try {
-			var = boost::lexical_cast<double>(str);
-		} catch (...) {
-			throw std::runtime_error("\"" + str + "\" is not valid floating point value");
-		}
-	}
-	void assign(bool& var, std::string const& str) {
+	void assign(bool& var, QString const& str) {
 		if (str == "YES" || str == "yes" || str == "1") var = true;
 		else if (str == "NO" || str == "no" || str == "0") var = false;
-		else throw std::runtime_error("Invalid boolean value: " + str);
-	}
-	void eraseLast(std::string& s, char ch) {
-		if (!s.empty() && *s.rbegin() == ch) s.erase(s.size() - 1);
+		else throw std::runtime_error("Invalid boolean value: " + str.toStdString());
 	}
 }
 
@@ -36,6 +20,7 @@ namespace SongParserUtil {
 /// constructor
 SongParser::SongParser(Song& s):
   m_song(s),
+  m_stream(),
   m_linenum(),
   m_relative(),
   m_gap(),
@@ -49,82 +34,80 @@ SongParser::SongParser(Song& s):
 {
 	enum { NONE, TXT, XML, INI, SM } type = NONE;
 	// Read the file, determine the type and do some initial validation checks
-	{
-		std::ifstream f((s.path + s.filename).c_str(), std::ios::binary);
-		if (!f.is_open()) throw SongParserException("Could not open song file", 0);
-		f.seekg(0, std::ios::end);
-		size_t size = f.tellg();
-		if (size < 10 || size > 100000) throw SongParserException("Does not look like a song file (wrong size)", 1, true);
-		f.seekg(0);
-		std::vector<char> data(size);
-		if (!f.read(&data[0], size)) throw SongParserException("Unexpected I/O error", 0);
-		if (smCheck(data)) type = SM;
-		else if (txtCheck(data)) type = TXT;
-		else if (xmlCheck(data)) type = XML;
-		else if (iniCheck(data)) type = INI;
-		else throw SongParserException("Does not look like a song file (wrong header)", 1, true);
-		m_ss.write(&data[0], size);
-	}
+	QFile file(m_song.path + m_song.filename);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		throw SongParserException(QT_TR_NOOP("Could not open song file"), 0);
+
+	QFileInfo finfo(file);
+	if (finfo.size() < 10 || finfo.size() > 100000) throw SongParserException("Does not look like a song file (wrong size)", 1, true);
+
+	QTextStream stream(&file);
+	QString data = stream.readAll();
+	file.close();
+
+	// TODO: Convert data from unknown encoding
+
+	if (smCheck(data)) type = SM;
+	else if (txtCheck(data)) type = TXT;
+	else if (xmlCheck(data)) type = XML;
+	else if (iniCheck(data)) type = INI;
+	else throw SongParserException("Does not look like a song file (wrong header)", 1, true);
+
+	m_stream.setString(&data);
+
 	// FIXME: convertToUTF8(m_ss, s.path + s.filename);
-	// Header parsing
+	// Parse
 	try {
-		if (type == TXT) txtParseHeader();
-		else if (type == XML) xmlParseHeader();
-		else if (type == INI) iniParseHeader();
-		else if (type == SM) { smParseHeader(); s.dropNotes(); } // Hack: drop notes here
+		if (type == TXT) txtParse();
+		else if (type == XML) xmlParse();
+		else if (type == INI) iniParse();
+		else if (type == SM) smParse();
 	} catch (std::runtime_error& e) {
 		throw SongParserException(e.what(), m_linenum);
 	}
 
 	// Remove bogus entries
-	if (!boost::filesystem::exists(m_song.path + m_song.cover)) m_song.cover = "";
-	if (!boost::filesystem::exists(m_song.path + m_song.background)) m_song.background = "";
-	if (!boost::filesystem::exists(m_song.path + m_song.video)) m_song.video = "";
+	if (!QFileInfo(m_song.path + m_song.cover).exists()) m_song.cover = "";
+	if (!QFileInfo(m_song.path + m_song.background).exists()) m_song.background = "";
+	if (!QFileInfo(m_song.path + m_song.video).exists()) m_song.video = "";
 
 	// In case no images/videos were specified, try to guess them
-	if (m_song.cover.empty() || m_song.background.empty() || m_song.video.empty()) {
-		boost::regex coverfile("((cover|album|label|\\[co\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
-		boost::regex backgroundfile("((background|bg||\\[bg\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
-		boost::regex videofile("(.*\\.(avi|mpg|mpeg|flv|mov|mp4))$", boost::regex_constants::icase);
-		boost::cmatch match;
+	try {
+		if (m_song.cover.isEmpty() || m_song.background.isEmpty() || m_song.video.isEmpty()) {
+			boost::regex coverfile("((cover|album|label|\\[co\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
+			boost::regex backgroundfile("((background|bg||\\[bg\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
+			boost::regex videofile("(.*\\.(avi|mpg|mpeg|flv|mov|mp4))$", boost::regex_constants::icase);
+			boost::cmatch match;
 
-		for (boost::filesystem::directory_iterator dirIt(s.path), dirEnd; dirIt != dirEnd; ++dirIt) {
-			boost::filesystem::path p = dirIt->path();
-			std::string name = p.leaf(); // File basename
-			if (m_song.cover.empty() && regex_match(name.c_str(), match, coverfile)) {
-				m_song.cover = name;
-			} else if (m_song.background.empty() && regex_match(name.c_str(), match, backgroundfile)) {
-				m_song.background = name;
-			} else if (m_song.video.empty() && regex_match(name.c_str(), match, videofile)) {
-				m_song.video = name;
+			for (boost::filesystem::directory_iterator dirIt(s.path.toStdString()), dirEnd; dirIt != dirEnd; ++dirIt) {
+				boost::filesystem::path p = dirIt->path();
+				std::string name = p.leaf(); // File basename
+				if (m_song.cover.isEmpty() && regex_match(name.c_str(), match, coverfile)) {
+					m_song.cover = QString::fromStdString(name);
+				} else if (m_song.background.isEmpty() && regex_match(name.c_str(), match, backgroundfile)) {
+					m_song.background = QString::fromStdString(name);
+				} else if (m_song.video.isEmpty() && regex_match(name.c_str(), match, videofile)) {
+					m_song.video = QString::fromStdString(name);
+				}
 			}
 		}
+	} catch (...) {
+		// FIXME: Due to conversion errors, directory_iterator may fail - reimplement with Qt
 	}
-	s.loadStatus = Song::HEADER;
-
-	// Note: The full parser invocation below should actually be above header parsing
-	// if two-phase parsing is wanted
-
-	// Header already parsed?
-	if (s.loadStatus == Song::HEADER) {
-		try {
-			if (type == TXT) txtParse();
-			else if (type == XML) xmlParse();
-			else if (type == INI) iniParse();
-			else if (type == SM) smParse();
-		} catch (std::runtime_error& e) {
-			throw SongParserException(e.what(), m_linenum);
-		}
-		finalize(); // Do some adjusting to the notes
-		s.loadStatus = Song::FULL;
-		return; // FIXME: Header-only parsing is disabled
-	}
+	finalize(); // Do some adjusting to the notes
+	s.loadStatus = Song::FULL;
 }
 
+bool SongParser::getline(QString &line)
+{
+	++m_linenum;
+	line = m_stream.readLine();
+	return !m_stream.atEnd();
+}
 
 void SongParser::finalize() {
-	std::vector<std::string> tracks = m_song.getVocalTrackNames();
-	for(std::vector<std::string>::const_iterator it = tracks.begin() ; it != tracks.end() ; ++it) {
+	std::vector<QString> tracks = m_song.getVocalTrackNames();
+	for(std::vector<QString>::const_iterator it = tracks.begin() ; it != tracks.end() ; ++it) {
 		// Adjust negative notes
 		VocalTrack& vocal = m_song.getVocalTrack(*it);
 		if (vocal.noteMin <= 0) {

@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <QString>
 
 /// musical scale, defaults to C major
 class MusicalScale {
@@ -14,7 +15,7 @@ class MusicalScale {
 	/// constructor
 	MusicalScale(double baseFreq = 440.0): m_baseFreq(baseFreq) {}
 	/// get name of note
-	std::string getNoteStr(double freq) const;
+	QString getNoteStr(double freq) const;
 	/// get note number for id
 	unsigned int getNoteNum(int id) const;
 	/// true if sharp note
@@ -52,7 +53,7 @@ typedef std::map<int, Durations> NoteMap;
 
 /// note read from songfile
 struct Note {
-	Note(std::string lyric = "");
+	Note(QString lyric = "");
 	/// note type - NOTE! Keep the types array below in sync with the enum!
 	enum Type { FREESTYLE = 'F', NORMAL = ':', GOLDEN = '*', SLIDE = '+', SLEEP = '-',
 		TAP = '1', HOLDBEGIN = '2', HOLDEND = '3', ROLL = '4', MINE = 'M', LIFT = 'L'} type;
@@ -65,7 +66,7 @@ struct Note {
 	double phase; ///< position within a measure, [0, 1)
 	int note; ///< MIDI pitch of the note (at the end for slide notes)
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
-	std::string syllable; ///< lyrics syllable for that note
+	QString syllable; ///< lyrics syllable for that note
 	bool lineBreak; ///< is this note ending a syllable?
 	/// note length
 	double length() const { return end - begin; }
@@ -79,15 +80,15 @@ struct Note {
 	static bool ltEnd(Note const& a, Note const& b) { return a.end < b.end; }
 
 	/// human-readable description of note type
-	std::string typeString() const;
+	QString typeString() const;
 };
 
 typedef std::vector<Note> Notes;
 
 struct VocalTrack {
-	VocalTrack(std::string name);
+	VocalTrack(QString name);
 	void reload();
-	std::string name;
+	QString name;
 	Notes notes;
 	int noteMin, noteMax; ///< lowest and highest note
 	double beginTime, endTime; ///< the period where there are notes
@@ -95,4 +96,4 @@ struct VocalTrack {
 	MusicalScale scale; ///< scale in which song is sung
 };
 
-typedef std::map<std::string, VocalTrack> VocalTracks;
+typedef std::map<QString, VocalTrack> VocalTracks;

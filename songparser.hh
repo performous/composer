@@ -1,18 +1,11 @@
 #pragma once
 
 #include "song.hh"
-#include <sstream>
-#include <boost/filesystem.hpp>
+#include <QTextStream>
 
 namespace SongParserUtil {
-	/// Parse an int from string and assign it to a variable
-	void assign(int& var, std::string const& str);
-	/// Parse a double from string and assign it to a variable
-	void assign(double& var, std::string str);
 	/// Parse a boolean from string and assign it to a variable
-	void assign(bool& var, std::string const& str);
-	/// Erase last character if it matches
-	void eraseLast(std::string& s, char ch = ' ');
+	void assign(bool& var, QString const& str);
 }
 
 /// parses songfiles
@@ -24,31 +17,28 @@ class SongParser {
 	void finalize();
 
 	Song& m_song;
-	std::stringstream m_ss;
+	QTextStream m_stream;
 	unsigned int m_linenum;
-	bool getline(std::string& line) { ++m_linenum; return std::getline(m_ss, line);}
+	bool getline(QString& line);
 	bool m_relative;
 	double m_gap;
 	double m_bpm;
 
 	// UltraStar TXT
-	bool txtCheck(std::vector<char> const& data);
-	void txtParseHeader();
+	bool txtCheck(QString const& data);
 	void txtParse();
-	bool txtParseField(std::string const& line);
-	bool txtParseNote(std::string line, VocalTrack &vocal);
+	bool txtParseField(QString const& line);
+	bool txtParseNote(QString line, VocalTrack &vocal);
 
 	// SingStar XML
-	bool xmlCheck(std::vector<char> const& data);
-	void xmlParseHeader();
+	bool xmlCheck(QString const& data);
 	void xmlParse();
 
 	// FIXME: Dummy funcs
-	bool iniCheck(std::vector<char> const& data) { (void)data; return false; }
+	bool iniCheck(QString const& data) { (void)data; return false; }
 	void iniParseHeader() { }
 	void iniParse() { }
-	bool smCheck(std::vector<char> const& data) { (void)data; return false; }
-	void smParseHeader() { }
+	bool smCheck(QString const& data) { (void)data; return false; }
 	void smParse() { }
 	bool smParseField(std::string line) { (void)line; return false; }
 	Notes smParseNotes(std::string line) { (void)line; return Notes(); }

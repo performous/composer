@@ -32,7 +32,9 @@ void Song::reload(bool errorIgnore) {
 	preview_start = getNaN();
 	hasBRE = false;
 	b0rkedTracks = false;
-	try { SongParser(*this); } catch (...) { if (!errorIgnore) throw; }
+	if (!filename.isEmpty()) {
+		try { SongParser(*this); } catch (...) { if (!errorIgnore) throw; }
+	}
 	collateUpdate();
 }
 
@@ -65,7 +67,7 @@ void Song::collateUpdate() {
 	collateByArtistOnly = collate(artist);
 }
 
-std::string Song::collate(std::string const& str) {
+QString Song::collate(QString const& str) {
 	return str; //unicodeCollate(str);
 }
 

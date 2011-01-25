@@ -20,7 +20,7 @@ void FoFMIDIWriter::writeMIDI() {
 
 void FoFMIDIWriter::writeINI() {
 	/*
-	std::ofstream f((path.toStdString() + "song.ini").c_str(), std::ios::binary);
+	std::ofstream f((path + "song.ini").c_str(), std::ios::binary);
 	f << "[song]\n";
 	f << "name = " << s.title << std::endl;
 	f << "artist = " << s.artist << std::endl;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
 #include "notes.hh"
 
 #include <stdexcept>
@@ -9,7 +10,8 @@
 /// parsing of songfile failed
 struct SongParserException: public std::runtime_error {
 	/// constructor
-	SongParserException(std::string const& msg, unsigned int linenum, bool sil = false): runtime_error(msg), m_linenum(linenum), m_silent(sil) {}
+	SongParserException(QString const& msg, unsigned int linenum, bool sil = false)
+		: runtime_error(msg.toStdString()), m_linenum(linenum), m_silent(sil) {}
 	unsigned int line() const { return m_linenum; } ///< line in which the error occured
 	bool silent() const { return m_silent; } ///< if the error should not be printed to user (file skipped)
   private:
@@ -20,15 +22,15 @@ struct SongParserException: public std::runtime_error {
 class SongParser;
 
 namespace TrackName {
-	const std::string GUITAR = "Guitar";
-	const std::string GUITAR_COOP = "Coop guitar";
-	const std::string GUITAR_RHYTHM = "Rhythm guitar";
-	const std::string BASS = "Bass";
-	const std::string DRUMS = "Drums";
-	const std::string LEAD_VOCAL = "Vocals";
-	const std::string HARMONIC_1 = "Harmonic 1";
-	const std::string HARMONIC_2 = "Harmonic 2";
-	const std::string HARMONIC_3 = "Harmonic 3";
+	const QString GUITAR = "Guitar";
+	const QString GUITAR_COOP = "Coop guitar";
+	const QString GUITAR_RHYTHM = "Rhythm guitar";
+	const QString BASS = "Bass";
+	const QString DRUMS = "Drums";
+	const QString LEAD_VOCAL = "Vocals";
+	const QString HARMONIC_1 = "Harmonic 1";
+	const QString HARMONIC_2 = "Harmonic 2";
+	const QString HARMONIC_3 = "Harmonic 3";
 }
 
 /// class to load and parse songfiles
@@ -40,17 +42,17 @@ class Song {
   public:
 	/// constructors
 	Song(): dummyVocal(TrackName::LEAD_VOCAL) { reload(true); }
-	Song(std::string const& path_, std::string const& filename_): dummyVocal(TrackName::LEAD_VOCAL), path(path_), filename(filename_) { reload(false); }
+	Song(QString const& path_, QString const& filename_): dummyVocal(TrackName::LEAD_VOCAL), path(path_), filename(filename_) { reload(false); }
 	/// reload song
 	void reload(bool errorIgnore = true);
 	/// parse field
-	bool parseField(std::string const& line);
+	bool parseField(QString const& line);
 	/// drop notes (to conserve memory), but keep info about available tracks
 	void dropNotes();
 	/** Get formatted song label. **/
-	std::string str() const { return title + "  by  " + artist; }
+	QString str() const { return title + "  by  " + artist; }
 	/** Get full song information (used by the search function). **/
-	std::string strFull() const { return title + "\n" + artist + "\n" + genre + "\n" + edition + "\n" + path; }
+	QString strFull() const { return title + "\n" + artist + "\n" + genre + "\n" + edition + "\n" + path; }
 	/// Is the song parsed from the file yet?
 	enum LoadStatus { NONE, HEADER, FULL } loadStatus;
 	/// status of song
@@ -58,12 +60,12 @@ class Song {
 	/** Get the song status at a given timestamp **/
 	Status status(double time);
 	int randomIdx; ///< sorting index used for random order
-	void insertVocalTrack(std::string vocalTrack, VocalTrack track) {
+	void insertVocalTrack(QString vocalTrack, VocalTrack track) {
 		vocalTracks.erase(vocalTrack);
-		vocalTracks.insert(std::make_pair<std::string, VocalTrack>(vocalTrack, track));
+		vocalTracks.insert(std::make_pair<QString, VocalTrack>(vocalTrack, track));
 	}
 	// Get a selected track, or LEAD_VOCAL if not found or the first one if not found
-	VocalTrack& getVocalTrack(std::string vocalTrack = TrackName::LEAD_VOCAL) {
+	VocalTrack& getVocalTrack(QString vocalTrack = TrackName::LEAD_VOCAL) {
 		if(vocalTracks.find(vocalTrack) != vocalTracks.end()) {
 			return vocalTracks.find(vocalTrack)->second;
 		} else {
@@ -78,7 +80,7 @@ class Song {
 			}
 		}
 	}
-	VocalTrack getVocalTrack(std::string vocalTrack = TrackName::LEAD_VOCAL) const {
+	VocalTrack getVocalTrack(QString vocalTrack = TrackName::LEAD_VOCAL) const {
 		if(vocalTracks.find(vocalTrack) != vocalTracks.end()) {
 			return vocalTracks.find(vocalTrack)->second;
 		} else {
@@ -94,8 +96,8 @@ class Song {
 		}
 	}
 
-	std::vector<std::string> getVocalTrackNames() {
-		std::vector<std::string> result;
+	std::vector<QString> getVocalTrackNames() {
+		std::vector<QString> result;
 		for (VocalTracks::const_iterator it = vocalTracks.begin(); it != vocalTracks.end(); ++it) {
 			result.push_back(it->first);
 		}
@@ -107,32 +109,32 @@ class Song {
 	//bool hasDrums() const { return instrumentTracks.find(TrackName::DRUMS) != instrumentTracks.end(); }
 	//bool hasGuitars() const { return instrumentTracks.size() - hasDrums(); }
 	bool hasVocals() const { return !vocalTracks.empty(); }
-	std::string path; ///< path of songfile
-	std::string filename; ///< name of songfile
-	std::string midifilename; ///< name of midi file in FoF format
-	std::vector<std::string> category; ///< category of song
-	std::string genre; ///< genre
-	std::string edition; ///< license
-	std::string title; ///< songtitle
-	std::string artist; ///< artist
-	std::string text; ///< songtext
-	std::string creator; ///< creator
-	std::string language; ///< language
-	std::string year; ///< year
-	std::map<std::string,std::string> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
-	std::string cover; ///< cd cover
-	std::string background; ///< background image
-	std::string video; ///< video
+	QString path; ///< path of songfile
+	QString filename; ///< name of songfile
+	QString midifilename; ///< name of midi file in FoF format
+	std::vector<QString> category; ///< category of song
+	QString genre; ///< genre
+	QString edition; ///< license
+	QString title; ///< songtitle
+	QString artist; ///< artist
+	QString text; ///< songtext
+	QString creator; ///< creator
+	QString language; ///< language
+	QString year; ///< year
+	std::map<QString,QString> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
+	QString cover; ///< cd cover
+	QString background; ///< background image
+	QString video; ///< video
 	/// Variables used for comparisons (sorting)
-	std::string collateByTitle;
-	std::string collateByTitleOnly;
+	QString collateByTitle;
+	QString collateByTitleOnly;
 	/// Variables used for comparisons (sorting)
-	std::string collateByArtist;
-	std::string collateByArtistOnly;
+	QString collateByArtist;
+	QString collateByArtistOnly;
 	/** Rebuild collate variables from other strings **/
 	void collateUpdate();
 	/** Convert a string to its collate form **/
-	static std::string collate(std::string const& str);
+	static QString collate(QString const& str);
 	double videoGap; ///< gap with video
 	double start; ///< start of song
 	double preview_start; ///< starting time for the preview
@@ -144,9 +146,9 @@ class Song {
 	bool hasBRE; ///< is there a Big Rock Ending? (used for drums only)
 	bool b0rkedTracks; ///< are some tracks broken? (so that user can be notified)
 	struct SongSection {
-		std::string name;
+		QString name;
 		double begin;
-		SongSection(std::string const& name, const double begin): name(name), begin(begin) {}
+		SongSection(QString const& name, const double begin): name(name), begin(begin) {}
 	};
 	typedef std::vector<SongSection> SongSections;
 	SongSections songsections; ///< vector of song sections

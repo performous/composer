@@ -156,8 +156,8 @@ void NoteLabel::updateNote()
 	MusicalScale ms;
 	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
 		.arg(lyric())
-		.arg(QString::fromStdString(m_note.typeString()))
-		.arg(QString::fromStdString(ms.getNoteStr(ms.getNoteFreq(m_note.note))))
+		.arg(m_note.typeString())
+		.arg(ms.getNoteStr(ms.getNoteFreq(m_note.note)))
 		.arg(QString::number(m_note.begin))
 		.arg(QString::number(m_note.end))
 		);

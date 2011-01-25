@@ -11,22 +11,18 @@ int sleepts = -1;
 
 
 /// 'Magick' to check if this file looks like correct format
-bool SongParser::xmlCheck(std::vector<char> const& data)
+bool SongParser::xmlCheck(QString const& data)
 {
 	return (data[0] == '<' && data[1] == '?' && data[2] == 'x' && data[3] == 'm' && data[4] == 'l')
 			|| (data[0] == '<' && data[1] == 'M' && data[2] == 'E' && data[3] == 'L');
 }
 
-void SongParser::xmlParseHeader()
+void SongParser::xmlParse()
 {
 	// Build DOM tree from the xml file
 	QDomDocument doc("MELODY");
-	QFile file(QString::fromStdString(m_song.path) + QString::fromStdString(m_song.filename));
-	if (!file.open(QIODevice::ReadOnly))
-		throw std::runtime_error(QT_TR_NOOP("Couldn't open file"));
-	if (!doc.setContent(&file)) {
+	if (!doc.setContent(m_stream.readAll())) {
 		throw std::runtime_error(QT_TR_NOOP("XML parse error"));	}
-	file.close();
 
 	VocalTrack vocal(TrackName::LEAD_VOCAL);
 	Notes& notes = vocal.notes;
@@ -39,8 +35,8 @@ void SongParser::xmlParseHeader()
 	if (root.attribute("Resolution") == QString("Demisemiquaver"))
 		m_bpm *= 2;
 	addBPM(0, m_bpm);
-	m_song.genre = root.attribute("Genre").toStdString();
-	m_song.year = root.attribute("Year").toStdString();
+	m_song.genre = root.attribute("Genre");
+	m_song.year = root.attribute("Year");
 
 	bool track_found = false; // FIXME: HACK: We only parse the first track
 
@@ -52,7 +48,7 @@ void SongParser::xmlParseHeader()
 			// Track found
 			if (track_found) break; // FIXME: HACK: We only parse the first track
 			track_found = true;
-			m_song.artist = elem.attribute("Artist").toStdString();
+			m_song.artist = elem.attribute("Artist");
 
 		} else if (elem.tagName() == "SENTENCE") {
 			// Sentence found
@@ -69,7 +65,7 @@ void SongParser::xmlParseHeader()
 					// See if it is an actual note and not sleep
 					if (noteElem.attribute("MidiNote") != "0" || !noteElem.attribute("Lyric").isEmpty()) {
 						// TODO: Prettify lyric? (as ss_extract)
-						Note n(noteElem.attribute("Lyric").toStdString());
+						Note n(noteElem.attribute("Lyric"));
 						if (noteElem.attribute("Bonus") == QString("Yes"))
 							n.type = Note::GOLDEN;
 						else if (noteElem.attribute("FreeStyle") == QString("Yes"))
@@ -115,11 +111,6 @@ void SongParser::xmlParseHeader()
 		// Insert notes
 		m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
 	} else throw std::runtime_error(QT_TR_NOOP("Couldn't find any notes"));
-}
-
-void SongParser::xmlParse()
-{
-	// No op: everything is done in ParseHeader
 }
 
 

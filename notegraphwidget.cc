@@ -75,7 +75,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		QString word;
 		ts >> word;
 		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word.toStdString()), this, QPoint(0, n2px(24)), QSize(), !first));
+			m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24)), QSize(), !first));
 			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 			first = false;
 		}
@@ -476,12 +476,12 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags flags)
 {
 	if (!(flags & Operation::NO_EXEC)) {
-		std::string action = op.op().toStdString();
+		QString action = op.op();
 		if (action == "BLOCK" || action == "COMBINER") {
 			; // No op
 		} else if (action == "NEW") {
 			NoteLabel *newLabel = new NoteLabel(
-				Note(op.s(2).toStdString()), // Note(lyric)
+				Note(op.s(2)), // Note(lyric)
 				this, // parent
 				QPoint(op.i(3), op.i(4)), // x,y
 				QSize(op.i(5), op.i(6)), // w,h
