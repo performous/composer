@@ -16,6 +16,7 @@ class SeekHandle: public QLabel
 	Q_OBJECT
 public:
 	SeekHandle(QWidget *parent = 0);
+	int curx() const { return x() + width() / 2; }
 	int moveTimerId;
 protected:
 	void mouseMoveEvent(QMouseEvent *event);
@@ -55,6 +56,10 @@ public:
 	int px2n(int px) const;
 	int h() const { return m_pitch->height; }
 
+public slots:
+	void timeSyllable();
+	void timeSentence();
+
 signals:
 	void updateNoteInfo(NoteLabel*);
 	void analyzeProgress(int, int);
@@ -72,6 +77,9 @@ protected:
 
 private:
 	void finalizeNewLyrics();
+	void timeCurrent();
+	void selectNextSyllableAfterSeekHandle();
+	void selectNextSentenceStart();
 
 	int m_requiredWidth;
 	int m_noteHalfHeight;

@@ -213,6 +213,58 @@ void NoteGraphWidget::seek(int x)
 	emit seeked(1000 * px2s(x));
 }
 
+void NoteGraphWidget::timeCurrent()
+{
+	if (m_selectedNote) {
+		// TODO: Automatic pitch detection
+		Operation op("MOVE");
+		op <<  getNoteLabelId(m_selectedNote)
+			<< m_seekHandle.curx() << m_selectedNote->y();
+		doOperation(op);
+	}
+}
+
+void NoteGraphWidget::timeSyllable()
+{
+	timeCurrent();
+	selectNextSyllableAfterSeekHandle();
+}
+
+void NoteGraphWidget::timeSentence()
+{
+	timeCurrent();
+	selectNextSentenceStart();
+}
+
+void NoteGraphWidget::selectNextSyllableAfterSeekHandle()
+{
+	bool currentFound = (m_selectedNote ? false : true);
+	if (m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
+		for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
+			if (m_selectedNote == *it) currentFound = true;
+			else if (currentFound && (*it)->x() > m_seekHandle.curx()) {
+				selectNote(*it); break;
+			}
+		}
+	}
+}
+
+void NoteGraphWidget::selectNextSentenceStart()
+{
+	bool currentFound = (m_selectedNote ? false : true);
+	NoteLabel *prev = NULL;
+	if (m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
+		for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); prev = *it, ++it) {
+			if (m_selectedNote == *it) currentFound = true;
+			else if (currentFound && (*it)->x() > m_seekHandle.curx()
+					 && prev && prev->note().lineBreak) {
+				selectNote(*it); break;
+			}
+		}
+	}
+}
+
+
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
@@ -313,6 +365,7 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	if (!child) {
 		// Double click empty space = seek there
 		seek(event->x());
+		selectNextSyllableAfterSeekHandle();
 		return;
 	}
 
@@ -342,8 +395,8 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		m_actionHappened = true; // We have movement, so resize/move can be accepted
 		// See if the note needs to be unfloated
 		if (m_selectedAction != NONE && m_selectedNote && m_selectedNote->isFloating()) {
-			Operation op("FLOATING"); op << getNoteLabelId(m_selectedNote) << false;
-			doOperation(op);
+			// Undo op is handled later by the SETGEOM constructed at drop
+			m_selectedNote->setFloating(false);
 		}
 	}
 
@@ -442,14 +495,15 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 				if (action == "DEL") {
 					n->close();
 					m_notes.removeAt(op.i(1));
-				} else if (action == "SPLIT") {
-					// TODO
 				} else if (action == "SETGEOM") {
 					n->setGeometry(op.i(2), op.i(3), op.i(4), op.i(5));
+					n->setFloating(false);
 				} else if (action == "RESIZE") {
 					n->resize(op.i(2), op.i(3));
+					n->setFloating(false);
 				} else if (action == "MOVE") {
 					n->move(op.i(2), op.i(3));
+					n->setFloating(false);
 				} else if (action == "FLOATING") {
 					n->setFloating(op.b(2));
 				} else if (action == "LYRIC") {
