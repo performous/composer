@@ -586,8 +586,8 @@ void EditorApp::on_chkFloating_stateChanged(int state)
 void EditorApp::on_chkLineBreak_stateChanged(int state)
 {
 	bool linebreak = (state != 0);
-	if (noteGraph->selectedNote() && noteGraph->selectedNote()->note().lineBreak != linebreak) {
-		noteGraph->selectedNote()->note().lineBreak = linebreak;
+	if (noteGraph->selectedNote() && noteGraph->selectedNote()->isLineBreak() != linebreak) {
+		noteGraph->selectedNote()->setLineBreak(linebreak);
 		Operation op("LINEBREAK");
 		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << linebreak;
 		operationDone(op);

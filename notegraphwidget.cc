@@ -507,7 +507,7 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 				} else if (action == "FLOATING") {
 					n->setFloating(op.b(2));
 				} else if (action == "LINEBREAK") {
-					n->note().lineBreak = op.b(2);
+					n->setLineBreak(op.b(2));
 				} else if (action == "LYRIC") {
 					n->setLyric(op.s(2));
 				} else if (action == "TYPE") {
