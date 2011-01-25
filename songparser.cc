@@ -2,8 +2,6 @@
 
 #include <QFile>
 #include <QFileInfo>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 
@@ -55,7 +53,6 @@ SongParser::SongParser(Song& s):
 
 	m_stream.setString(&data);
 
-	// FIXME: convertToUTF8(m_ss, s.path + s.filename);
 	// Parse
 	try {
 		if (type == TXT) txtParse();

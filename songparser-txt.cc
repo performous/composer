@@ -1,8 +1,5 @@
 #include "songparser.hh"
 
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 
@@ -135,9 +132,7 @@ bool SongParser::txtParseNote(QString line, VocalTrack &vocal) {
 			// Can we just make the previous note shorter?
 			if (p.begin <= n.begin) p.end = n.begin;
 			else { // Nothing to do, warn and skip
-				std::ostringstream oss;
-				oss << "Skipping overlapping note in " << m_song.path.toStdString() << m_song.filename.toStdString() << std::endl;
-				std::cout << "songparser/warning: " << oss.str(); // More likely to be atomic when written as one string
+				std::cout << "Skipping overlapping note in " << m_song.path.toStdString() << m_song.filename.toStdString() << std::endl;
 				return true;
 			}
 		} else throw std::runtime_error("The first note has negative timestamp");
@@ -147,7 +142,6 @@ bool SongParser::txtParseNote(QString line, VocalTrack &vocal) {
 	if (n.type != Note::SLEEP && n.end > n.begin) {
 		vocal.noteMin = std::min(vocal.noteMin, n.note);
 		vocal.noteMax = std::max(vocal.noteMax, n.note);
-		//FIXME: m_maxScore += n.maxScore();
 	}
 	if (n.type == Note::SLEEP) {
 		if (notes.empty()) return true; // Ignore sleeps at song beginning
