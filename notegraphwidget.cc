@@ -32,6 +32,9 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	// FIXME: Temporary hack to make testing quicker
 	analyzeMusic("music.ogg");
 
+	setProperty("darkBackground", true);
+	setStyleSheet("QLabel[darkBackground=\"true\"] { background: #222; }");
+
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 
