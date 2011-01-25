@@ -327,13 +327,31 @@ void EditorApp::on_actionUltraStarTXT_triggered()
 
 void EditorApp::on_actionFoFMIDI_triggered()
 {
-		QString path = QFileDialog::getExistingDirectory(this, tr("Export FoF MIDI"), QDir::homePath());
+	QString path = QFileDialog::getExistingDirectory(this, tr("Export FoF MIDI"), QDir::homePath());
 	if (!path.isNull()) {
 		try { FoFMIDIWriter(*song.data(), path); }
 		catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
 		}
 	}
+}
+
+void EditorApp::on_actionLyricsToFile_triggered()
+{
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export to plain text lyrics"), QDir::homePath());
+	if (!fileName.isNull()) {
+		QFile f(fileName);
+		if (f.open(QFile::WriteOnly | QFile::Truncate)) {
+			QTextStream out(&f);
+			out << noteGraph->dumpLyrics();
+		} else
+			QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for writing.").arg(fileName));
+	}
+}
+
+void EditorApp::on_actionLyricsToClipboard_triggered()
+{
+	QApplication::clipboard()->setText(noteGraph->dumpLyrics());
 }
 
 void EditorApp::on_actionExit_triggered()

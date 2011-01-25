@@ -531,6 +531,21 @@ int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note) - m_no
 int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px + m_noteHalfHeight); }
 
 
+QString NoteGraphWidget::dumpLyrics() const
+{
+	QString lyrics;
+	if (!m_notes.isEmpty()) {
+		for (int i = 0; i < m_notes.size(); ++i) {
+			lyrics += m_notes[i]->lyric() + " ";
+			if (m_notes[i]->note().lineBreak)
+				lyrics.replace(lyrics.size()-1, 1, QString("\n"));
+		}
+		lyrics.replace(lyrics.size()-1, 1, QString("\n"));
+	}
+	return lyrics;
+}
+
+
 
 SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)

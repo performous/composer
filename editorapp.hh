@@ -51,6 +51,8 @@ public slots:
 	void on_actionSingStarXML_triggered();
 	void on_actionUltraStarTXT_triggered();
 	void on_actionFoFMIDI_triggered();
+	void on_actionLyricsToFile_triggered();
+	void on_actionLyricsToClipboard_triggered();
 	void on_actionExit_triggered();
 
 	// Edit menu
