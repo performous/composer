@@ -418,7 +418,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionAbout">
    <property name="text">
-    <string>&amp;About</string>
+    <string>&amp;About...</string>
    </property>
   </action>
   <action name="actionNew">
@@ -431,7 +431,7 @@
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>&amp;Open</string>
+    <string>&amp;Open...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -481,18 +481,21 @@
    </property>
   </action>
   <action name="actionPreferences">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Preferences</string>
    </property>
   </action>
   <action name="actionSingStarXML">
    <property name="text">
-    <string>&amp;SingStar XML</string>
+    <string>&amp;SingStar XML...</string>
    </property>
   </action>
   <action name="actionLyricsToFile">
    <property name="text">
-    <string>Lyrics to fi&amp;le</string>
+    <string>Lyrics to fi&amp;le...</string>
    </property>
   </action>
   <action name="actionLyricsToClipboard">
@@ -502,12 +505,12 @@
   </action>
   <action name="actionMusicFile">
    <property name="text">
-    <string>&amp;Music file</string>
+    <string>&amp;Music file...</string>
    </property>
   </action>
   <action name="actionLyricsFromFile">
    <property name="text">
-    <string>Lyrics from fi&amp;le</string>
+    <string>Lyrics from fi&amp;le...</string>
    </property>
   </action>
   <action name="actionLyricsFromClipboard">
@@ -517,12 +520,12 @@
   </action>
   <action name="actionUltraStarTXT">
    <property name="text">
-    <string>&amp;UltraStar TXT</string>
+    <string>&amp;UltraStar TXT...</string>
    </property>
   </action>
   <action name="actionFoFMIDI">
    <property name="text">
-    <string>&amp;FoF MIDI</string>
+    <string>&amp;FoF MIDI...</string>
    </property>
   </action>
   <action name="actionWhatsThis">
