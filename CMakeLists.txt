@@ -24,7 +24,7 @@ foreach(lib AVFormat SWScale)
 	add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Boost 1.36 REQUIRED COMPONENTS thread regex filesystem system)
+find_package(Boost 1.36 REQUIRED COMPONENTS thread)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBS ${Boost_LIBRARIES})
 

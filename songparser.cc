@@ -2,8 +2,6 @@
 
 #include <QFile>
 #include <QFileInfo>
-#include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
 
 
 namespace SongParserUtil {
@@ -68,29 +66,8 @@ SongParser::SongParser(Song& s):
 	if (!QFileInfo(m_song.path + m_song.background).exists()) m_song.background = "";
 	if (!QFileInfo(m_song.path + m_song.video).exists()) m_song.video = "";
 
-	// In case no images/videos were specified, try to guess them
-	try {
-		if (m_song.cover.isEmpty() || m_song.background.isEmpty() || m_song.video.isEmpty()) {
-			boost::regex coverfile("((cover|album|label|\\[co\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
-			boost::regex backgroundfile("((background|bg||\\[bg\\])\\.(png|jpeg|jpg|svg))$", boost::regex_constants::icase);
-			boost::regex videofile("(.*\\.(avi|mpg|mpeg|flv|mov|mp4))$", boost::regex_constants::icase);
-			boost::cmatch match;
+	// TODO: Should we try to guess images and stuff?
 
-			for (boost::filesystem::directory_iterator dirIt(s.path.toStdString()), dirEnd; dirIt != dirEnd; ++dirIt) {
-				boost::filesystem::path p = dirIt->path();
-				std::string name = p.leaf(); // File basename
-				if (m_song.cover.isEmpty() && regex_match(name.c_str(), match, coverfile)) {
-					m_song.cover = QString::fromStdString(name);
-				} else if (m_song.background.isEmpty() && regex_match(name.c_str(), match, backgroundfile)) {
-					m_song.background = QString::fromStdString(name);
-				} else if (m_song.video.isEmpty() && regex_match(name.c_str(), match, videofile)) {
-					m_song.video = QString::fromStdString(name);
-				}
-			}
-		}
-	} catch (...) {
-		// FIXME: Due to conversion errors, directory_iterator may fail - reimplement with Qt
-	}
 	finalize(); // Do some adjusting to the notes
 	s.loadStatus = Song::FULL;
 }
