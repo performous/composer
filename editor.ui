@@ -94,7 +94,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="0" column="2">
              <widget class="QLabel" name="valNoteBegin">
               <property name="text">
                <string>-</string>
@@ -108,14 +108,14 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="1" column="2">
              <widget class="QLabel" name="valNoteEnd">
               <property name="text">
                <string>-</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="5">
+            <item row="0" column="9">
              <widget class="QComboBox" name="cmbNoteType">
               <property name="toolTip">
                <string>Note type</string>
@@ -143,7 +143,7 @@
               </item>
              </widget>
             </item>
-            <item row="1" column="5">
+            <item row="1" column="9">
              <widget class="QCheckBox" name="chkFloating">
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
@@ -153,38 +153,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="3">
+            <item row="0" column="7">
              <widget class="QLabel" name="label_6">
               <property name="text">
                <string>Type</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Duration</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="valNoteDuration">
-              <property name="text">
-               <string>-</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Note</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="valNote">
-              <property name="text">
-               <string>-</string>
               </property>
              </widget>
             </item>
@@ -201,8 +173,46 @@
               </property>
              </spacer>
             </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer">
+            <item row="2" column="9">
+             <widget class="QCheckBox" name="chkLineBreak">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Line break after this</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Duration</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QLabel" name="valNoteDuration">
+              <property name="text">
+               <string>-</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Note</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QLabel" name="valNote">
+              <property name="text">
+               <string>-</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <spacer name="horizontalSpacer_2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -217,15 +227,21 @@
               </property>
              </spacer>
             </item>
-            <item row="2" column="5">
-             <widget class="QCheckBox" name="chkLineBreak">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
+            <item row="0" column="3">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
-              <property name="text">
-               <string>Line break after this</string>
+              <property name="sizeType">
+               <enum>QSizePolicy::Maximum</enum>
               </property>
-             </widget>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
