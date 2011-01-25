@@ -73,6 +73,7 @@ public slots:
 	void on_txtYear_editingFinished();
 	void on_cmbNoteType_currentIndexChanged(int);
 	void on_chkFloating_stateChanged(int);
+	void on_chkLineBreak_stateChanged(int);
 
 protected:
 	void closeEvent(QCloseEvent *event);

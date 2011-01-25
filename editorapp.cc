@@ -150,6 +150,8 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
+		ui.chkLineBreak->setEnabled(true);
+		ui.chkLineBreak->setChecked(note->note().lineBreak);
 	} else {
 		ui.valNoteBegin->setText("-");
 		ui.valNoteEnd->setText("-");
@@ -157,6 +159,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNote->setText("-");
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
+		ui.chkLineBreak->setEnabled(false);
 	}
 }
 
@@ -557,7 +560,18 @@ void EditorApp::on_chkFloating_stateChanged(int state)
 	if (noteGraph->selectedNote() && noteGraph->selectedNote()->isFloating() != floating) {
 		noteGraph->selectedNote()->setFloating(floating);
 		Operation op("FLOATING");
-		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << (floating);
+		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << floating;
+		operationDone(op);
+	}
+}
+
+void EditorApp::on_chkLineBreak_stateChanged(int state)
+{
+	bool linebreak = (state != 0);
+	if (noteGraph->selectedNote() && noteGraph->selectedNote()->note().lineBreak != linebreak) {
+		noteGraph->selectedNote()->note().lineBreak = linebreak;
+		Operation op("LINEBREAK");
+		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << linebreak;
 		operationDone(op);
 	}
 }
