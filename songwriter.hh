@@ -17,6 +17,7 @@ struct SingStarXMLWriter: public SongWriter
 private:
 	void writeXML();
 	int sec2dur(double sec);
+	double dur2sec(int ts);
 	int tempo;
 };
 
