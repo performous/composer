@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QWhatsThis>
 #include <QUrl>
+#include <QCloseEvent>
 #include <phonon/AudioOutput>
 #include <iostream>
 #include "config.hh"
@@ -334,7 +335,7 @@ void EditorApp::on_actionFoFMIDI_triggered()
 
 void EditorApp::on_actionExit_triggered()
 {
-	if (promptSaving()) close();
+	close();
 }
 
 void EditorApp::on_actionUndo_triggered()
@@ -559,4 +560,10 @@ void EditorApp::on_chkFloating_stateChanged(int state)
 		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << (floating);
 		operationDone(op);
 	}
+}
+
+void EditorApp::closeEvent(QCloseEvent *event)
+{
+	if (promptSaving()) event->accept();
+	else event->ignore();
 }

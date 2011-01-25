@@ -6,6 +6,7 @@
 #include "song.hh"
 
 class QProgressBar;
+class QCloseEvent;
 class NoteLabel;
 class NoteGraphWidget;
 namespace Phonon {
@@ -72,6 +73,9 @@ public slots:
 	void on_txtYear_editingFinished();
 	void on_cmbNoteType_currentIndexChanged(int);
 	void on_chkFloating_stateChanged(int);
+
+protected:
+	void closeEvent(QCloseEvent *event);
 
 private:
 	Ui::EditorApp ui;
