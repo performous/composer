@@ -76,6 +76,7 @@ protected:
 	void mouseMoveEvent(QMouseEvent * event);
 	void keyPressEvent(QKeyEvent *event);
 	void timerEvent(QTimerEvent *event);
+	void paintEvent(QPaintEvent*);
 
 private:
 	void finalizeNewLyrics();

@@ -29,9 +29,6 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	m_noteHalfHeight = templabel.height()/2;
 	templabel.close();
 
-	// FIXME: Temporary hack to make testing quicker
-	analyzeMusic("music.ogg");
-
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: #222; }");
 
@@ -124,19 +121,34 @@ void NoteGraphWidget::finalizeNewLyrics()
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath, this));
-	m_analyzeTimer = startTimer(2000);
+	m_analyzeTimer = startTimer(100);
 }
 
-void NoteGraphWidget::timerEvent(QTimerEvent *event)
+void NoteGraphWidget::timerEvent(QTimerEvent*)
 {
-	(void)event;
-	if (!m_pitch.isNull()) {
+	if (m_pitch) {
 		QMutexLocker locker(&m_pitch->mutex);
-		if (m_pitch->newDataAvailable()) setPixmap(QPixmap::fromImage(m_pitch->getImage()));
-		if (m_pitch->isFinished()) {
-			killTimer(m_analyzeTimer);
-			emit analyzeProgress(0, 0); // Reset progressbar
-		} else emit analyzeProgress(m_pitch->getXValue(), width());
+		emit analyzeProgress(m_pitch->getXValue(), width());
+		if (m_pitch->newDataAvailable()) update();
+	}
+}
+
+void NoteGraphWidget::paintEvent(QPaintEvent*) {
+	if (m_pitch) {
+		QMutexLocker locker(&m_pitch->mutex);
+		QPainter painter;
+		painter.begin(this);
+		painter.setRenderHint(QPainter::Antialiasing);
+		QPen pen;
+		pen.setColor(Qt::gray);
+		pen.setWidth(8);
+		pen.setCapStyle(Qt::RoundCap);
+		painter.setPen(pen);
+		PitchVis::Paths const& paths = m_pitch->getPaths();
+		for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+			painter.drawPath(*it);
+		}
+		painter.end();
 	}
 }
 
@@ -527,11 +539,11 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 	}
 }
 
-
-int NoteGraphWidget::s2px(double sec) const { return m_pitch->time2px(sec); }
-double NoteGraphWidget::px2s(int px) const { return m_pitch->px2time(px); }
-int NoteGraphWidget::n2px(int note) const { return m_pitch->note2px(note) - m_noteHalfHeight; }
-int NoteGraphWidget::px2n(int px) const { return m_pitch->px2note(px + m_noteHalfHeight); }
+// FIXME: duplicated functionality with PitchVis and funny handling for m_pitch == NULL
+int NoteGraphWidget::s2px(double sec) const { return m_pitch ? m_pitch->time2px(sec) : sec * 345.0; }
+double NoteGraphWidget::px2s(int px) const { return m_pitch ? m_pitch->px2time(px) : px / 345.0; }
+int NoteGraphWidget::n2px(int note) const { return PitchVis::note2px(note) - m_noteHalfHeight; }
+int NoteGraphWidget::px2n(int px) const { return PitchVis::px2note(px + m_noteHalfHeight); }
 
 
 QString NoteGraphWidget::dumpLyrics() const
@@ -581,9 +593,8 @@ void SeekHandle::mouseMoveEvent(QMouseEvent *event)
 	event->ignore();
 }
 
-void SeekHandle::timerEvent(QTimerEvent *event)
+void SeekHandle::timerEvent(QTimerEvent*)
 {
-	(void)event;
 	move(x() + 1, 0);
 
 	// Make handle always visible in the ScrollArea
