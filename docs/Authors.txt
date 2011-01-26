@@ -1,0 +1,8 @@
+Primary Authors:
+Lasse Kärkkäinen
+Tapio Vierros
+
+See Git repository history for full list of contributors.
+
+This applications uses code from the Performous game.
+

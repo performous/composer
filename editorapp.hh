@@ -2,6 +2,7 @@
 
 #include <phonon/MediaObject>
 #include "ui_editor.h"
+#include "ui_aboutdialog.h"
 #include "operation.hh"
 #include "song.hh"
 
@@ -13,6 +14,15 @@ namespace Phonon {
 	class MediaObject;
 	class AudioOutput;
 }
+
+
+class AboutDialog: public QDialog, private Ui::AboutDialog
+{
+	Q_OBJECT
+public:
+	AboutDialog(QWidget* parent = 0);
+};
+
 
 class EditorApp: public QMainWindow
 {

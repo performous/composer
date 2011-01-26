@@ -463,9 +463,8 @@ void EditorApp::on_actionWhatsThis_triggered()
 
 void EditorApp::on_actionAbout_triggered()
 {
-	QMessageBox::about(this, tr("About"),
-		tr("Semi-automatic karaoke song editor.\n")
-		);
+	AboutDialog aboutDialog(this);
+	aboutDialog.exec();
 }
 
 void EditorApp::updateSongMeta(bool readFromSongToUI)
@@ -599,4 +598,33 @@ void EditorApp::closeEvent(QCloseEvent *event)
 {
 	if (promptSaving()) event->accept();
 	else event->ignore();
+}
+
+
+AboutDialog::AboutDialog(QWidget* parent)
+	: QDialog(parent)
+{
+	setupUi(this);
+	setWindowTitle(tr("About %1").arg(PACKAGE));
+	// Setup About tab
+	lblName->setText(PACKAGE);
+	lblVersion->setText(QString(tr("Version: ")) + VERSION);
+
+	// Populate Authors tab
+	{
+		QFile f(":/docs/Authors.txt");
+		f.open(QIODevice::ReadOnly);
+		QTextStream in(&f);
+		txtAuthors->setPlainText(in.readAll());
+	}
+	// Poplate License text
+	{
+		QFile f(":/docs/License.txt");
+		f.open(QIODevice::ReadOnly);
+		QTextStream in(&f);
+		txtLicense->setPlainText(in.readAll());
+	}
+
+	connect(cmdClose, SIGNAL(clicked()), this, SLOT(accept()));
+	setModal(true);
 }
