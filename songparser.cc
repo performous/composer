@@ -1,5 +1,5 @@
 #include "songparser.hh"
-
+#include "textcodecselector.hh"
 #include <QFile>
 #include <QFileInfo>
 
@@ -37,11 +37,20 @@ SongParser::SongParser(Song& s):
 	QFileInfo finfo(file);
 	if (finfo.size() < 10 || finfo.size() > 100000) throw SongParserException("Does not look like a song file (wrong size)", 1, true);
 
-	QTextStream stream(&file);
-	QString data = stream.readAll();
+	// Determine encoding
+	QString data;
+	{
+		QByteArray ba = file.readAll();
+		if (!ba.isEmpty()) {
+			data = QString::fromLocal8Bit(ba, ba.size());
+			if (data.toLocal8Bit().size() != ba.size()) {
+				// Not UTF8 :(
+				QTextCodec* codec = TextCodecSelector::codecForContent(ba);
+				if (codec) data = codec->toUnicode(ba);
+			}
+		}
+	}
 	file.close();
-
-	// TODO: Convert data from unknown encoding
 
 	if (smCheck(data)) type = SM;
 	else if (txtCheck(data)) type = TXT;

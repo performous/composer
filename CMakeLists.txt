@@ -42,7 +42,7 @@ else(Phonon_FOUND)
 endif(Phonon_FOUND)
 
 # Headers that need MOC need to be defined separately
-file(GLOB MOC_HEADER_FILES "editorapp.hh" "notelabel.hh" "notegraphwidget.hh")
+file(GLOB MOC_HEADER_FILES "editorapp.hh" "notelabel.hh" "notegraphwidget.hh" "textcodecselector.hh")
 
 file(GLOB SOURCE_FILES "*.cc")
 file(GLOB HEADER_FILES "*.hh")
