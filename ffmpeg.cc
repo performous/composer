@@ -19,9 +19,13 @@ extern "C" {
 FFmpeg::FFmpeg(std::string const& _filename, unsigned int rate):
   m_filename(_filename), m_rate(rate), m_quit(), m_running(), m_eof(), m_seekTarget(getNaN()),
   pFormatCtx(), pResampleCtx(), img_convert_ctx(), pAudioCodecCtx(), pAudioCodec(),
-  audioStream(-1), m_position(),
-  m_thread(new boost::thread(boost::ref(*this)))
-{}
+  audioStream(-1), m_position()
+{
+	open(); // Throws on error
+	m_running = true;
+	audioQueue.setDuration(duration());
+	m_thread.reset(new boost::thread(boost::ref(*this)));
+}
 
 FFmpeg::~FFmpeg() {
 	m_quit = true;
@@ -87,9 +91,6 @@ void FFmpeg::open() {
 }
 
 void FFmpeg::operator()() {
-	try { open(); } catch (std::exception const& e) { std::cerr << "FFMPEG failed to open " << m_filename << ": " << e.what() << std::endl; m_quit = true; return; }
-	m_running = true;
-	audioQueue.setDuration(duration());
 	int errors = 0;
 	while (!m_quit) {
 		try {

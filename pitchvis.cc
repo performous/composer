@@ -29,13 +29,8 @@ void PitchVis::run()
 		{
 			// Initialize FFmpeg decoding
 			FFmpeg mpeg(fileName.toStdString(), rate);
-			while(std::isnan(mpeg.duration()) || std::isinf(mpeg.duration())) {
-				if (mpeg.terminating()) // Check if FFMPEG has failed
-					return;
-				msleep(1000); // Wait for ffmpeg to be ready
-			}
-			msleep(1000); // Wait some more
 			setWidth(mpeg.duration() * rate / step); // Estimation
+			msleep(1000); // Wait some
 			curX = 0;
 			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
 				msleep(2);
