@@ -7,6 +7,7 @@
 #include <QWhatsThis>
 #include <QUrl>
 #include <QCloseEvent>
+#include <QSettings>
 #include <phonon/AudioOutput>
 #include <iostream>
 #include "config.hh"
@@ -24,8 +25,8 @@ namespace {
 
 EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), hasUnsavedChanges()
 {
-	showMaximized();
 	ui.setupUi(this);
+	readSettings();
 
 	noteGraph = new NoteGraphWidget(NULL);
 	ui.noteGraphScroller->setWidget(noteGraph);
@@ -598,7 +599,29 @@ void EditorApp::closeEvent(QCloseEvent *event)
 {
 	if (promptSaving()) event->accept();
 	else event->ignore();
+	writeSettings();
 }
+
+void EditorApp::readSettings()
+ {
+	QSettings settings; // Default QSettings parameters given in main()
+	// Read values
+	QPoint pos = settings.value("pos", QPoint()).toPoint();
+	QSize size = settings.value("size", QSize(800, 600)).toSize();
+	bool maximized = settings.value("maximized", false).toBool();
+	// Apply them
+	if (!pos.isNull()) move(pos);
+	resize(size);
+	if (maximized) showMaximized();
+ }
+
+void EditorApp::writeSettings()
+ {
+	QSettings settings; // Default QSettings parameters given in main()
+	settings.setValue("pos", pos());
+	settings.setValue("size", size());
+	settings.setValue("maximized", isMaximized());
+ }
 
 
 AboutDialog::AboutDialog(QWidget* parent)

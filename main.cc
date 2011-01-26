@@ -9,6 +9,8 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 	app.setApplicationName(PACKAGE);
 	app.setApplicationVersion(VERSION);
+	app.setOrganizationName("Performous Team");
+	app.setOrganizationDomain("performous.org");
 
 	EditorApp window;
 	window.show();

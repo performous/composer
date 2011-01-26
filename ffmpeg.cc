@@ -1,5 +1,4 @@
 #include "ffmpeg.hh"
-
 #include "config.hh"
 #include "util.hh"
 #include <iostream>

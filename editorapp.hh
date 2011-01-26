@@ -39,6 +39,8 @@ private:
 	void saveProject(QString fileName);
 	void doOpStack();
 	void playButton();
+	void readSettings();
+	void writeSettings();
 
 public slots:
 	void operationDone(const Operation &op);
