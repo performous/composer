@@ -3,23 +3,20 @@
 #include "util.hh"
 #include "libda/sample.hpp"
 #include <boost/circular_buffer.hpp>
-#include <boost/ptr_container/ptr_set.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
+#include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QWaitCondition>
+#include <QScopedPointer>
 #include <vector>
 
-using boost::uint8_t;
-using boost::int16_t;
-using boost::int64_t;
 
 /// single audio frame
 struct AudioFrame {
 	/// timestamp of audio frame
 	double timestamp;
 	/// audio data
-	std::vector<int16_t> data;
+	std::vector<qint16> data;
 	/// constructor
 	template <typename InIt> AudioFrame(double ts, InIt begin, InIt end): timestamp(ts), data(begin, end) {}
 	AudioFrame(): timestamp(getInf()) {} // EOF marker
@@ -30,25 +27,25 @@ class AudioBuffer {
 	AudioBuffer(size_t size = 2000000): m_data(size), m_pos(), m_posReq(), m_sps(), m_duration(getNaN()), m_quit() {}
 	/// Reset from FFMPEG side (seeking to beginning or terminate stream)
 	void reset() {
-		boost::mutex::scoped_lock l(m_mutex);
+		QMutexLocker l(&m_mutex);
 		m_data.clear();
 		m_pos = 0;
 		l.unlock();
-		m_cond.notify_one();
+		m_cond.wakeOne();
 	}
 	void quit() {
-		boost::mutex::scoped_lock l(m_mutex);
+		QMutexLocker l(&m_mutex);
 		m_quit = true;
 		l.unlock();
-		m_cond.notify_one();
+		m_cond.wakeOne();
 	}
 	/// set samples per second
 	void setSamplesPerSecond(unsigned sps) { m_sps = sps; }
 	/// get samples per second
 	unsigned getSamplesPerSecond() { return m_sps; }
-	void push(std::vector<int16_t> const& data, double timestamp) {
-		boost::mutex::scoped_lock l(m_mutex);
-		while (!condition()) m_cond.wait(l);
+	void push(std::vector<qint16> const& data, double timestamp) {
+		QMutexLocker l(&m_mutex);
+		while (!condition()) m_cond.wait(&m_mutex);
 		if (m_quit) return;
 		if (m_pos == 0 && timestamp != 0.0) {
 			//std::cerr << "Warning: The first audio frame begins at " << timestamp << " seconds instead of zero, compensating." << std::endl;
@@ -58,14 +55,15 @@ class AudioBuffer {
 		m_pos += data.size();
 	}
 	bool prepare(int64_t pos) {
-		boost::mutex::scoped_try_lock l(m_mutex);
-		if (!l.owns_lock()) return false;
+		if (!m_mutex.tryLock()) return false;
 		if (pos < 0) pos = 0;
 		m_posReq = pos;
-		return m_pos > m_posReq + m_data.capacity() / 4 && m_pos - m_data.size() <= m_pos;
+		bool ret = m_pos > m_posReq + m_data.capacity() / 4 && m_pos - m_data.size() <= m_pos;
+		m_mutex.unlock();
+		return ret;
 	}
 	bool operator()(float* begin, float* end, int64_t pos, float volume = 1.0f) {
-		boost::mutex::scoped_lock l(m_mutex);
+		QMutexLocker l(&m_mutex);
 		size_t idx = pos + m_data.size() - m_pos;
 		size_t samples = end - begin;
 		for (size_t s = 0; s < samples; ++s, ++idx) {
@@ -74,7 +72,7 @@ class AudioBuffer {
 		m_posReq = pos + samples;
 		l.unlock();
 		if (wantSeek()) reset();
-		if (condition()) m_cond.notify_one();
+		if (condition()) m_cond.wakeOne();
 		return !eof(pos);
 	}
 	bool eof(int64_t pos) const { return double(pos) / m_sps >= m_duration; }
@@ -87,9 +85,9 @@ class AudioBuffer {
   private:
 	bool wantMore() { return int64_t(m_pos) - int64_t(m_data.capacity() / 2) < m_posReq; }
 	bool condition() { return m_quit || wantMore() || wantSeek(); }
-	mutable boost::mutex m_mutex;
-	boost::condition m_cond;
-	boost::circular_buffer<int16_t> m_data;
+	mutable QMutex m_mutex;
+	QWaitCondition m_cond;
+	boost::circular_buffer<qint16> m_data;
 	size_t m_pos;
 	int64_t m_posReq;
 	unsigned m_sps;
@@ -107,23 +105,18 @@ extern "C" {
 }
 
 /// ffmpeg class
-class FFmpeg {
+class FFmpeg: public QThread {
   public:
 	/// constructor
 	FFmpeg(std::string const& file, unsigned int rate = 48000);
 	~FFmpeg();
-	/**
-	* This function is called by the crash handler to indicate that FFMPEG has
-	* crashed or has gotten stuck, and that the destructor should not wait for
-	* it to finish before exiting.
-	**/
-	void crash() { m_thread.reset(); m_quit = true; }
-	void operator()(); ///< Thread runs here, don't call directly
-	/// queue for audio
+	/// Thread runs here, don't call directly
+	void run();
+	/// Queue for audio
 	AudioBuffer  audioQueue;
 	/** Seek to the chosen time. Will block until the seek is done, if wait is true. **/
 	void seek(double time, bool wait = true);
-	/// duration
+	/// Duration
 	double duration() const;
 	bool terminating() const { return m_quit; }
 
@@ -147,7 +140,6 @@ class FFmpeg {
 
 	int audioStream;
 	double m_position;
-	boost::scoped_ptr<boost::thread> m_thread;
-	static boost::mutex s_avcodec_mutex; // Used for avcodec_open/close (which use some static crap and are thus not thread-safe)
+	static QMutex s_avcodec_mutex; // Used for avcodec_open/close (which use some static crap and are thus not thread-safe)
 };
 

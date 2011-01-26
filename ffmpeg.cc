@@ -2,9 +2,13 @@
 
 #include "config.hh"
 #include "util.hh"
-#include "xtime.hh"
 #include <iostream>
 #include <stdexcept>
+#include <QtGlobal>
+
+// Somehow ffmpeg headers give errors that these are not defined...
+#define INT64_C Q_INT64_C
+#define UINT64_C Q_UINT64_C
 
 extern "C" {
 #include AVCODEC_INCLUDE
@@ -14,7 +18,7 @@ extern "C" {
 
 #define AUDIO_CHANNELS 2
 
-/*static*/ boost::mutex FFmpeg::s_avcodec_mutex;
+/*static*/ QMutex FFmpeg::s_avcodec_mutex;
 
 FFmpeg::FFmpeg(std::string const& _filename, unsigned int rate):
   m_filename(_filename), m_rate(rate), m_quit(), m_running(), m_eof(), m_seekTarget(getNaN()),
@@ -24,20 +28,15 @@ FFmpeg::FFmpeg(std::string const& _filename, unsigned int rate):
 	open(); // Throws on error
 	m_running = true;
 	audioQueue.setDuration(duration());
-	m_thread.reset(new boost::thread(boost::ref(*this)));
+	start();
 }
 
 FFmpeg::~FFmpeg() {
 	m_quit = true;
 	audioQueue.quit();
-	if (!m_thread) {
-		std::cerr << "FFMPEG crashed at some point, decoding " << m_filename << std::endl;
-		std::cerr << "Please restart Performous to avoid resource leaks and program crashes!" << std::endl;
-		return;
-	}
-	m_thread->join();
+	wait();
 	// TODO: use RAII for freeing resources (to prevent memory leaks)
-	boost::mutex::scoped_lock l(s_avcodec_mutex); // avcodec_close is not thread-safe
+	QMutexLocker l(&s_avcodec_mutex); // avcodec_close is not thread-safe
 	if (pResampleCtx) audio_resample_close(pResampleCtx);
 	if (pAudioCodecCtx) avcodec_close(pAudioCodecCtx);
 	if (pFormatCtx) av_close_input_file(pFormatCtx);
@@ -49,7 +48,7 @@ double FFmpeg::duration() const {
 }
 
 void FFmpeg::open() {
-	boost::mutex::scoped_lock l(s_avcodec_mutex);
+	QMutexLocker l(&s_avcodec_mutex);
 	av_register_all();
 	av_log_set_level(AV_LOG_ERROR);
 	if (av_open_input_file(&pFormatCtx, m_filename.c_str(), NULL, 0, NULL)) throw std::runtime_error("Cannot open input file");
@@ -67,7 +66,7 @@ void FFmpeg::open() {
 	pAudioCodec = avcodec_find_decoder(cc->codec_id);
 	// Awesome HACK for AAC to work (unfortunately libavformat fails to decode this information from MPEG ADTS)
 	if (pAudioCodec->name == std::string("aac") && cc->extradata_size == 0) {
-		cc->extradata = static_cast<uint8_t*>(malloc(2));
+		cc->extradata = static_cast<quint8*>(malloc(2));
 		unsigned profile = 1; // 0 = MAIN, 1 = LC/LOW
 		unsigned srate_idx = 3; // 3 = 48000 Hz
 		unsigned channels = 2; // Just the number of channels
@@ -90,7 +89,7 @@ void FFmpeg::open() {
 	audioQueue.setSamplesPerSecond(AUDIO_CHANNELS * m_rate);
 }
 
-void FFmpeg::operator()() {
+void FFmpeg::run() {
 	int errors = 0;
 	while (!m_quit) {
 		try {
@@ -101,7 +100,7 @@ void FFmpeg::operator()() {
 			errors = 0;
 		} catch (eof_error&) {
 			m_eof = true;
-			boost::thread::sleep(now() + 0.1);
+			msleep(100);
 		} catch (std::exception& e) {
 			std::cerr << "FFMPEG error: " << e.what() << std::endl;
 			if (++errors > 2) { std::cerr << "FFMPEG terminating due to errors" << std::endl; m_quit = true; }
@@ -114,7 +113,7 @@ void FFmpeg::operator()() {
 void FFmpeg::seek(double time, bool wait) {
 	m_seekTarget = time;
 	audioQueue.reset(); // Empty these to unblock the internals in case buffers were full
-	if (wait) while (!m_quit && m_seekTarget == m_seekTarget) boost::thread::sleep(now() + 0.01);
+	if (wait) while (!m_quit && m_seekTarget == m_seekTarget) msleep(10);
 }
 
 void FFmpeg::seek_internal() {
@@ -155,27 +154,27 @@ void FFmpeg::decodeNextFrame() {
 
 	class AudioBuffer {
 	  public:
-		AudioBuffer(size_t _size): m_buffer((int16_t*)av_malloc(_size*sizeof(int16_t))) {
+		AudioBuffer(size_t _size): m_buffer((qint16*)av_malloc(_size*sizeof(qint16))) {
 			if (!m_buffer) throw std::runtime_error("Unable to allocate AudioBuffer");
 		}
 		~AudioBuffer() { av_free(m_buffer); }
-		operator  int16_t*() { return m_buffer; }
-		int16_t* operator->() { return m_buffer; }
+		operator  qint16*() { return m_buffer; }
+		qint16* operator->() { return m_buffer; }
 	  private:
-		int16_t* m_buffer;
+		qint16* m_buffer;
 	};
 
 	int frameFinished=0;
 	while (!frameFinished) {
 		ReadFramePacket packet(pFormatCtx);
 		int packetSize = packet.size;
-		uint8_t *packetData = packet.data;
+		quint8 *packetData = packet.data;
 		if (packet.stream_index==audioStream) {
 			while (packetSize) {
 				if (packetSize < 0) throw std::logic_error("negative audio packet size?!");
 				if (m_quit || m_seekTarget == m_seekTarget) return;
 				AudioBuffer audioFrames(AVCODEC_MAX_AUDIO_FRAME_SIZE);
-				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE*sizeof(int16_t);
+				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE*sizeof(qint16);
 #if LIBAVCODEC_VERSION_INT > ((52<<16)+(25<<8)+0)
 				int decodeSize = avcodec_decode_audio3(pAudioCodecCtx, audioFrames, &outsize, &packet);
 #else
@@ -189,8 +188,8 @@ void FFmpeg::decodeNextFrame() {
 				packetSize -= decodeSize;
 				packetData += decodeSize;
 				// Convert outsize from bytes into number of frames (samples)
-				outsize /= sizeof(int16_t) * pAudioCodecCtx->channels;
-				std::vector<int16_t> resampled(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+				outsize /= sizeof(qint16) * pAudioCodecCtx->channels;
+				std::vector<qint16> resampled(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 				int frames = audio_resample(pResampleCtx, &resampled[0], audioFrames, outsize);
 				resampled.resize(frames * AUDIO_CHANNELS);
 				// Calculate new positions

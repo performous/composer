@@ -24,9 +24,8 @@ foreach(lib AVFormat SWScale)
 	add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Boost 1.36 REQUIRED COMPONENTS thread)
+find_package(Boost 1.36 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-list(APPEND LIBS ${Boost_LIBRARIES})
 
 find_package(Phonon)
 if(Phonon_FOUND)
