@@ -28,7 +28,7 @@ void PitchVis::run()
 		Analyzer analyzer(rate, "");
 		{
 			// Initialize FFmpeg decoding
-			FFmpeg mpeg(false, true, fileName.toStdString(), rate);
+			FFmpeg mpeg(fileName.toStdString(), rate);
 			while(std::isnan(mpeg.duration()) || std::isinf(mpeg.duration())) {
 				if (mpeg.terminating()) // Check if FFMPEG has failed
 					return;
