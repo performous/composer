@@ -1,1 +1,19 @@
-<RCC/>
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+<file>icons/application-exit.png</file>
+<file>icons/document-new.png</file>
+<file>icons/document-save-as.png</file>
+<file>icons/document-save.png</file>
+<file>icons/edit-redo.png</file>
+<file>icons/edit-undo.png</file>
+<file>icons/green-document-open.png</file>
+<file>icons/help-about.png</file>
+<file>icons/help-hint.png</file>
+<file>icons/insert-object.png</file>
+<file>icons/insert-text.png</file>
+<file>icons/media-playback-pause.png</file>
+<file>icons/media-playback-start.png</file>
+<file>icons/media-playback-stop.png</file>
+<file>icons/preferences-other.png</file>
+</qresource>
+</RCC>

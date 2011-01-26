@@ -57,20 +57,21 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	song.reset(new Song);
 
 	// Some icons to make menus etc prettier
-	ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
-	ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
-	ui.actionSave->setIcon(QIcon::fromTheme("document-save"));
-	ui.actionSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
-	ui.actionExit->setIcon(QIcon::fromTheme("application-exit"));
-	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo"));
-	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo"));
-	ui.actionPreferences->setIcon(QIcon::fromTheme("preferences-other"));
-	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object"));
-	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text"));
-	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text"));
-	ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
-	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
-	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop"));
+	ui.actionNew->setIcon(QIcon::fromTheme("document-new", QIcon(":/icons/document-new.png")));
+	ui.actionOpen->setIcon(QIcon::fromTheme("document-open", QIcon(":/icons/document-open.png")));
+	ui.actionSave->setIcon(QIcon::fromTheme("document-save", QIcon(":/icons/document-save.png")));
+	ui.actionSaveAs->setIcon(QIcon::fromTheme("document-save-as", QIcon(":/icons/document-save-as.png")));
+	ui.actionExit->setIcon(QIcon::fromTheme("application-exit", QIcon(":/icons/application-exit.png")));
+	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo", QIcon(":/icons/edit-undo.png")));
+	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo", QIcon(":/icons/edit-redo.png")));
+	ui.actionPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
+	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
+	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
+	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
+	ui.actionWhatsThis->setIcon(QIcon::fromTheme("help-hint", QIcon(":/icons/help-hint.png")));
+	ui.actionAbout->setIcon(QIcon::fromTheme("help-about", QIcon(":/icons/help-about.png")));
+	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
+	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(":/icons/media-playback-stop.png")));
 
 	statusbarProgress = new QProgressBar(NULL);
 	ui.statusbar->addPermanentWidget(statusbarProgress);
@@ -511,10 +512,10 @@ void EditorApp::playButton()
 {
 	if (player && player->state() == Phonon::PlayingState) {
 		ui.cmdPlay->setText(tr("Pause"));
-		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause"));
+		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause", QIcon(":/icons/media-playback-pause.png")));
 	} else {
 		ui.cmdPlay->setText(tr("Play"));
-		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start"));
+		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
 	}
 }
 
