@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <QPainter>
 #include <QProgressDialog>
 #include <QLabel>
 
@@ -23,15 +24,15 @@ void PitchVis::setWidth(std::size_t w) {
 void PitchVis::run()
 {
 	try {
-		unsigned scale = 8;
-		unsigned int rate = 44100;
+		unsigned pixScale = 8;
+		unsigned rate = 44100;
 		Analyzer analyzer(rate, "");
 		{
 			unsigned step = 1024;
-			pixelsPerSecond = scale * rate / step;
+			pixelsPerSecond = pixScale * rate / step;
 			// Initialize FFmpeg decoding
 			FFmpeg mpeg(fileName.toStdString(), rate);
-			setWidth(scale * mpeg.duration() * rate / step); // Estimation
+			setWidth(pixScale * mpeg.duration() * rate / step); // Estimation
 			curX = 0;
 			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
 				// Mix stereo into mono
@@ -46,7 +47,7 @@ void PitchVis::run()
 		// Filter the analyzer output data into QPainterPaths.
 		Analyzer::Moments const& moments = analyzer.getMoments();
 		curX = 0;
-		setWidth(scale * moments.size());
+		setWidth(pixScale * moments.size());
 		for (Analyzer::Moments::const_iterator it = moments.begin(), itend = moments.end(); it != itend && curX < width(); ++it, ++curX) {
 			moreAvailable = true;
 			Moment::Tones const& tones = it->m_tones;
@@ -54,17 +55,16 @@ void PitchVis::run()
 				if (it2->prev) continue;  // The tone doesn't begin at this moment, skip
 				// Copy the linked list into vector for easier access and calculate max level
 				std::vector<Tone const*> tones;
-				double lmax = 0.0;
-				for (Tone const* n = &*it2; n; n = n->next) { tones.push_back(n); lmax = std::max(lmax, n->level); }
-				if (tones.size() < 8) continue;  // Too short or weak tone, ignored
-				QPainterPath path;
-				path.lineTo(20, 30);
+				for (Tone const* n = &*it2; n; n = n->next) { tones.push_back(n); }
+				if (tones.size() < 5) continue;  // Too short or weak tone, ignored
+				PitchPath path;
+				Analyzer::Moments::const_iterator momit = it;
 				// Render
-				for (unsigned i = 0; i < tones.size(); ++i) {
-					//float value = 0.006 * (level2dB(tones[i]->level) + 60.0);
-					unsigned x = scale * (curX + i);
-					unsigned y = freq2px(tones[i]->freq);
-					if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+				for (unsigned i = 0; i < tones.size(); ++i, ++momit) {
+					float t = momit->m_time;
+					float n = scale.getNote(tones[i]->freq);
+					float level = level2dB(tones[i]->level);
+					path.push_back(PitchFragment(t, n, level));
 				}
 				QMutexLocker locker(&mutex);
 				paths.push_back(path);
@@ -78,6 +78,29 @@ void PitchVis::run()
 	QMutexLocker locker(&mutex);
 	moreAvailable = true;
 	curX = width();
+}
+
+void PitchVis::paint(QPaintDevice* widget) {
+	QMutexLocker locker(&mutex);
+	QPainter painter;
+	painter.begin(widget);
+	painter.setRenderHint(QPainter::Antialiasing);
+	QPen pen;
+	pen.setWidth(8);
+	pen.setCapStyle(Qt::RoundCap);
+	PitchVis::Paths const& paths = getPaths();
+	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+		int oldx, oldy;
+		for (PitchPath::const_iterator it2 = it->begin(), it2end = it->end(); it2 != it2end; ++it2) {
+			int x = time2px(it2->time);
+			int y = note2px(it2->note);
+			pen.setColor(QColor(32, clamp<int>(127 + it2->level, 32, 255), 32));
+			painter.setPen(pen);
+			if (it2 != it->begin()) painter.drawLine(oldx, oldy, x, y);
+			oldx = x; oldy = y;
+		}
+	}
+	painter.end();
 }
 
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }

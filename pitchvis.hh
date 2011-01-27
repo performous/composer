@@ -10,34 +10,17 @@
 #include <string>
 #include <vector>
 
-struct Pixel {
-	float r,g,b,a;
-	Pixel(float r, float g, float b, float a = 1.0f): r(r), g(g), b(b), a(a) {}
-	Pixel(): r(), g(), b(), a(1.0f) {}
-	static unsigned char conv(float c, float a) {
-		return static_cast<unsigned char>(0.5 + 255.0 * clamp(a * std::sqrt(c))); // sqrt(c) is gamma correction
-	}
-	unsigned rgba() const {
-		unsigned char red = conv(r, a);
-		unsigned char green = conv(g, a);
-		unsigned char blue = conv(b, a);
-		unsigned char alpha = conv(1.0f, a);
-		return alpha << 24 | red << 16 | green << 8 | blue;
-	}
-	float& operator[](unsigned idx) { return (&r)[idx]; }
-	Pixel& operator+=(Pixel const& pix) {
-		r += pix.r;
-		g += pix.g;
-		b += pix.b;
-		a += pix.a;
-		return *this;
-	}
+struct PitchFragment {
+	float time, note, level;  // seconds, MIDI note, dB
+	PitchFragment(float time, float note, float level): time(time), note(note), level(level) {}
 };
+
+typedef std::vector<PitchFragment> PitchPath;
 
 class PitchVis: public QWidget, public QThread {
 public:
 	static const std::size_t height = 768;
-	typedef std::vector<QPainterPath> Paths;
+	typedef std::vector<PitchPath> Paths;
 	QMutex mutex;
 
 	PitchVis(QString const& filename, QWidget *parent = NULL);
@@ -45,7 +28,7 @@ public:
 
 	void run(); // Thread runs here
 	void stop() { cancelled = true; }
-
+	void paint(QPaintDevice* widget);
 	Paths const& getPaths() { moreAvailable = false; return paths; }
 	bool newDataAvailable() const { return moreAvailable; }
 	int getXValue() const { return curX; }

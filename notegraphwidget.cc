@@ -30,7 +30,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	templabel.close();
 
 	setProperty("darkBackground", true);
-	setStyleSheet("QLabel[darkBackground=\"true\"] { background: #222; }");
+	setStyleSheet("QLabel[darkBackground=\"true\"] { background: rgb(32, 32, 32); }");
 
 	// Initially expanding horizontally to fill the space
 	QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -145,22 +145,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent*)
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
-	if (m_pitch) {
-		QMutexLocker locker(&m_pitch->mutex);
-		QPainter painter;
-		painter.begin(this);
-		painter.setRenderHint(QPainter::Antialiasing);
-		QPen pen;
-		pen.setColor(Qt::gray);
-		pen.setWidth(8);
-		pen.setCapStyle(Qt::RoundCap);
-		painter.setPen(pen);
-		PitchVis::Paths const& paths = m_pitch->getPaths();
-		for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
-			painter.drawPath(*it);
-		}
-		painter.end();
-	}
+	if (m_pitch) m_pitch->paint(this);
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
