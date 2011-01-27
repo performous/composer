@@ -75,6 +75,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 
 	statusbarProgress = new QProgressBar(NULL);
 	ui.statusbar->addPermanentWidget(statusbarProgress);
+	statusbarProgress->hide();
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 
 	hasUnsavedChanges = false;
