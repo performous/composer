@@ -53,6 +53,7 @@ struct Combo {
 	Combo(): freq(), level() {}
 	void combine(Peak const& p);
 	bool match(double freqOther) const;
+	static bool cmpByFreq(Combo const& a, Combo const& b) { return a.freq < b.freq; }
 	static bool cmpByLevel(Combo const& a, Combo const& b) { return a.level < b.level; }
 };
 

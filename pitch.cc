@@ -70,6 +70,8 @@ void Combo::combine(Peak const& p) {
 
 bool Combo::match(double freqOther) const { return matchFreq(freq, freqOther); }
 
+#include <iostream>
+
 void Analyzer::calcTones() {
 	// Precalculated constants
 	const double freqPerBin = m_rate / FFT_N;
@@ -79,7 +81,6 @@ void Analyzer::calcTones() {
 	const size_t kMin = std::max(size_t(3), size_t(FFT_MINFREQ / freqPerBin));
 	const size_t kMax = std::min(FFT_N / 2, size_t(FFT_MAXFREQ / freqPerBin));
 	m_peaks.resize(kMax);
-	std::vector<double> levels;
 	// Process FFT into peaks
 	for (size_t k = 1; k < kMax; ++k) {
 		double level = normCoeff * std::abs(m_fft[k]);
@@ -93,62 +94,47 @@ void Analyzer::calcTones() {
 		m_peaks[k].freqFFT = k * freqPerBin;  // Calculate the simple FFT frequency
 		m_peaks[k].freq = (k + delta) * freqPerBin;  // Calculate the true frequency
 		m_peaks[k].level = level;
-		levels.push_back(level);
 	}
-	std::sort(levels.begin(), levels.end());
-	double l80 = levels[levels.size() * 80 / 100];  // l80 > 80 % peaks
-	double lmax = levels.back();  // Max level of peaks (note: combos will combine peaks and go higher)
 	// Filter peaks and combine adjacent peaks pointing at the same frequency into one
 	typedef std::vector<Combo> Combos;
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		if (p.level < l80) continue;
+		if (p.level < 1e-6) continue;
 		if (p.freq < FFT_MINFREQ || p.freq > FFT_MAXFREQ) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
 		combos.back().combine(p);
 	}
 	// Convert sum frequencies into averages
-	for (Combos::iterator it = combos.begin(), end = combos.end(); it != end; ++it) it->freq /= it->level;
-	// Strongest first
+	for (Combos::iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
+		it->freq /= it->level;
+		if (it->freq != it->freq) std::cout << it->freq << ", " << it->level << std::endl;
+	}
+	// Only keep a reasonable amount of strongest combos
 	std::sort(combos.rbegin(), combos.rend(), Combo::cmpByLevel);
-	// Keep only a reasonable amount of strongest frequencies.
-	//if (combos.size() > 10) combos.resize(10);
+	if (combos.size() > 20) combos.resize(20);
+	// The order may not be strictly correct, fix it...
+	std::sort(combos.begin(), combos.end(), Combo::cmpByFreq);
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
-	for (Combos::const_iterator it = combos.begin(), end = combos.end(); it != end; ++it) {
-		if (it->level < 0.1 * lmax) break;
-		Tone bestTone;
-		int bestScore = 0;
-		for (std::size_t div = 1; div <= Tone::MAXHARM; ++div) {
-			// Assume that the *it is the div'th harmonic
-			Tone t;
-			double freq = it->freq / div;  // Assumed fundamental frequency
-			int score = 0;
-			size_t misses = 0;
-			t.level = 0.0;
-			for (std::size_t n = 1; n <= Tone::MAXHARM && misses < 3; ++n) {
-				double hfreq = n * freq;
-				bool miss = true;
-				for (Combos::const_iterator harm = combos.begin(), harmend = combos.end(); harm != harmend; ++harm) {
-					if (!harm->match(hfreq)) continue;  // Skip current combo if it doesn't match
-					// Possible matching harmonic found, update t and scoring
-					score += (n == 1 ? 3 : 2);  // Score for finding a harmonic (extra for fundamental)
-					double l = harm->level;
-					t.harmonics[n - 1] += l;
-					t.level += l;
-					t.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
-				}
-				if (miss) ++misses;
+	for (Combos::const_iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
+		Tone tone;
+		for (Combos::const_iterator harm = it + 1; harm != itend; ++harm) {
+			double ratio = harm->freq / it->freq;
+			unsigned n = round(ratio);
+			if (n == 0) {
+				continue;
 			}
-			t.freq /= t.level;  // Average instead of sum
-			if (score > bestScore) {
-				bestScore = score;
-				bestTone = t;
-			}
+			if (n > Tone::MAXHARM) break; // No more harmonics can be found
+			if (std::abs(ratio - n) > 0.03) continue; // Frequency doesn't match
+			double l = harm->level;
+			tone.harmonics[n - 1] += l;
+			tone.level += l;
+			tone.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
 		}
-		tones.push_back(bestTone);
+		tone.freq /= tone.level;  // Average instead of sum
+		tones.push_back(tone);
 	}
 	// Clean harmonics misdetected as fundamental
 	tones.sort();
