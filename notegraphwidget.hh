@@ -44,11 +44,13 @@ public:
 
 	void selectNote(NoteLabel *note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
+	void split(NoteLabel *note);
+	void del(NoteLabel *note);
+	void editLyric(NoteLabel *note);
 
 	int getNoteLabelId(NoteLabel* note) const;
 	NoteLabels& noteLabels() { return m_notes; }
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
-	void editLyric(NoteLabel *note);
 
 	int s2px(double sec) const;
 	double px2s(int px) const;

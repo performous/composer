@@ -321,25 +321,8 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		child->createPixmap(child->size());
 
 	// Right Click
-/*	} else if (event->button() == Qt::RightButton) {
-
-		// Cut the text in a position proportional to the click point
-		float relRatio = float(hotSpot.x()) / child->width();
-		int cutpos = int(std::ceil(child->lyric().length() * relRatio));
-		QString firstst = child->lyric().left(cutpos);
-		QString secondst = child->lyric().right(child->lyric().length() - cutpos);
-		int w1 = relRatio * child->width();
-
-		// Create operations for adding the new labels and deleting the old one
-		int id = getNoteLabelId(child);
-		Operation new1("NEW"), new2("NEW");
-		new1 << id << firstst << child->pos().x() << child->pos().y() << w1 << 0 << child->isFloating();
-		new2 << id+1 << secondst << child->pos().x() + w1 << child->pos().y() << child->width() - w1 << 0 << child->isFloating();
-		Operation del("DEL"); del << id+2;
-		Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
-		doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
-
-		m_selectedNote = NULL;*/
+	} else if (event->button() == Qt::RightButton) {
+		event->ignore();
 	}
 }
 
@@ -385,6 +368,39 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	}
 
 	editLyric(child);
+}
+
+void NoteGraphWidget::split(NoteLabel *note)
+{
+	if (!note) return;
+
+	// Cut the text in half
+	float relRatio = 0.5; //float(hotSpot.x()) / note->width();
+	int cutpos = int(std::ceil(note->lyric().length() * relRatio));
+	QString firstst = note->lyric().left(cutpos);
+	QString secondst = note->lyric().right(note->lyric().length() - cutpos);
+	int w1 = relRatio * note->width();
+
+	// Create operations for adding the new labels and deleting the old one
+	int id = getNoteLabelId(note);
+	Operation new1("NEW"), new2("NEW");
+	new1 << id << firstst << note->pos().x() << note->pos().y() << w1 << 0 << note->isFloating();
+	new2 << id+1 << secondst << note->pos().x() + w1 << note->pos().y() << note->width() - w1 << 0 << note->isFloating();
+	Operation del("DEL"); del << id+2;
+	Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
+	doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
+
+	m_selectedNote = NULL;
+}
+
+void NoteGraphWidget::del(NoteLabel *note)
+{
+	if (!note) return;
+
+	Operation op("DEL");
+	op << getNoteLabelId(m_selectedNote);
+	doOperation(op);
+	m_selectedNote = NULL;
 }
 
 void NoteGraphWidget::editLyric(NoteLabel *note) {
@@ -476,12 +492,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 	case Qt::Key_Delete: // Delete selected note
-		if (m_selectedNote) {
-			Operation op("DEL");
-			op << getNoteLabelId(m_selectedNote);
-			doOperation(op);
-			m_selectedNote = NULL;
-		}
+		del(m_selectedNote);
 		break;
 	default:
 		QWidget::keyPressEvent(event);
