@@ -32,6 +32,11 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: #222; }");
 
+	// Initially expanding horizontally to fill the space
+	QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	setSizePolicy(sp);
+	setFixedHeight(PitchVis::height);
+
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 

@@ -43,14 +43,11 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	// Duplicate/reused signals/slots
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 
+	show(); // Needed in order to get real values from width()
+
 	// We must set the initial lyrics here, because constructor doesn't have
-	// signals yet ready, which leads to empty undo stack
+	// signals yet ready, which leads to empty undo stack (and thus b0rked saving)
 	noteGraph->setLyrics(tr("Please add music file and lyrics text."));
-	// We want the initial text to be completely visible on screen
-	// FIXME: This should be handled with more robustness and elegance
-	Operation moveop("MOVE");
-	moveop << (int)noteGraph->noteLabels().size()-1 << 600 - noteGraph->noteLabels().back()->width() << noteGraph->noteLabels().back()->y();
-	noteGraph->doOperation(moveop);
 	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
 	noteGraph->updateNotes();
 	updateNoteInfo(NULL);
