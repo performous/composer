@@ -210,7 +210,7 @@ void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
 	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
 	m_seekHandle.move(x, 0);
 	if (smoothing)
-		m_seekHandle.moveTimerId = m_seekHandle.startTimer(px2s(1) * 1000);
+		m_seekHandle.moveTimerId = m_seekHandle.startTimer(std::ceil(px2s(1) * 1000));
 }
 
 void NoteGraphWidget::stopMusic()
@@ -274,7 +274,6 @@ void NoteGraphWidget::selectNextSentenceStart()
 		}
 	}
 }
-
 
 void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -483,7 +482,6 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	emit updateNoteInfo(m_selectedNote);
 }
 
-
 void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
  {
 	switch (event->key()) {
@@ -602,6 +600,9 @@ QString NoteGraphWidget::dumpLyrics() const
 
 
 
+
+/// SeekHandle
+
 SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
@@ -643,12 +644,15 @@ void SeekHandle::timerEvent(QTimerEvent*)
 			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
 			int y = 0;
 			if (scrollVer) y = scrollVer->value();
-			scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);
+				scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);
 		}
 	}
 }
 
 
+
+
+/// FloatingGap
 
 void FloatingGap::addNote(NoteLabel* n)
 {
