@@ -33,9 +33,9 @@ void PitchVis::run()
 			// Initialize FFmpeg decoding
 			FFmpeg mpeg(fileName.toStdString(), rate);
 			setWidth(pixScale * mpeg.duration() * rate / step); // Estimation
-			curX = 0;
-			int i = 0;
-			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), i * step * 2); ++i, curX += pixScale) {
+			unsigned x = 0;
+			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2); ++x) {
+				curX = pixScale * x;
 				// Mix stereo into mono
 				for (unsigned j = 0; j < step; ++j) data[j] = 0.5 * (data[2*j] + data[2*j + 1]);
 				// Process
@@ -47,10 +47,10 @@ void PitchVis::run()
 		}
 		// Filter the analyzer output data into QPainterPaths.
 		Analyzer::Moments const& moments = analyzer.getMoments();
-		curX = 0;
 		setWidth(pixScale * moments.size());
-		for (Analyzer::Moments::const_iterator it = moments.begin(), itend = moments.end(); it != itend && curX < width(); ++it, ++curX) {
-			moreAvailable = true;
+		curX = 0;
+		for (Analyzer::Moments::const_iterator it = moments.begin(), itend = moments.end(); it != itend; ++it) {
+			curX += pixScale;
 			Moment::Tones const& tones = it->m_tones;
 			for (Moment::Tones::const_iterator it2 = tones.begin(), it2end = tones.end(); it2 != it2end; ++it2) {
 				if (it2->prev) continue;  // The tone doesn't begin at this moment, skip
