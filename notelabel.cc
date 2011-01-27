@@ -2,6 +2,7 @@
 #include <QResizeEvent>
 #include <QToolTip>
 #include <QPainter>
+#include <QMenu>
 #include <iostream>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -23,6 +24,9 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, 
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
+	// Context menu
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 	show();
 }
 
@@ -160,4 +164,47 @@ void NoteLabel::updateNote()
 		.arg(QString::number(m_note.begin))
 		.arg(QString::number(m_note.end))
 		);
+}
+
+
+void NoteLabel::showContextMenu(const QPoint &pos)
+{
+	QAction *actionSplit = new QAction(this);
+	QAction *actionFloating = new QAction(this);
+	actionFloating->setCheckable(true);
+	QAction *actionLineBreak = new QAction(this);
+	actionLineBreak->setCheckable(this);
+	QAction *actionNormal = new QAction(this);
+	QAction *actionGolden = new QAction(this);
+	QAction *actionFreestyle = new QAction(this);
+	QAction *actionDelete = new QAction(this);
+
+	QMenu *menuContext = new QMenu(this);
+	QMenu *menuType = new QMenu(menuContext);
+
+	menuContext->addAction(actionSplit);
+	menuContext->addSeparator();
+	menuContext->addAction(actionFloating);
+	menuContext->addAction(actionLineBreak);
+	menuContext->addAction(menuType->menuAction());
+	menuContext->addSeparator();
+	menuContext->addAction(actionDelete);
+	menuType->addAction(actionNormal);
+	menuType->addAction(actionGolden);
+	menuType->addAction(actionFreestyle);
+
+	actionSplit->setText(tr("Split"));
+	actionFloating->setText(tr("Floating"));
+	actionLineBreak->setText(tr("Line break"));
+	actionNormal->setText(tr("Normal"));
+	actionGolden->setText(tr("Golden"));
+	actionFreestyle->setText(tr("Freestyle"));
+	actionDelete->setText(tr("Delete"));
+	menuType->setTitle(tr("Type"));
+
+	QPoint globalPos = mapToGlobal(pos);
+	QAction *selectedItem = menuContext->exec(globalPos);
+	if (selectedItem) {
+		std::cout<< selectedItem->text().toStdString();
+	}
 }

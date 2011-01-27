@@ -37,10 +37,14 @@ public:
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);
 
+	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
+
+public slots:
+	void showContextMenu(const QPoint &pos);
+
+protected:
 	void resizeEvent(QResizeEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
-
-	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
 
 private:
 	Note m_note;

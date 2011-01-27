@@ -321,7 +321,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		child->createPixmap(child->size());
 
 	// Right Click
-	} else if (event->button() == Qt::RightButton) {
+/*	} else if (event->button() == Qt::RightButton) {
 
 		// Cut the text in a position proportional to the click point
 		float relRatio = float(hotSpot.x()) / child->width();
@@ -339,7 +339,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
 		doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
 
-		m_selectedNote = NULL;
+		m_selectedNote = NULL;*/
 	}
 }
 
