@@ -406,6 +406,33 @@ void NoteGraphWidget::del(NoteLabel *note)
 	doOperation(op);
 }
 
+void NoteGraphWidget::setType(NoteLabel *note, int index)
+{
+	if (note && note->note().getTypeInt() != index) {
+		Operation op("TYPE");
+		op << getNoteLabelId(note) << index;
+		doOperation(op);
+	}
+}
+
+void NoteGraphWidget::setFloating(NoteLabel *note, bool state)
+{
+	if (note && note->isFloating() != state) {
+		Operation op("FLOATING");
+		op << getNoteLabelId(note) << state;
+		doOperation(op);
+	}
+}
+
+void NoteGraphWidget::setLineBreak(NoteLabel *note, bool state)
+{
+	if (note && note->isLineBreak() != state) {
+		Operation op("LINEBREAK");
+		op << getNoteLabelId(note) << state;
+		doOperation(op);
+	}
+}
+
 void NoteGraphWidget::editLyric(NoteLabel *note) {
 	if (!note) return;
 

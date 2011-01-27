@@ -47,6 +47,9 @@ public:
 	void split(NoteLabel *note);
 	void del(NoteLabel *note);
 	void editLyric(NoteLabel *note);
+	void setFloating(NoteLabel *note, bool state);
+	void setLineBreak(NoteLabel *note, bool state);
+	void setType(NoteLabel *note, int newtype);
 
 	int getNoteLabelId(NoteLabel* note) const;
 	NoteLabels& noteLabels() { return m_notes; }

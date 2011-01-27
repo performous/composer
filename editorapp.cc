@@ -565,34 +565,19 @@ void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
 
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
-	if (noteGraph->selectedNote() && noteGraph->selectedNote()->note().getTypeInt() != index) {
-		noteGraph->selectedNote()->setType(index);
-		Operation op("TYPE");
-		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << index;
-		operationDone(op);
-	}
+	if (noteGraph) noteGraph->setType(noteGraph->selectedNote(), index);
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)
 {
 	bool floating = (state != 0);
-	if (noteGraph->selectedNote() && noteGraph->selectedNote()->isFloating() != floating) {
-		noteGraph->selectedNote()->setFloating(floating);
-		Operation op("FLOATING");
-		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << floating;
-		operationDone(op);
-	}
+	if (noteGraph) noteGraph->setFloating(noteGraph->selectedNote(), floating);
 }
 
 void EditorApp::on_chkLineBreak_stateChanged(int state)
 {
 	bool linebreak = (state != 0);
-	if (noteGraph->selectedNote() && noteGraph->selectedNote()->isLineBreak() != linebreak) {
-		noteGraph->selectedNote()->setLineBreak(linebreak);
-		Operation op("LINEBREAK");
-		op << noteGraph->getNoteLabelId(noteGraph->selectedNote()) << linebreak;
-		operationDone(op);
-	}
+	if (noteGraph) noteGraph->setLineBreak(noteGraph->selectedNote(), linebreak);
 }
 
 void EditorApp::closeEvent(QCloseEvent *event)
