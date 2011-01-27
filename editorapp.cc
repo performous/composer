@@ -51,6 +51,8 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
 	noteGraph->updateNotes();
 	updateNoteInfo(NULL);
+	// Scroll to middle to show the initial lyrics
+	ui.noteGraphScroller->ensureVisible(0, noteGraph->height()/2, 0, ui.noteGraphScroller->height()/2);
 
 	song.reset(new Song);
 
