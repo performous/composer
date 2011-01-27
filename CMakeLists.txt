@@ -47,8 +47,10 @@ file(GLOB SOURCE_FILES "*.cc")
 file(GLOB HEADER_FILES "*.hh")
 file(GLOB RESOURCE_FILES "*.qrc")
 file(GLOB UI_FILES "*.ui")
+file(GLOB LANG_FILES "lang/*.ts")
 
 QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
+QT4_ADD_TRANSLATION(TRANSLATIONS ${LANG_FILES})
 QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
 QT4_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
 
@@ -58,5 +60,7 @@ configure_file("${CMAKE_SOURCE_DIR}/config.cmake.hh" "${CMAKE_BINARY_DIR}/config
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
+
+add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
 target_link_libraries(editor ${LIBS})
+

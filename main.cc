@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QTranslator>
 #include "config.hh"
 #include "editorapp.hh"
 
@@ -11,6 +12,11 @@ int main(int argc, char *argv[])
 	app.setApplicationVersion(VERSION);
 	app.setOrganizationName("Performous Team");
 	app.setOrganizationDomain("performous.org");
+
+	QString locale = QLocale::system().name();
+	QTranslator translator;
+	translator.load(locale);
+	app.installTranslator(&translator);
 
 	EditorApp window;
 	window.show();
