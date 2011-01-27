@@ -320,6 +320,10 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		}
 		child->createPixmap(child->size());
 
+	// Middle Click
+	} else if (event->button() == Qt::MiddleButton) {
+		split(child, float(hotSpot.x()) / child->width());
+
 	// Right Click
 	} else if (event->button() == Qt::RightButton) {
 		event->ignore();
@@ -370,19 +374,18 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	editLyric(child);
 }
 
-void NoteGraphWidget::split(NoteLabel *note)
+void NoteGraphWidget::split(NoteLabel *note, float ratio)
 {
 	if (!note) return;
 
 	if (m_selectedNote == note)
 		m_selectedNote = NULL;
 
-	// Cut the text in half
-	float relRatio = 0.5; //float(hotSpot.x()) / note->width();
-	int cutpos = int(std::ceil(note->lyric().length() * relRatio));
+	// Cut the text
+	int cutpos = int(std::ceil(note->lyric().length() * ratio));
 	QString firstst = note->lyric().left(cutpos);
 	QString secondst = note->lyric().right(note->lyric().length() - cutpos);
-	int w1 = relRatio * note->width();
+	int w1 = ratio * note->width();
 
 	// Create operations for adding the new labels and deleting the old one
 	int id = getNoteLabelId(note);

@@ -44,7 +44,7 @@ public:
 
 	void selectNote(NoteLabel *note);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
-	void split(NoteLabel *note);
+	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);
 	void editLyric(NoteLabel *note);
 	void setFloating(NoteLabel *note, bool state);
