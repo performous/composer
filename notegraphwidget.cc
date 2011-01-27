@@ -77,13 +77,19 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 	clearNotes();
 	bool first = true;
 	while (!ts.atEnd()) {
-		QString word;
-		ts >> word;
-		if (!word.isEmpty()) {
-			m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24)), QSize(), !first));
-			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
-			first = false;
+		// We want to loop one line at the time to insert line breaks
+		QString sentence = ts.readLine();
+		QTextStream ts2(&sentence, QIODevice::ReadOnly);
+		while (!ts2.atEnd()) {
+			QString word;
+			ts2 >> word;
+			if (!word.isEmpty()) {
+				m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24)), QSize(), !first));
+				doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+				first = false;
+			}
 		}
+		if (!m_notes.isEmpty()) setLineBreak(m_notes.back(), true);
 	}
 
 	finalizeNewLyrics();

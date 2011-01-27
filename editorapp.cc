@@ -427,14 +427,8 @@ void EditorApp::on_actionLyricsFromFile_triggered()
 			 return;
 
 		 QTextStream in(&file);
-		 QString text = "";
-		 while (!in.atEnd()) {
-			 text += in.readLine();
-			 if (!in.atEnd()) text += " "; // TODO: Some kind of line separator here
-		 }
-
-		 if (text != "")
-			 noteGraph->setLyrics(text);
+		 QString text = in.readAll();
+		 if (text != "") noteGraph->setLyrics(text);
 	}
 }
 
