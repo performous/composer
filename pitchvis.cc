@@ -34,9 +34,10 @@ void PitchVis::run()
 			FFmpeg mpeg(fileName.toStdString(), rate);
 			setWidth(pixScale * mpeg.duration() * rate / step); // Estimation
 			curX = 0;
-			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), curX * step * 2); ++curX) {
+			int i = 0;
+			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), i * step * 2); ++i, curX += pixScale) {
 				// Mix stereo into mono
-				for (unsigned i = 0; i < step; ++i) data[i] = 0.5 * (data[2*i] + data[2*i + 1]);
+				for (unsigned j = 0; j < step; ++j) data[j] = 0.5 * (data[2*j] + data[2*j + 1]);
 				// Process
 				analyzer.input(&data[0], &data[step]);
 				analyzer.process();
