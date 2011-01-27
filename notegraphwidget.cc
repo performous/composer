@@ -374,6 +374,9 @@ void NoteGraphWidget::split(NoteLabel *note)
 {
 	if (!note) return;
 
+	if (m_selectedNote == note)
+		m_selectedNote = NULL;
+
 	// Cut the text in half
 	float relRatio = 0.5; //float(hotSpot.x()) / note->width();
 	int cutpos = int(std::ceil(note->lyric().length() * relRatio));
@@ -389,18 +392,18 @@ void NoteGraphWidget::split(NoteLabel *note)
 	Operation del("DEL"); del << id+2;
 	Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
 	doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
-
-	m_selectedNote = NULL;
 }
 
 void NoteGraphWidget::del(NoteLabel *note)
 {
 	if (!note) return;
 
+	if (m_selectedNote == note)
+		m_selectedNote = NULL;
+
 	Operation op("DEL");
-	op << getNoteLabelId(m_selectedNote);
+	op << getNoteLabelId(note);
 	doOperation(op);
-	m_selectedNote = NULL;
 }
 
 void NoteGraphWidget::editLyric(NoteLabel *note) {
