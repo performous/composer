@@ -25,6 +25,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QByteArray>
+#include <QFile>
 
 #include <iostream>
 
@@ -87,6 +88,21 @@ public:
 		if (tcs.result())
 			return tcs.selection(ba);
 		return 0;
+	}
+
+	static QString readAllAndHandleEncoding(QFile &file, QWidget *parent = 0)
+	{
+		QString data = "";
+		QByteArray ba = file.readAll();
+		if (!ba.isEmpty()) {
+			data = QString::fromLocal8Bit(ba, ba.size());
+			if (data.toLocal8Bit().size() != ba.size()) {
+				// Not UTF8 :(
+				QTextCodec* codec = codecForContent(ba, parent);
+				if (codec) data = codec->toUnicode(ba);
+			}
+		}
+		return data;
 	}
 
 private:

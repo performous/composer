@@ -38,18 +38,7 @@ SongParser::SongParser(Song& s):
 	if (finfo.size() < 10 || finfo.size() > 100000) throw SongParserException("Does not look like a song file (wrong size)", 1, true);
 
 	// Determine encoding
-	QString data;
-	{
-		QByteArray ba = file.readAll();
-		if (!ba.isEmpty()) {
-			data = QString::fromLocal8Bit(ba, ba.size());
-			if (data.toLocal8Bit().size() != ba.size()) {
-				// Not UTF8 :(
-				QTextCodec* codec = TextCodecSelector::codecForContent(ba);
-				if (codec) data = codec->toUnicode(ba);
-			}
-		}
-	}
+	QString data = TextCodecSelector::readAllAndHandleEncoding(file);
 	file.close();
 
 	if (smCheck(data)) type = SM;

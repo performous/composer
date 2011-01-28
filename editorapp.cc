@@ -15,6 +15,7 @@
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
 #include "songwriter.hh"
+#include "textcodecselector.hh"
 
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
@@ -427,8 +428,7 @@ void EditorApp::on_actionLyricsFromFile_triggered()
 		 if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 			 return;
 
-		 QTextStream in(&file);
-		 QString text = in.readAll();
+		 QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
 		 if (text != "") noteGraph->setLyrics(text);
 	}
 }
