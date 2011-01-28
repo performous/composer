@@ -63,9 +63,11 @@ void SongParser::xmlParse()
 					unsigned int ts = m_prevts;
 
 					// See if it is an actual note and not sleep
-					if (noteElem.attribute("MidiNote") != "0" || !noteElem.attribute("Lyric").isEmpty()) {
+					QString lyric = noteElem.attribute("Lyric").isEmpty()
+						? noteElem.attribute("Rap") : noteElem.attribute("Lyric");
+					if (noteElem.attribute("MidiNote") != "0" || !lyric.isEmpty()) {
 						// TODO: Prettify lyric? (as ss_extract)
-						Note n(noteElem.attribute("Lyric"));
+						Note n(lyric);
 						if (noteElem.attribute("Bonus") == QString("Yes"))
 							n.type = Note::GOLDEN;
 						else if (noteElem.attribute("FreeStyle") == QString("Yes"))
