@@ -79,10 +79,13 @@ bool SongParser::getline(QString &line)
 void SongParser::finalize() {
 	std::vector<QString> tracks = m_song.getVocalTrackNames();
 	for(std::vector<QString>::const_iterator it = tracks.begin() ; it != tracks.end() ; ++it) {
-		// Adjust negative notes
+		// Note normalization
 		VocalTrack& vocal = m_song.getVocalTrack(*it);
-		if (vocal.noteMin <= 0) {
-			unsigned int shift = (1 - vocal.noteMin / 12) * 12;
+		const int limLow = 0, limHigh = 48;
+		if (vocal.noteMin <= limLow || vocal.noteMax >= limHigh) {
+			// Phase 1: Center the entire song to the middle of the permitted range
+			int midnote = (vocal.noteMin + vocal.noteMax) / 2;
+			unsigned int shift = (1006 + 24 - midnote) / 12 * 12 - 1006;  // 1006 for mathematical rounding (always positive, round up from 6)
 			vocal.noteMin += shift;
 			vocal.noteMax += shift;
 			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
