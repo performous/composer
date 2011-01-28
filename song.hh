@@ -125,6 +125,7 @@ class Song {
 	QString cover; ///< cd cover
 	QString background; ///< background image
 	QString video; ///< video
+	double bpm; ///< used for more accurate import --> export cycle
 	/// Variables used for comparisons (sorting)
 	QString collateByTitle;
 	QString collateByTitleOnly;

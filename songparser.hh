@@ -22,7 +22,6 @@ class SongParser {
 	bool getline(QString& line);
 	bool m_relative;
 	double m_gap;
-	double m_bpm;
 
 	// UltraStar TXT
 	bool txtCheck(QString const& data);
@@ -48,7 +47,7 @@ class SongParser {
 	unsigned int m_relativeShift;
 	double m_maxScore;
 	struct BPM {
-		BPM(double _begin, double _ts, double bpm): begin(_begin), step(0.25 * 60.0 / bpm), ts(_ts) {}
+		BPM(double _begin, double _ts, double _bpm): begin(_begin), step(0.25 * 60.0 / _bpm), ts(_ts) {}
 		double begin; // Time in seconds
 		double step; // Seconds per quarter note
 		double ts;

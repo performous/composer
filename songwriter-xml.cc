@@ -6,6 +6,10 @@
 
 
 void SingStarXMLWriter::writeXML() {
+	if (tempo > 300) {
+		tempo /= 2;
+		res = "Demisemiquaver"; // Demisemiquaver = 2x tempo of Semiquaver
+	}
 	QDomDocument doc("");
 	QDomElement root = doc.createElement("MELODY");
 	root.setAttribute("xmlns", "http://www.singstargame.com");
@@ -13,7 +17,7 @@ void SingStarXMLWriter::writeXML() {
 	root.setAttribute("Version", "1");
 	root.setAttribute("Tempo", QString::number(tempo));
 	root.setAttribute("FixedTempo", "Yes");
-	root.setAttribute("Resolution", "Demisemiquaver"); // Demisemiquaver = 2x tempo of Semiquaver
+	root.setAttribute("Resolution", res);
 	root.setAttribute("Genre", s.genre);
 	root.setAttribute("Year", s.year);
 	root.setAttribute("xsi:schemaLocation", "http://www.singstargame.com http://15GMS-SINGSQL/xml_schema/melody.xsd");

@@ -30,6 +30,7 @@ void Song::reload(bool errorIgnore) {
 	videoGap = 0.0;
 	start = 0.0;
 	preview_start = getNaN();
+	bpm = 0.0;
 	hasBRE = false;
 	b0rkedTracks = false;
 	if (!filename.isEmpty()) {

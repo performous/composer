@@ -20,7 +20,7 @@ void SongParser::txtParse() {
 	while (getline(line) && txtParseField(line)) {}
 	if (m_song.title.isEmpty() || m_song.artist.isEmpty())
 		throw std::runtime_error("Required header fields missing");
-	if (m_bpm != 0.0) addBPM(0, m_bpm);
+	if (m_song.bpm != 0.0) addBPM(0, m_song.bpm);
 
 	// Parse notes
 	VocalTrack vocal(TrackName::LEAD_VOCAL);
@@ -57,7 +57,7 @@ bool SongParser::txtParseField(QString const& line) {
 	else if (key == "PREVIEWSTART") m_song.preview_start = value.toDouble(&ok);
 	else if (key == "RELATIVE") assign(m_relative, value);
 	else if (key == "GAP") { m_gap = value.toDouble(&ok); m_gap *= 1e-3; }
-	else if (key == "BPM") m_bpm = value.toDouble(&ok);
+	else if (key == "BPM") m_song.bpm = value.toDouble(&ok);
 	else if (key == "LANGUAGE") m_song.language= value;
 	else if (key == "YEAR") m_song.year = value;
 

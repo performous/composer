@@ -20,7 +20,6 @@ SongParser::SongParser(Song& s):
   m_linenum(),
   m_relative(),
   m_gap(),
-  m_bpm(),
   m_prevtime(),
   m_prevts(),
   m_relativeShift(),

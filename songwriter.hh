@@ -13,12 +13,13 @@ struct SongWriter
 struct SingStarXMLWriter: public SongWriter
 {
 	SingStarXMLWriter(const Song& s_, const QString& path_)
-		: SongWriter(s_, path_), tempo(160) { writeXML(); }
+		: SongWriter(s_, path_), tempo(s_.bpm > 0 ? s_.bpm : 180), res("Semiquaver") { writeXML(); }
 private:
 	void writeXML();
 	int sec2dur(double sec);
 	double dur2sec(int ts);
 	int tempo;
+	QString res;
 };
 
 struct UltraStarTXTWriter: public SongWriter
