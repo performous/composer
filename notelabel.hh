@@ -31,7 +31,7 @@ public:
 	bool isFloating() const { return m_floating; }
 	void setFloating(bool state) { m_floating = state; createPixmap(size()); }
 	bool isLineBreak() const { return m_note.lineBreak; }
-	bool setLineBreak(bool state) { m_note.lineBreak = state; createPixmap(size()); }
+	void setLineBreak(bool state) { m_note.lineBreak = state; createPixmap(size()); }
 	void setType(int newtype) { m_note.type = Note::types[newtype]; createPixmap(size()); }
 
 	void startResizing(int dir);
