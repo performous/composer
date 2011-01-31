@@ -315,6 +315,7 @@ void EditorApp::on_actionSingStarXML_triggered()
 {
 	QString path = QFileDialog::getExistingDirectory(this, tr("Export SingStar XML"), QDir::homePath());
 	if (!path.isNull()) {
+		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
 		try { SingStarXMLWriter(*song.data(), path); }
 		catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
@@ -326,6 +327,7 @@ void EditorApp::on_actionUltraStarTXT_triggered()
 {
 	QString path = QFileDialog::getExistingDirectory(this, tr("Export UltraStar TXT"), QDir::homePath());
 	if (!path.isNull()) {
+		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
 		try { UltraStarTXTWriter(*song.data(), path); }
 		catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
@@ -337,6 +339,7 @@ void EditorApp::on_actionFoFMIDI_triggered()
 {
 	QString path = QFileDialog::getExistingDirectory(this, tr("Export FoF MIDI"), QDir::homePath());
 	if (!path.isNull()) {
+		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
 		try { FoFMIDIWriter(*song.data(), path); }
 		catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());

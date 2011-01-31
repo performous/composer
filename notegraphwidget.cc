@@ -10,6 +10,7 @@
 #include <cmath>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
+#include "song.hh"
 #include "util.hh"
 
 
@@ -594,6 +595,22 @@ double NoteGraphWidget::px2s(int px) const { return m_pitch ? m_pitch->px2time(p
 int NoteGraphWidget::n2px(int note) const { return PitchVis::note2px(note) - m_noteHalfHeight; }
 int NoteGraphWidget::px2n(int px) const { return PitchVis::px2note(px + m_noteHalfHeight); }
 
+
+VocalTrack NoteGraphWidget::getVocalTrack() const
+{
+	VocalTrack track(TrackName::LEAD_VOCAL);
+	Notes& notes = track.notes;
+	if (!m_notes.isEmpty()) {
+		for (int i = 0; i < m_notes.size(); ++i) {
+			notes.push_back(m_notes[i]->note());
+			track.noteMin = std::min(notes.back().note, track.noteMin);
+			track.noteMax = std::max(notes.back().note, track.noteMin);
+		}
+		track.beginTime = notes.front().begin;
+		track.endTime = notes.back().end;
+	}
+	return track;
+}
 
 QString NoteGraphWidget::dumpLyrics() const
 {
