@@ -71,6 +71,7 @@ public slots:
 	// Edit menu
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
+	void on_actionAntiAliasing_toggled(bool checked);
 
 	// Insert menu
 	void on_actionMusicFile_triggered();
@@ -86,9 +87,9 @@ public slots:
 	void on_txtArtist_editingFinished();
 	void on_txtGenre_editingFinished();
 	void on_txtYear_editingFinished();
-	void on_cmbNoteType_currentIndexChanged(int);
-	void on_chkFloating_stateChanged(int);
-	void on_chkLineBreak_stateChanged(int);
+	void on_cmbNoteType_currentIndexChanged(int state);
+	void on_chkFloating_stateChanged(int state);
+	void on_chkLineBreak_stateChanged(int state);
 
 protected:
 	void closeEvent(QCloseEvent *event);

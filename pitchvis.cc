@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QProgressDialog>
 #include <QLabel>
+#include <QSettings>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
 	: QWidget(parent), QThread(), mutex(), pixelsPerSecond(), fileName(filename), moreAvailable(), cancelled(), curX(), m_width()
@@ -82,10 +83,12 @@ void PitchVis::run()
 }
 
 void PitchVis::paint(QPaintDevice* widget, int x1, int x2) {
+	QSettings settings; // Default QSettings parameters given in main()
+	bool aa = settings.value("anti-aliasing", true).toBool();
 	QMutexLocker locker(&mutex);
 	QPainter painter;
 	painter.begin(widget);
-	painter.setRenderHint(QPainter::Antialiasing);
+	if (aa) painter.setRenderHint(QPainter::Antialiasing);
 	QPen pen;
 	pen.setWidth(8);
 	pen.setCapStyle(Qt::RoundCap);

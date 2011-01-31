@@ -462,7 +462,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -494,10 +494,16 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <widget class="QMenu" name="menuPreferences">
+     <property name="title">
+      <string>&amp;Preferences</string>
+     </property>
+     <addaction name="actionAntiAliasing"/>
+    </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
-    <addaction name="actionPreferences"/>
+    <addaction name="menuPreferences"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -586,14 +592,6 @@
     <string>Ctrl+Shift+Z</string>
    </property>
   </action>
-  <action name="actionPreferences">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Preferences</string>
-   </property>
-  </action>
   <action name="actionSingStarXML">
    <property name="text">
     <string>&amp;SingStar XML...</string>
@@ -637,6 +635,17 @@
   <action name="actionWhatsThis">
    <property name="text">
     <string>&amp;What's this?</string>
+   </property>
+  </action>
+  <action name="actionAntiAliasing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Anti-aliasing</string>
+   </property>
+   <property name="toolTip">
+    <string>Use anti-aliasing for the pitch visualization</string>
    </property>
   </action>
  </widget>

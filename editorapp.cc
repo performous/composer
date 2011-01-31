@@ -65,7 +65,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	ui.actionExit->setIcon(QIcon::fromTheme("application-exit", QIcon(":/icons/application-exit.png")));
 	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo", QIcon(":/icons/edit-undo.png")));
 	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo", QIcon(":/icons/edit-redo.png")));
-	ui.actionPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
+	ui.menuPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
@@ -178,6 +178,11 @@ void EditorApp::analyzeProgress(int value, int maximum)
 		}
 	}
 }
+
+
+
+// File menu
+
 
 void EditorApp::on_actionNew_triggered()
 {
@@ -362,6 +367,11 @@ void EditorApp::on_actionExit_triggered()
 	close();
 }
 
+
+
+// Edit menu
+
+
 void EditorApp::on_actionUndo_triggered()
 {
 	if (opStack.isEmpty())
@@ -400,6 +410,18 @@ void EditorApp::on_actionRedo_triggered()
 	redoStack.pop();
 	doOpStack();
 }
+
+
+void EditorApp::on_actionAntiAliasing_toggled(bool checked)
+{
+	QSettings settings; // Default QSettings parameters given in main()
+	settings.setValue("anti-aliasing", checked);
+}
+
+
+
+// Insert menu
+
 
 void EditorApp::on_actionMusicFile_triggered()
 {
@@ -451,6 +473,11 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 	}
 }
 
+
+
+// Help menu
+
+
 void EditorApp::on_actionWhatsThis_triggered()
 {
 	QWhatsThis::enterWhatsThisMode();
@@ -461,6 +488,11 @@ void EditorApp::on_actionAbout_triggered()
 	AboutDialog aboutDialog(this);
 	aboutDialog.exec();
 }
+
+
+
+// Misc stuff
+
 
 void EditorApp::updateSongMeta(bool readFromSongToUI)
 {
@@ -594,10 +626,12 @@ void EditorApp::readSettings()
 	QPoint pos = settings.value("pos", QPoint()).toPoint();
 	QSize size = settings.value("size", QSize(800, 600)).toSize();
 	bool maximized = settings.value("maximized", false).toBool();
+	bool aa = settings.value("anti-aliasing", true).toBool();
 	// Apply them
 	if (!pos.isNull()) move(pos);
 	resize(size);
 	if (maximized) showMaximized();
+	ui.actionAntiAliasing->setChecked(aa);
  }
 
 void EditorApp::writeSettings()
@@ -606,6 +640,7 @@ void EditorApp::writeSettings()
 	settings.setValue("pos", pos());
 	settings.setValue("size", size());
 	settings.setValue("maximized", isMaximized());
+	settings.setValue("anti-aliasing", ui.actionAntiAliasing->isChecked());
  }
 
 
