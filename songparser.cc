@@ -102,7 +102,7 @@ void SongParser::finalize() {
 			std::sort(regNotes.begin(), regNotes.end());
 			std::sort(fsNotes.begin(), fsNotes.end());
 			// Center the entire song to the middle of the permitted range
-			int shift = regNotes.empty() ? 0 : nearestOctave(fsNotes[fsNotes.size() / 2], 24);
+			int shift = regNotes.empty() ? 0 : nearestOctave(regNotes[regNotes.size() / 2], 24);
 			int shiftFS = fsNotes.empty() ? 0 : nearestOctave(fsNotes[fsNotes.size() / 2], 24);
 			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
 				int s = (it->type == Note::FREESTYLE ? shiftFS : shift);
