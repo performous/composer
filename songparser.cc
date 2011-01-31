@@ -82,6 +82,43 @@ namespace {
 	int nearestOctave(int note, int target) {
 		return (1006 + target - note) / 12 * 12 - 1006; // 1006 for mathematical rounding (always positive, round up from 6)
 	}
+	void normalize(Notes& notes, int limLow, int limHigh) {
+		// Find the correction required for freestyle notes (over the entire song)
+		int shiftFS = 0;
+		{
+			std::vector<int> fsNotes, regNotes;
+			for (Notes::iterator it = notes.begin(); it != notes.end(); ++it) {
+				(it->type == Note::FREESTYLE ? fsNotes : regNotes).push_back(it->note);
+			}
+			std::sort(regNotes.begin(), regNotes.end());
+			std::sort(fsNotes.begin(), fsNotes.end());
+			if (!regNotes.empty() && !fsNotes.empty()) shiftFS = nearestOctave(fsNotes[fsNotes.size() / 2], regNotes[regNotes.size() / 2]);
+		}
+		for (Notes::iterator it = notes.begin(), itnext = it; it != notes.end();) {
+			int low, high;
+			low = high = it->note;
+			// Analyze the sentence and find the end of it
+			while (++itnext != notes.end() && !itnext->lineBreak) {
+				int n = itnext->note;
+				if (itnext->type == Note::FREESTYLE) n += shiftFS;
+				low = std::min(low, n);
+				high = std::max(high, n);
+			}
+			// Per-sentence shift
+			int shift = nearestOctave(high - low, limHigh - limLow);
+			// Shift the notes into position
+			while (it != itnext) {
+				int s = shift;
+				if (it->type == Note::FREESTYLE) s += shiftFS;
+				// The last resort if everything else fails
+				while (it->note + s < limLow) s += 12;
+				while (it->note + s > limHigh) s -= 12;
+				it->note += s;
+				it->notePrev += s;
+				++it;
+			}
+		}
+	}
 }
 
 void SongParser::finalize() {
@@ -100,23 +137,8 @@ void SongParser::finalize() {
 			else sentenceStart = false;
 		}
 		// Note normalization
-		const int limLow = 0, limHigh = 48;
-		if (vocal.noteMin <= limLow || vocal.noteMax >= limHigh) {
-			std::vector<int> fsNotes, regNotes;
-			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
-				(it->type == Note::FREESTYLE ? fsNotes : regNotes).push_back(it->note);
-			}
-			std::sort(regNotes.begin(), regNotes.end());
-			std::sort(fsNotes.begin(), fsNotes.end());
-			// Center the entire song to the middle of the permitted range
-			int shift = regNotes.empty() ? 0 : nearestOctave(regNotes[regNotes.size() / 2], 24);
-			int shiftFS = fsNotes.empty() ? 0 : nearestOctave(fsNotes[fsNotes.size() / 2], 24);
-			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
-				int s = (it->type == Note::FREESTYLE ? shiftFS : shift);
-				it->note += s;
-				it->notePrev += s;
-			}
-		}
+		const int limLow = 1, limHigh = 47;
+		if (vocal.noteMin < limLow || vocal.noteMax > limHigh) normalize(vocal.notes, limLow, limHigh);
 	}
 	if (m_tsPerBeat) {
 		// Add song beat markers
