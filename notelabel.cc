@@ -161,8 +161,8 @@ void NoteLabel::updateNote()
 		.arg(lyric())
 		.arg(m_note.typeString())
 		.arg(ms.getNoteStr(ms.getNoteFreq(m_note.note)))
-		.arg(QString::number(m_note.begin))
-		.arg(QString::number(m_note.end))
+		.arg(QString::number(m_note.begin, 'f', 3))
+		.arg(QString::number(m_note.end, 'f', 3))
 		);
 }
 

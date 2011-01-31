@@ -144,9 +144,9 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 {
 	if (note) {
 		MusicalScale ms;
-		ui.valNoteBegin->setText(QString::number(note->note().begin) + tr(" s"));
-		ui.valNoteEnd->setText(QString::number(note->note().end) + tr(" s"));
-		ui.valNoteDuration->setText(QString::number(note->note().length()) + tr(" s"));
+		ui.valNoteBegin->setText(QString::number(note->note().begin, 'f', 2) + tr(" s"));
+		ui.valNoteEnd->setText(QString::number(note->note().end, 'f', 2) + tr(" s"));
+		ui.valNoteDuration->setText(QString::number(note->note().length(), 'f', 2) + tr(" s"));
 		ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
 			+ " (" + QString::number(note->note().note) + ")");
 		ui.cmbNoteType->setEnabled(true);
