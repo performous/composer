@@ -81,7 +81,7 @@ void SingStarXMLWriter::writeXML() {
 		// This is only done if the pause has duration
 		// We also take the overall position into consideration (counter rounding errors)
 		int pauseLen = 0;
-		double end = dur2sec(ts) + n.length();
+		double end = dur2sec(ts);
 		if (i < notes.size() - 1)
 			pauseLen = sec2dur(notes[i+1].begin - end); // Difference to next note
 		if (pauseLen > 0) {
