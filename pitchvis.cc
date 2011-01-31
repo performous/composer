@@ -58,7 +58,7 @@ void PitchVis::run()
 				// Copy the linked list into vector for easier access and calculate max level
 				std::vector<Tone const*> tones;
 				for (Tone const* n = &*it2; n; n = n->next) { tones.push_back(n); }
-				if (tones.size() < 5) continue;  // Too short or weak tone, ignored
+				if (tones.size() < 3) continue;  // Too short tone, ignored
 				PitchPath path;
 				Analyzer::Moments::const_iterator momit = it;
 				// Render
