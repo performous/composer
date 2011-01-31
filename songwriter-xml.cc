@@ -110,9 +110,9 @@ void SingStarXMLWriter::writeXML() {
 }
 
 int SingStarXMLWriter::sec2dur(double sec) {
-	return round(tempo / 60.0 * sec * 8); // 8 for Demisemiquaver
+	return round(tempo / 60.0 * sec * (res == "Demisemiquaver" ? 8 : 4));
 }
 
 double SingStarXMLWriter::dur2sec(int ts) {
-	return ts * 60.0 / (tempo * 8); // 8 for Demisemiquaver
+	return ts * 60.0 / (tempo * (res == "Demisemiquaver" ? 8 : 4));
 }
