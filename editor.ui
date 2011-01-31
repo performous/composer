@@ -179,7 +179,7 @@
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>Line break after this</string>
+               <string>Sentence beginning</string>
               </property>
              </widget>
             </item>
