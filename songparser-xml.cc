@@ -29,7 +29,7 @@ void SongParser::xmlParse()
 
 	// Parse meta
 	QDomElement root = doc.documentElement();
-	m_song.bpm = root.attribute("Tempo").toInt();
+	m_song.bpm = root.attribute("Tempo").toDouble();
 	if (m_song.bpm == 0)
 		throw std::runtime_error(QT_TR_NOOP("Invalid tempo"));
 	if (root.attribute("Resolution") == QString("Demisemiquaver"))
