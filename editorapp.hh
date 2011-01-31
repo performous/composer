@@ -37,6 +37,7 @@ public:
 private:
 	bool promptSaving();
 	void saveProject(QString fileName);
+	void exportSong(QString format, QString dialogTitle);
 	void doOpStack();
 	void playButton();
 	void readSettings();

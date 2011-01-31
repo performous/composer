@@ -311,41 +311,28 @@ void EditorApp::saveProject(QString fileName)
 	updateMenuStates();
 }
 
-void EditorApp::on_actionSingStarXML_triggered()
+void EditorApp::exportSong(QString format, QString dialogTitle)
 {
-	QString path = QFileDialog::getExistingDirectory(this, tr("Export SingStar XML"), QDir::homePath());
+	QString path = QFileDialog::getExistingDirectory(this, dialogTitle, QDir::homePath());
 	if (!path.isNull()) {
-		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
-		try { SingStarXMLWriter(*song.data(), path); }
-		catch (const std::exception& e) {
+		// Sync notes
+		if (noteGraph) song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
+		// Pick exporter
+		try {
+			if (format == "XML") SingStarXMLWriter(*song.data(), path);
+			else if (format == "TXT") UltraStarTXTWriter(*song.data(), path);
+			else if (format == "INI") FoFMIDIWriter(*song.data(), path);
+		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
 		}
 	}
 }
 
-void EditorApp::on_actionUltraStarTXT_triggered()
-{
-	QString path = QFileDialog::getExistingDirectory(this, tr("Export UltraStar TXT"), QDir::homePath());
-	if (!path.isNull()) {
-		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
-		try { UltraStarTXTWriter(*song.data(), path); }
-		catch (const std::exception& e) {
-			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
-		}
-	}
-}
+void EditorApp::on_actionSingStarXML_triggered() { exportSong("XML", tr("Export SingStar XML")); }
 
-void EditorApp::on_actionFoFMIDI_triggered()
-{
-	QString path = QFileDialog::getExistingDirectory(this, tr("Export FoF MIDI"), QDir::homePath());
-	if (!path.isNull()) {
-		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
-		try { FoFMIDIWriter(*song.data(), path); }
-		catch (const std::exception& e) {
-			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
-		}
-	}
-}
+void EditorApp::on_actionUltraStarTXT_triggered() { exportSong("TXT", tr("Export UltraStar TXT")); }
+
+void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Frets on Fire MIDI")); }
 
 void EditorApp::on_actionLyricsToFile_triggered()
 {
