@@ -2,6 +2,7 @@
 #include "textcodecselector.hh"
 #include <QFile>
 #include <QFileInfo>
+#include <algorithm>
 
 
 namespace SongParserUtil {
@@ -76,26 +77,39 @@ bool SongParser::getline(QString &line)
 	return !m_stream.atEnd();
 }
 
+namespace {
+	/// Return the amount of shift (in notes) required for note to make put it in the nearest octave of the target note
+	int nearestOctave(int note, int target) {
+		return (1006 + target - note) / 12 * 12 - 1006; // 1006 for mathematical rounding (always positive, round up from 6)
+	}
+}
+
 void SongParser::finalize() {
 	std::vector<QString> tracks = m_song.getVocalTrackNames();
 	for(std::vector<QString>::const_iterator it = tracks.begin() ; it != tracks.end() ; ++it) {
-		// Note normalization
 		VocalTrack& vocal = m_song.getVocalTrack(*it);
+		vocal.m_scoreFactor = 1.0 / m_maxScore;
+		if (vocal.notes.empty()) continue;
+		// Set begin/end times
+		vocal.beginTime = vocal.notes.front().begin, vocal.endTime = vocal.notes.back().end;
+		// Note normalization
 		const int limLow = 0, limHigh = 48;
 		if (vocal.noteMin <= limLow || vocal.noteMax >= limHigh) {
-			// Phase 1: Center the entire song to the middle of the permitted range
-			int midnote = (vocal.noteMin + vocal.noteMax) / 2;
-			unsigned int shift = (1006 + 24 - midnote) / 12 * 12 - 1006;  // 1006 for mathematical rounding (always positive, round up from 6)
-			vocal.noteMin += shift;
-			vocal.noteMax += shift;
+			std::vector<int> fsNotes, regNotes;
 			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
-				it->note += shift;
-				it->notePrev += shift;
+				(it->type == Note::FREESTYLE ? fsNotes : regNotes).push_back(it->note);
+			}
+			std::sort(regNotes.begin(), regNotes.end());
+			std::sort(fsNotes.begin(), fsNotes.end());
+			// Center the entire song to the middle of the permitted range
+			int shift = regNotes.empty() ? 0 : nearestOctave(fsNotes[fsNotes.size() / 2], 24);
+			int shiftFS = fsNotes.empty() ? 0 : nearestOctave(fsNotes[fsNotes.size() / 2], 24);
+			for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
+				int s = (it->type == Note::FREESTYLE ? shiftFS : shift);
+				it->note += s;
+				it->notePrev += s;
 			}
 		}
-		// Set begin/end times
-		if (!vocal.notes.empty()) vocal.beginTime = vocal.notes.front().begin, vocal.endTime = vocal.notes.back().end;
-		vocal.m_scoreFactor = 1.0 / m_maxScore;
 	}
 	if (m_tsPerBeat) {
 		// Add song beat markers
