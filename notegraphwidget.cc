@@ -204,7 +204,10 @@ void NoteGraphWidget::updateNotes()
 				double step = (gap.width() - w * gap.notes.size()) / double(gap.notes.size() + 1);
 				double x = gap.begin + step;
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
-					(*it2)->move(x, (*it2)->y());
+					double y = (*it2)->y();
+					// Try to find optimal pitch
+					if (m_pitch) y = n2px(m_pitch->guessNote(px2s(x), px2s(x + w + step), 24));
+					(*it2)->move(x, y);
 					(*it2)->resize(w, (*it2)->height());
 					x += w + step;
 				}

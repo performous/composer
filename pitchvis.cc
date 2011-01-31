@@ -111,6 +111,23 @@ void PitchVis::paint(QPaintDevice* widget, int x1, int x2) {
 	painter.end();
 }
 
+int PitchVis::guessNote(double begin, double end, int note) {
+	const unsigned scoreSz = 48;
+	double score[scoreSz] = {};
+	if (note >= 0 || note < 48) score[note] = 10.0;  // Slightly prefer the current note
+	// Score against paths
+	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+		for (PitchPath::const_iterator it2 = it->begin(), it2end = it->end(); it2 != it2end; ++it2) {
+			if (it2->time < begin) continue;
+			if (it2->time > end) break;
+			unsigned n = round(it2->note);
+			if (n < scoreSz) score[n] += 100 + it2->level;
+		}
+	}
+	// Return the idx with best score
+	return std::max_element(score + 1, score + scoreSz) - score;
+}
+
 unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }
 /* static */ unsigned PitchVis::note2px(double tone) { return height - static_cast<unsigned>(16.0 * tone); }
 /* static */ double PitchVis::px2note(unsigned px) { return (height - px) / 16.0; }

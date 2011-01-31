@@ -32,7 +32,7 @@ public:
 	Paths const& getPaths() { moreAvailable = false; return paths; }
 	bool newDataAvailable() const { return moreAvailable; }
 	int getXValue() const { return curX; }
-
+	int guessNote(double begin, double end, int initial);
 	std::size_t width() const { return m_width; }
 
 	unsigned freq2px(double freq) const;
