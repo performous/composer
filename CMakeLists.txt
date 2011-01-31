@@ -61,6 +61,6 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 
-add_executable(editor ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
+add_executable(editor ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
 target_link_libraries(editor ${LIBS})
 
