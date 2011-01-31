@@ -28,7 +28,7 @@ public:
 
 	void run(); // Thread runs here
 	void stop() { cancelled = true; }
-	void paint(QPaintDevice* widget);
+	void paint(QPaintDevice* widget, int x1, int x2);
 	Paths const& getPaths() { moreAvailable = false; return paths; }
 	bool newDataAvailable() const { return moreAvailable; }
 	int getXValue() const { return curX; }

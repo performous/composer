@@ -81,7 +81,7 @@ void PitchVis::run()
 	curX = width();
 }
 
-void PitchVis::paint(QPaintDevice* widget) {
+void PitchVis::paint(QPaintDevice* widget, int x1, int x2) {
 	QMutexLocker locker(&mutex);
 	QPainter painter;
 	painter.begin(widget);
@@ -92,6 +92,10 @@ void PitchVis::paint(QPaintDevice* widget) {
 	PitchVis::Paths const& paths = getPaths();
 	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
 		int oldx, oldy;
+		// Only render paths in view
+		if (time2px(it->back().time) < x1) continue;
+		else if (time2px(it->front().time) > x2) break;
+		// Iterate through the path points
 		for (PitchPath::const_iterator it2 = it->begin(), it2end = it->end(); it2 != it2end; ++it2) {
 			int x = time2px(it2->time);
 			int y = note2px(it2->note);

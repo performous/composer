@@ -141,11 +141,20 @@ void NoteGraphWidget::timerEvent(QTimerEvent*)
 		QMutexLocker locker(&m_pitch->mutex);
 		emit analyzeProgress(m_pitch->getXValue(), width());
 		if (m_pitch->newDataAvailable()) update();
+		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
 	}
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
-	if (m_pitch) m_pitch->paint(this);
+	QScrollArea *scrollArea = NULL;
+	int x1 = 0, x2 = 0;
+	if (parentWidget())
+		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	if (scrollArea && scrollArea->horizontalScrollBar()) {
+		x1 = scrollArea->horizontalScrollBar()->value();
+		x2 = x1 + 2000; // FIXME: Need to figure out the real viewport width from somewhere
+	}
+	if (m_pitch) m_pitch->paint(this, x1, x2);
 }
 
 int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
