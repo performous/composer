@@ -83,19 +83,26 @@ namespace {
 		return (1200 + 6 + target - note) / 12 * 12 - 1200; // 1200 for always positive, 6 for mathematical rounding
 	}
 	void normalize(Notes& notes, int limLow, int limHigh) {
-		// Find the correction required for freestyle notes (over the entire song)
+		// Analyze the entire song first
+		int defaultShift = 0;
 		int shiftFS = 0;
 		{
 			std::vector<int> fsNotes, regNotes;
 			for (Notes::iterator it = notes.begin(); it != notes.end(); ++it) {
 				(it->type == Note::FREESTYLE ? fsNotes : regNotes).push_back(it->note);
 			}
-			if (!regNotes.empty() && !fsNotes.empty()) {
+			if (!regNotes.empty()) {
 				std::sort(regNotes.begin(), regNotes.end());
-				std::sort(fsNotes.begin(), fsNotes.end());
-				shiftFS = nearestOctave(fsNotes[fsNotes.size() / 2], regNotes[regNotes.size() / 2]);
+				// Find a good starting value for default shift
+				defaultShift = nearestOctave(regNotes[regNotes.size() / 2], 0.5 * (limLow + limHigh));
+				// Find the additional correction required for freestyle notes 
+				if (!fsNotes.empty()) {
+					std::sort(fsNotes.begin(), fsNotes.end());
+					shiftFS = nearestOctave(fsNotes[fsNotes.size() / 2], regNotes[regNotes.size() / 2]);
+				}
 			}
 		}
+		// Process sentence by sentence
 		for (Notes::iterator it = notes.begin(), itnext = it; it != notes.end();) {
 			int low, high;
 			low = high = it->note;
@@ -109,12 +116,13 @@ namespace {
 			}
 			// Per-sentence shift
 			int shift = nearestOctave(0.5 * (low + high), 0.5 * (limLow + limHigh));
+			if (std::abs(defaultShift - shift) <= 12) shift = defaultShift;
 			// Shift the notes into position
 			for (; it != itnext; ++it) {
 				if (it->type == Note::SLEEP) continue;
 				int s = shift;
 				if (it->type == Note::FREESTYLE) s += shiftFS;
-				// The last resort if everything else fails
+				// The last resort if everything else fails (per-note shifting)
 				while (it->note + s < limLow) s += 12;
 				while (it->note + s > limHigh) s -= 12;
 				it->note += s;
