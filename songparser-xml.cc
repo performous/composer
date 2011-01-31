@@ -95,8 +95,7 @@ void SongParser::xmlParse()
 				noteElem = noteElem.nextSiblingElement();
 			}
 
-			// Now add sentence end indicators
-			if (!notes.empty()) notes.back().lineBreak = true;
+			// Now add sentence end indicator
 			Note n;
 			n.type = Note::SLEEP;
 			n.note = 0;

@@ -77,7 +77,7 @@ void NoteLabel::createPixmap(QSize size)
 	// Render sentence end indicator
 	if (m_note.lineBreak) {
 		painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 4));
-		painter.drawLine(image.width()-2, 0, image.width()-2, image.height()-1);
+		painter.drawLine(2, 0, 2, image.height()-1);
 	}
 
 	painter.end();

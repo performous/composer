@@ -92,6 +92,13 @@ void SongParser::finalize() {
 		if (vocal.notes.empty()) continue;
 		// Set begin/end times
 		vocal.beginTime = vocal.notes.front().begin, vocal.endTime = vocal.notes.back().end;
+		// Setup sentence start indicators
+		bool sentenceStart = true;
+		for (Notes::iterator it = vocal.notes.begin(); it != vocal.notes.end(); ++it) {
+			it->lineBreak = sentenceStart;
+			if (it->type == Note::SLEEP) sentenceStart = true;
+			else sentenceStart = false;
+		}
 		// Note normalization
 		const int limLow = 0, limHigh = 48;
 		if (vocal.noteMin <= limLow || vocal.noteMax >= limHigh) {
