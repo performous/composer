@@ -51,39 +51,44 @@ void SingStarXMLWriter::writeXML() {
 	firstNoteElem.setAttribute("Duration", QString::number(ts));
 	firstNoteElem.setAttribute("Lyric", "");
 	sentenceElem.appendChild(firstNoteElem);
+	bool firstNote = true;
 
 	// Iterate all notes
 	for (unsigned int i = 0; i < notes.size(); ++i) {
 		Note const& n = notes[i];
+		if (n.type == Note::SLEEP) continue; // Skip SLEEPs
 
-		// SLEEP notes indicate sentence end
-		if (n.type == Note::SLEEP) {
+		// New sentence
+		if (n.lineBreak && !firstNote) {
 			root.appendChild(sentenceElem);
 			++sentencenum;
 			sentenceElem = doc.createElement("SENTENCE");
 			sentenceComment = doc.createComment(QString("Track %1, Sentence %2").arg(tracknum).arg(sentencenum));
 			sentenceElem.appendChild(sentenceComment);
-
-		} else { // Regular note handling
-
-			// Construct the note element
-			int l = sec2dur(n.length()); ts += l;
-			QDomElement noteElem = doc.createElement("NOTE");
-			noteElem.setAttribute("MidiNote", QString::number(n.note));
-			noteElem.setAttribute("Duration", QString::number(l));
-			noteElem.setAttribute("Lyric", n.syllable);
-			if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
-			if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
-			sentenceElem.appendChild(noteElem);
 		}
+		firstNote = false;
+
+		// Construct a regular note element
+		int l = sec2dur(n.length()); ts += l;
+		QDomElement noteElem = doc.createElement("NOTE");
+		noteElem.setAttribute("MidiNote", QString::number(n.note));
+		noteElem.setAttribute("Duration", QString::number(l));
+		noteElem.setAttribute("Lyric", n.syllable);
+		if (n.type == Note::GOLDEN) noteElem.setAttribute("Bonus", "Yes");
+		if (n.type == Note::FREESTYLE) noteElem.setAttribute("FreeStyle", "Yes");
+		sentenceElem.appendChild(noteElem);
 
 		// Construct a note element, indicationg the pause before next note
 		// This is only done if the pause has duration
 		// We also take the overall position into consideration (counter rounding errors)
 		int pauseLen = 0;
 		double end = dur2sec(ts);
-		if (i < notes.size() - 1)
-			pauseLen = sec2dur(notes[i+1].begin - end); // Difference to next note
+		for (int j = i + 1; j < notes.size(); ++j) { // Find the next non-SLEEP note
+			if (notes[j].type != Note::SLEEP) {
+				pauseLen = sec2dur(notes[j].begin - end); // Difference to next note
+				break;
+			}
+		}
 		if (pauseLen > 0) {
 			QDomElement pauseElem = doc.createElement("NOTE");
 			pauseElem.setAttribute("MidiNote", "0");
