@@ -24,7 +24,7 @@ namespace {
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
-EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), hasUnsavedChanges()
+EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
 	readSettings();
@@ -198,7 +198,7 @@ void EditorApp::on_actionOpen_triggered()
 	if (!promptSaving()) return;
 
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			QDir::homePath(),
+			latestPath,
 			tr("All supported formats") + "(*." + PROJECT_SAVE_FILE_EXTENSION + " *.xml *.mid *.ini *.txt);;" +
 			tr("Project files") +" (*." + PROJECT_SAVE_FILE_EXTENSION + ") ;;" +
 			tr("SingStar XML") + " (*.xml);;" +
@@ -208,6 +208,7 @@ void EditorApp::on_actionOpen_triggered()
 
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName);
+		latestPath = finfo.path();
 		try {
 			if (finfo.suffix() == PROJECT_SAVE_FILE_EXTENSION) {
 
@@ -264,12 +265,13 @@ void EditorApp::on_actionSave_triggered()
 void EditorApp::on_actionSaveAs_triggered()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Project"),
-			QDir::homePath(),
+			latestPath,
 			tr("Project files ") + "(*." + PROJECT_SAVE_FILE_EXTENSION + ");;" +
 			tr("All files") + " (*)");
 	if (!fileName.isNull()) {
 		// Add the correct suffix if it is missing
 		QFileInfo finfo(fileName);
+		latestPath = finfo.path();
 		if (finfo.suffix() != PROJECT_SAVE_FILE_EXTENSION)
 			fileName += "." + PROJECT_SAVE_FILE_EXTENSION;
 		saveProject(fileName);
@@ -313,8 +315,9 @@ void EditorApp::saveProject(QString fileName)
 
 void EditorApp::exportSong(QString format, QString dialogTitle)
 {
-	QString path = QFileDialog::getExistingDirectory(this, dialogTitle, QDir::homePath());
+	QString path = QFileDialog::getExistingDirectory(this, dialogTitle, latestPath);
 	if (!path.isNull()) {
+		latestPath = path;
 		// Sync notes
 		if (noteGraph) song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
 		// Pick exporter
@@ -336,9 +339,10 @@ void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Fret
 
 void EditorApp::on_actionLyricsToFile_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Export to plain text lyrics"), QDir::homePath());
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export to plain text lyrics"), latestPath);
 	if (!fileName.isNull()) {
 		QFile f(fileName);
+		QFileInfo finfo(f); latestPath = finfo.path();
 		if (f.open(QFile::WriteOnly | QFile::Truncate)) {
 			QTextStream out(&f);
 			out << noteGraph->dumpLyrics();
@@ -416,10 +420,11 @@ void EditorApp::on_actionAntiAliasing_toggled(bool checked)
 void EditorApp::on_actionMusicFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			QDesktopServices::storageLocation(QDesktopServices::MusicLocation),
+			latestPath,
 			tr("Music files") + " (*.mp3 *.ogg *.wav *.wma *.flac)");
 
 	if (!fileName.isNull()) {
+		QFileInfo finfo(fileName); latestPath = finfo.path();
 		ui.valMusicFile->setText(fileName);
 		// Metadata is updated when it becomes available (signal)
 		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
@@ -432,16 +437,17 @@ void EditorApp::on_actionMusicFile_triggered()
 void EditorApp::on_actionLyricsFromFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			QDir::homePath(),
+			latestPath,
 			tr("Text files (*.txt)"));
 
 	if (!fileName.isNull()) {
 		QFile file(fileName);
-		 if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-			 return;
+		QFileInfo finfo(file); latestPath = finfo.path();
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+			return;
 
-		 QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
-		 if (text != "") noteGraph->setLyrics(text);
+		QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
+		if (text != "") noteGraph->setLyrics(text);
 	}
 }
 
@@ -617,6 +623,7 @@ void EditorApp::readSettings()
 	QSize size = settings.value("size", QSize(800, 600)).toSize();
 	bool maximized = settings.value("maximized", false).toBool();
 	bool aa = settings.value("anti-aliasing", true).toBool();
+	latestPath = settings.value("latestpath", QDir::homePath()).toString();
 	// Apply them
 	if (!pos.isNull()) move(pos);
 	resize(size);
@@ -631,6 +638,7 @@ void EditorApp::writeSettings()
 	settings.setValue("size", size());
 	settings.setValue("maximized", isMaximized());
 	settings.setValue("anti-aliasing", ui.actionAntiAliasing->isChecked());
+	settings.setValue("latestpath", latestPath);
  }
 
 

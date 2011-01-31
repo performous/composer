@@ -106,4 +106,5 @@ private:
 	QProgressBar *statusbarProgress;
 	QString projectFileName;
 	bool hasUnsavedChanges;
+	QString latestPath;
 };
