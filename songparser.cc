@@ -80,7 +80,7 @@ bool SongParser::getline(QString &line)
 namespace {
 	/// Return the amount of shift (in notes) required for note to make put it in the nearest octave of the target note
 	int nearestOctave(int note, int target) {
-		return (1006 + target - note) / 12 * 12 - 1006; // 1006 for mathematical rounding (always positive, round up from 6)
+		return (1200 + 6 + target - note) / 12 * 12 - 1200; // 1200 for always positive, 6 for mathematical rounding
 	}
 	void normalize(Notes& notes, int limLow, int limHigh) {
 		// Find the correction required for freestyle notes (over the entire song)
@@ -90,24 +90,28 @@ namespace {
 			for (Notes::iterator it = notes.begin(); it != notes.end(); ++it) {
 				(it->type == Note::FREESTYLE ? fsNotes : regNotes).push_back(it->note);
 			}
-			std::sort(regNotes.begin(), regNotes.end());
-			std::sort(fsNotes.begin(), fsNotes.end());
-			if (!regNotes.empty() && !fsNotes.empty()) shiftFS = nearestOctave(fsNotes[fsNotes.size() / 2], regNotes[regNotes.size() / 2]);
+			if (!regNotes.empty() && !fsNotes.empty()) {
+				std::sort(regNotes.begin(), regNotes.end());
+				std::sort(fsNotes.begin(), fsNotes.end());
+				shiftFS = nearestOctave(fsNotes[fsNotes.size() / 2], regNotes[regNotes.size() / 2]);
+			}
 		}
 		for (Notes::iterator it = notes.begin(), itnext = it; it != notes.end();) {
 			int low, high;
 			low = high = it->note;
 			// Analyze the sentence and find the end of it
 			while (++itnext != notes.end() && !itnext->lineBreak) {
+				if (itnext->type == Note::SLEEP) continue;
 				int n = itnext->note;
 				if (itnext->type == Note::FREESTYLE) n += shiftFS;
 				low = std::min(low, n);
 				high = std::max(high, n);
 			}
 			// Per-sentence shift
-			int shift = nearestOctave(high - low, limHigh - limLow);
+			int shift = nearestOctave(0.5 * (low + high), 0.5 * (limLow + limHigh));
 			// Shift the notes into position
-			while (it != itnext) {
+			for (; it != itnext; ++it) {
+				if (it->type == Note::SLEEP) continue;
 				int s = shift;
 				if (it->type == Note::FREESTYLE) s += shiftFS;
 				// The last resort if everything else fails
@@ -115,7 +119,6 @@ namespace {
 				while (it->note + s > limHigh) s -= 12;
 				it->note += s;
 				it->notePrev += s;
-				++it;
 			}
 		}
 	}
