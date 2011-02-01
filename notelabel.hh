@@ -18,9 +18,14 @@ public:
 	QString lyric() const { return m_note.syllable; }
 	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(size()); }
 
+	bool isSelected() const { return m_selected; }
 	void setSelected(bool state = true) {
 		if (m_selected != state) {
 			m_selected = state; createPixmap(size());
+			if (!m_selected) {
+				if (nextSelected) nextSelected->prevSelected = prevSelected;
+				if (prevSelected) prevSelected->nextSelected = nextSelected;
+			}
 		}
 	}
 
@@ -38,6 +43,9 @@ public:
 	void startDragging(const QPoint& point);
 
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
+
+	NoteLabel* nextSelected;
+	NoteLabel* prevSelected;
 
 public slots:
 	void showContextMenu(const QPoint &pos);

@@ -44,12 +44,27 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	updateNotes();
 }
 
-void NoteGraphWidget::selectNote(NoteLabel* note)
+void NoteGraphWidget::selectNote(NoteLabel* note, bool clearPrevious)
 {
-	if (m_selectedNote) // Reset old pixmap
-		m_selectedNote->setSelected(false);
+	if (!note) clearPrevious = true; // NULL means allways clear all
 
-	// Assign new selection
+	if (m_selectedNote) {
+		m_selectedNote->setSelected(false); // Pixmap reset
+		// Clear all selections
+		if (clearPrevious) {
+			// Assumes m_selectedNote is the first note in the selection chain
+			for (NoteLabel* n = m_selectedNote; n; n = n->nextSelected)
+				n->setSelected(false);
+		} else {
+			// Add at the beginning of the chain
+			if (note && note != m_selectedNote && !note->isSelected()) {
+				m_selectedNote->prevSelected = note;
+				note->nextSelected = m_selectedNote;
+			}
+		}
+	}
+
+	// Assign new selection as the first selected note
 	m_selectedNote = note;
 	if (m_selectedNote) {
 		m_selectedNote->setSelected();

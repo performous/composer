@@ -42,7 +42,7 @@ public:
 	void stopMusic();
 	void seek(int x);
 
-	void selectNote(NoteLabel *note);
+	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	NoteLabel* selectedNote() const { return m_selectedNote; }
 	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);

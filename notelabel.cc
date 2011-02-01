@@ -16,7 +16,7 @@ const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 100; // The preferred size of notes
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
+	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot(), nextSelected(), prevSelected()
 {
 	createPixmap(size);
 	if (!position.isNull())
@@ -48,7 +48,7 @@ void NoteLabel::createPixmap(QSize size)
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
 	float ff = m_floating ? 1.0f : 0.6f;
-	int alpha = m_floating ? 160 : ( m_selected ? 80 : 220 );
+	int alpha = m_floating ? 160 : ( isSelected() ? 80 : 220 );
 	gradient.setColorAt(0.0, m_floating ? QColor(255, 255, 255, alpha) : QColor(50, 50, 50, alpha));
 	if (m_note.type == Note::NORMAL) {
 		gradient.setColorAt(0.2, QColor(100 * ff, 100 * ff, 255 * ff, alpha));
@@ -67,7 +67,7 @@ void NoteLabel::createPixmap(QSize size)
 	QPainter painter;
 	painter.begin(&image);
 	painter.setRenderHint(QPainter::Antialiasing);
-	painter.setPen(m_selected ? Qt::red : Qt::black); // Hilight selected note
+	painter.setPen(isSelected() ? Qt::red : Qt::black); // Hilight selected note
 	painter.setBrush(gradient);
 	painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1), 8, 8);
 
