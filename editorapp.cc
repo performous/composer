@@ -93,6 +93,10 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), h
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
+
+	QSettings settings;
+	if (settings.value("showhelp", true).toBool())
+		on_actionGettingStarted_triggered();
 }
 
 void EditorApp::operationDone(const Operation &op)
