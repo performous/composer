@@ -23,7 +23,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this), m_pixelsPerSecond(200.0)
+	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this), m_pixelsPerSecond(200.0), m_duration(10.0)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
@@ -101,7 +101,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	clearNotes();
-
+	m_duration = std::max(m_duration, track.endTime);
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
@@ -139,16 +139,16 @@ void NoteGraphWidget::timerEvent(QTimerEvent*)
 	if (m_pitch) {
 		QMutexLocker locker(&m_pitch->mutex);
 		emit analyzeProgress(1000 * m_pitch->getProgress(), 1000);
-		if (m_pitch->newDataAvailable()) update();
+		if (m_pitch->newDataAvailable()) {
+			m_duration = std::max(m_duration, m_pitch->getDuration());
+			update();
+		}
 		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
 	}
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
-	double duration = 10.0;
-	if (m_pitch) duration = std::max(duration, m_pitch->getDuration());
-	// TODO: if (has notes) duration = std::max(duration, notes.duration);
-	setFixedSize(s2px(duration), height());
+	setFixedSize(s2px(m_duration), height());
 	QScrollArea *scrollArea = NULL;
 	int x1 = 0, x2 = 0;
 	if (parentWidget())

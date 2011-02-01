@@ -102,6 +102,7 @@ private:
 	SeekHandle m_seekHandle;
 	int m_analyzeTimer;
 	double m_pixelsPerSecond;
+	double m_duration;
 };
 
 
