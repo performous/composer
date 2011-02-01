@@ -99,11 +99,11 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0) {
 		// Resizing
-		if (m_resizing < 0)
+		if (m_resizing < 0 && width() - event->pos().x() > min_width)
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
-		else
+		else if (m_resizing > 0 && event->pos().x() > min_width)
 			resize(event->pos().x(), height());
-		if (ngw) ngw->updateNotes();
+		if (ngw) ngw->updateNotes(m_resizing > 0);
 
 	} else if (!m_hotspot.isNull()) {
 		// Moving
@@ -111,7 +111,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		move(newpos);
 		if (ngw) {
 			move(x(), ngw->n2px(int(round(ngw->px2n(y() + height() / 2)))) - height() / 2);
-			ngw->updateNotes();
+			ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
 		}
 		// Check if we need a new hotspot, because the note was constrained
 		if (pos().x() != newpos.x()) m_hotspot.rx() = event->x();

@@ -167,54 +167,55 @@ int NoteGraphWidget::getNoteLabelId(NoteLabel* note) const
 	return -1;
 }
 
-void NoteGraphWidget::updateNotes()
+void NoteGraphWidget::updateNotes(bool leftToRight)
 {
 	// Here happens the magic that adjusts the floating
 	// notes according to the fixed ones.
-	FloatingGap gap(0);
+	FloatingGap gap(leftToRight ? 0 : width());
 
 	// Determine gaps between non-floating notes
-	for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-		NoteLabel *child = *it;
+	// Variable leftToRight controls the iteration direction.
+	for (int i = (leftToRight ? 0 : m_notes.size()-1); i >= 0 && i < m_notes.size(); i += (leftToRight ? 1 : -1)) {
+		NoteLabel *child = m_notes[i];
 		if (!child) continue;
 
-		if (child->isFloating() && child != m_notes.back()) {
+		if (child->isFloating() && i != (leftToRight ? m_notes.size()-1 : 0)) {
 			// Add floating note to gap
 			gap.addNote(child);
 
 		} else {
 			// Fixed note encountered, handle the gap (divide notes evenly into it)
-			gap.end = child->x();
+			gap.end = child->x() + (leftToRight ? 0 : child->width());
 
-			if (gap.width() <= gap.minWidth()) {
+			int d = (gap.end - gap.begin) * (leftToRight ? 1 : -1);
+			if (d <= gap.minWidth()) {
 				// We are at minimum width, enforce it
-				int x = gap.begin;
+				int x = gap.begin - (leftToRight ? 0 : NoteLabel::min_width);
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					(*it2)->move(x, (*it2)->y());
 					(*it2)->resize(NoteLabel::min_width, (*it2)->height());
-					x += NoteLabel::min_width;
+					x += NoteLabel::min_width * (leftToRight ? 1 : -1);
 				}
-				// FIXME: Enforcing fixed note position can be cheated by rapid mouse movement
-				// Also, left & right side behave differently
-				child->move(gap.begin + gap.minWidth(), child->y());
+				// Also move the fixed one (probably the one being moved by user)
+				child->move(gap.begin + (leftToRight ? gap.minWidth() : (-gap.minWidth() - child->width())), child->y());
 
 			} else {
 				// Calculate position and size
 				double w = gap.width() / double(gap.notes.size()) * 0.9;
 				double step = (gap.width() - w * gap.notes.size()) / double(gap.notes.size() + 1);
-				double x = gap.begin + step;
+				double x = gap.begin + (leftToRight ? step : (-step - w));
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					double y = (*it2)->y();
 					// Try to find optimal pitch
 					if (m_pitch) y = n2px(m_pitch->guessNote(px2s(x), px2s(x + w + step), 24)) - m_noteHalfHeight;
 					(*it2)->move(x, y);
 					(*it2)->resize(w, (*it2)->height());
-					x += w + step;
+					x += (w + step) * (leftToRight ? 1 : -1);
 				}
 			}
 
 			// Start a new gap
-			gap = FloatingGap(child->x() + child->width());
+			gap = FloatingGap(child->x() + (leftToRight ? child->width() : 0));
 		}
 	}
 }

@@ -36,7 +36,7 @@ public:
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
 	void analyzeMusic(QString filepath);
-	void updateNotes();
+	void updateNotes(bool leftToRight = true);
 
 	void updateMusicPos(qint64 time, bool smoothing);
 	void stopMusic();
@@ -112,7 +112,7 @@ struct FloatingGap
 
 	void addNote(NoteLabel* n);
 	bool isEmpty() const { return notes.empty(); }
-	int width() const { return end - begin; }
+	int width() const { return abs(end - begin); }
 	int minWidth() const;
 	int notesWidth() const { return m_notesWidth; }
 
