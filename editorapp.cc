@@ -73,7 +73,6 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	ui.actionWhatsThis->setIcon(QIcon::fromTheme("help-hint", QIcon(":/icons/help-hint.png")));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about", QIcon(":/icons/help-about.png")));
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
-	ui.cmdStop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(":/icons/media-playback-stop.png")));
 
 	statusbarProgress = new QProgressBar(NULL);
 	ui.statusbar->addPermanentWidget(statusbarProgress);
@@ -568,12 +567,6 @@ void EditorApp::on_cmdPlay_clicked()
 			else player->play();
 		}
 	}
-}
-
-void EditorApp::on_cmdStop_clicked()
-{
-	if (player) player->stop();
-	if (noteGraph) noteGraph->updateMusicPos(0, false);
 }
 
 void EditorApp::audioTick(qint64 time)

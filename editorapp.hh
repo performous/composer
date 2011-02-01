@@ -57,7 +57,6 @@ public slots:
 	// Automatic slots
 
 	void on_cmdPlay_clicked();
-	void on_cmdStop_clicked();
 	void on_cmdRefreshLyrics_clicked();
 
 	// File menu
