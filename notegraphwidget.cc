@@ -615,6 +615,20 @@ VocalTrack NoteGraphWidget::getVocalTrack() const
 	return track;
 }
 
+QString NoteGraphWidget::getCurrentSentence() const
+{
+	QString lyrics;
+	if (!m_notes.isEmpty() && m_selectedNote) {
+		int id = getNoteLabelId(m_selectedNote);
+		for (int i = id; i < m_notes.size(); ++i) {
+			if (i != id && m_notes[i]->note().lineBreak) break;
+			lyrics += m_notes[i]->lyric() + " ";
+		}
+		lyrics = lyrics.left(lyrics.size() - 1);
+	}
+	return lyrics;
+}
+
 QString NoteGraphWidget::dumpLyrics() const
 {
 	QString lyrics;

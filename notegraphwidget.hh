@@ -62,6 +62,7 @@ public:
 	int h() const { return m_pitch->height; }
 
 	VocalTrack getVocalTrack() const;
+	QString getCurrentSentence() const;
 	QString dumpLyrics() const;
 
 public slots:

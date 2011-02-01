@@ -159,6 +159,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.chkFloating->setChecked(note->isFloating());
 		ui.chkLineBreak->setEnabled(true);
 		ui.chkLineBreak->setChecked(note->note().lineBreak);
+		ui.lblCurrentSentence->setText(tr("Current sentence:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
 	} else {
 		ui.valNoteBegin->setText("-");
 		ui.valNoteEnd->setText("-");
@@ -167,6 +168,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 		ui.chkLineBreak->setEnabled(false);
+		ui.lblCurrentSentence->setText(tr("Current sentence:") + " -");
 	}
 }
 
