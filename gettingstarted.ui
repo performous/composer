@@ -159,14 +159,14 @@
        </widget>
       </item>
       <item row="3" column="1" colspan="3">
-       <widget class="QCommandLinkButton" name="commandLinkButton">
+       <widget class="QCommandLinkButton" name="cmdFineTuneLyrics">
         <property name="text">
          <string>Fine tune and fix wrongly guessed note positions</string>
         </property>
        </widget>
       </item>
       <item row="4" column="1" colspan="3">
-       <widget class="QCommandLinkButton" name="commandLinkButton_2">
+       <widget class="QCommandLinkButton" name="cmdExport">
         <property name="text">
          <string>Export to your preferred format</string>
         </property>

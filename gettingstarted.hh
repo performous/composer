@@ -1,6 +1,7 @@
 #include <QSettings>
 #include "ui_gettingstarted.h"
 #include "editorapp.hh"
+#include <iostream>
 
 class GettingStartedDialog: public QDialog, private Ui::GettingStarted
 {
@@ -21,6 +22,32 @@ public slots:
 	void on_chkShowOnStartup_stateChanged(int state) {
 		QSettings settings;
 		settings.setValue("showhelp", state != Qt::Unchecked);
+	}
+
+	// Command link buttons
+
+	void on_cmdMusicFile_clicked(bool) {
+		m_editorApp->on_actionMusicFile_triggered();
+	}
+
+	void on_cmdLyricsFromFile_clicked(bool) {
+		m_editorApp->on_actionLyricsFromFile_triggered();
+	}
+
+	void on_cmdLyricsFromClipboard_clicked(bool) {
+		m_editorApp->on_actionLyricsFromClipboard_triggered();
+	}
+
+	void on_cmdTimeLyrics_clicked(bool) {
+		m_editorApp->showTab(2);
+	}
+
+	void on_cmdFineTuneLyrics_clicked(bool) {
+		m_editorApp->showTab(0);
+	}
+
+	void on_cmdExport_clicked(bool) {
+		m_editorApp->showExportMenu();
 	}
 
 protected:
