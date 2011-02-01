@@ -16,6 +16,7 @@
 #include "notegraphwidget.hh"
 #include "songwriter.hh"
 #include "textcodecselector.hh"
+#include "gettingstarted.hh"
 
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
@@ -473,6 +474,11 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 // Help menu
 
+void EditorApp::on_actionGettingStarted_triggered()
+{
+	GettingStartedDialog dialog(this);
+	dialog.exec();
+}
 
 void EditorApp::on_actionWhatsThis_triggered()
 {

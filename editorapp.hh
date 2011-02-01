@@ -80,6 +80,7 @@ public slots:
 	void on_actionLyricsFromClipboard_triggered();
 
 	// Help menu
+	void on_actionGettingStarted_triggered();
 	void on_actionWhatsThis_triggered();
 	void on_actionAbout_triggered();
 

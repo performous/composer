@@ -509,6 +509,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionGettingStarted"/>
     <addaction name="actionWhatsThis"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
@@ -646,6 +647,11 @@
    </property>
    <property name="toolTip">
     <string>Use anti-aliasing for the pitch visualization</string>
+   </property>
+  </action>
+  <action name="actionGettingStarted">
+   <property name="text">
+    <string>&amp;Getting started</string>
    </property>
   </action>
  </widget>
