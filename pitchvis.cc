@@ -117,7 +117,11 @@ int PitchVis::guessNote(double begin, double end, int note) {
 	if (note >= 0 || note < 48) score[note] = 10.0;  // Slightly prefer the current note
 	// Score against paths
 	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+		// Discard paths completely outside the window
+		if (it->back().time < begin) continue;
+		if (it->front().time > end) break;
 		for (PitchPath::const_iterator it2 = it->begin(), it2end = it->end(); it2 != it2end; ++it2) {
+			// Discard path points outside the window
 			if (it2->time < begin) continue;
 			if (it2->time > end) break;
 			unsigned n = round(it2->note);
