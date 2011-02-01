@@ -46,6 +46,10 @@ public slots:
 		m_editorApp->showTab(0);
 	}
 
+	void on_cmdMetadata_clicked(bool) {
+		m_editorApp->showTab(1);
+	}
+
 	void on_cmdExport_clicked(bool) {
 		m_editorApp->showExportMenu();
 	}
