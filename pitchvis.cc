@@ -1,4 +1,5 @@
 
+#include "notegraphwidget.hh"
 #include "pitchvis.hh"
 #include "pitch.hh"
 #include "ffmpeg.hh"
@@ -11,47 +12,48 @@
 #include <QSettings>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QWidget(parent), QThread(), mutex(), pixelsPerSecond(), fileName(filename), moreAvailable(), cancelled(), curX(), m_width()
+	: QWidget(parent), QThread(), mutex(), fileName(filename), moreAvailable(), cancelled()
 {
 	start(); // Launch the thread
-}
-
-void PitchVis::setWidth(std::size_t w) {
-	m_width = w;
-	QLabel *ngw = qobject_cast<QLabel*>(QWidget::parent());
-	if (ngw) ngw->setFixedSize(w, height);
 }
 
 void PitchVis::run()
 {
 	try {
-		unsigned pixScale = 8;
 		unsigned rate = 44100;
 		Analyzer analyzer(rate, "");
+		// Process the entire song
 		{
 			unsigned step = 1024;
-			pixelsPerSecond = pixScale * rate / step;
 			// Initialize FFmpeg decoding
 			FFmpeg mpeg(fileName.toStdString(), rate);
-			setWidth(pixScale * mpeg.duration() * rate / step); // Estimation
+			{
+				QMutexLocker locker(&mutex);
+				paths.clear();
+				position = 0.0;
+				duration = mpeg.duration(); // Estimation
+			}
 			unsigned x = 0;
-			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2); ++x) {
-				curX = pixScale * x;
-				// Mix stereo into mono
+			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2); ++x, std::fill(data.begin(), data.end(), 0.0f)) {
+				// Mix stereo into mono (FIXME: FFmpeg converting into stereo and then converting back here is really stupid)
 				for (unsigned j = 0; j < step; ++j) data[j] = 0.5 * (data[2*j] + data[2*j + 1]);
 				// Process
 				analyzer.input(&data[0], &data[step]);
 				analyzer.process();
+				QMutexLocker locker(&mutex);
 				if (cancelled) return;
-				std::fill(data.begin(), data.end(), 0.0f);
+				Analyzer::Moments const& moments = analyzer.getMoments();
+				if (!moments.empty()) {
+					double t = moments.back().time();
+					position = t;
+					duration = std::max(duration, t + 0.01);
+				}
 			}
 		}
 		// Filter the analyzer output data into QPainterPaths.
 		Analyzer::Moments const& moments = analyzer.getMoments();
-		setWidth(pixScale * moments.size());
-		curX = 0;
+		if (moments.empty()) return;
 		for (Analyzer::Moments::const_iterator it = moments.begin(), itend = moments.end(); it != itend; ++it) {
-			curX += pixScale;
 			Moment::Tones const& tones = it->m_tones;
 			for (Moment::Tones::const_iterator it2 = tones.begin(), it2end = tones.end(); it2 != it2end; ++it2) {
 				if (it2->prev) continue;  // The tone doesn't begin at this moment, skip
@@ -79,10 +81,10 @@ void PitchVis::run()
 	}
 	QMutexLocker locker(&mutex);
 	moreAvailable = true;
-	curX = width();
+	position = duration;
 }
 
-void PitchVis::paint(QPaintDevice* widget, int x1, int x2) {
+void PitchVis::paint(NoteGraphWidget* widget, int x1, int x2) {
 	QSettings settings; // Default QSettings parameters given in main()
 	bool aa = settings.value("anti-aliasing", true).toBool();
 	QMutexLocker locker(&mutex);
@@ -96,12 +98,12 @@ void PitchVis::paint(QPaintDevice* widget, int x1, int x2) {
 	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
 		int oldx, oldy;
 		// Only render paths in view
-		if (time2px(it->back().time) < x1) continue;
-		else if (time2px(it->front().time) > x2) break;
+		if (widget->s2px(it->back().time) < x1) continue;
+		else if (widget->s2px(it->front().time) > x2) break;
 		// Iterate through the path points
 		for (PitchPath::const_iterator it2 = it->begin(), it2end = it->end(); it2 != it2end; ++it2) {
-			int x = time2px(it2->time);
-			int y = note2px(it2->note);
+			int x = widget->s2px(it2->time);
+			int y = widget->n2px(it2->note);
 			pen.setColor(QColor(32, clamp<int>(127 + it2->level, 32, 255), 32));
 			painter.setPen(pen);
 			if (it2 != it->begin()) painter.drawLine(oldx, oldy, x, y);
@@ -131,10 +133,4 @@ int PitchVis::guessNote(double begin, double end, int note) {
 	// Return the idx with best score
 	return std::max_element(score + 1, score + scoreSz) - score;
 }
-
-unsigned PitchVis::freq2px(double freq) const { return note2px(scale.getNote(freq)); }
-/* static */ unsigned PitchVis::note2px(double tone) { return height - static_cast<unsigned>(16.0 * tone); }
-/* static */ double PitchVis::px2note(unsigned px) { return (height - px) / 16.0; }
-unsigned PitchVis::time2px(double t) const { return t * pixelsPerSecond; }
-double PitchVis::px2time(double px) const { return px / pixelsPerSecond; }
 

@@ -17,9 +17,10 @@ struct PitchFragment {
 
 typedef std::vector<PitchFragment> PitchPath;
 
+class NoteGraphWidget;
+
 class PitchVis: public QWidget, public QThread {
 public:
-	static const std::size_t height = 768;
 	typedef std::vector<PitchPath> Paths;
 	QMutex mutex;
 
@@ -28,27 +29,20 @@ public:
 
 	void run(); // Thread runs here
 	void stop() { cancelled = true; }
-	void paint(QPaintDevice* widget, int x1, int x2);
+	void paint(NoteGraphWidget* widget, int x1, int x2);
 	Paths const& getPaths() { moreAvailable = false; return paths; }
 	bool newDataAvailable() const { return moreAvailable; }
-	int getXValue() const { return curX; }
+	double getProgress() const { return position / duration; }
+	double getDuration() const { return duration; }
 	int guessNote(double begin, double end, int initial);
-	std::size_t width() const { return m_width; }
 
-	unsigned freq2px(double freq) const;
-	static unsigned note2px(double note);
-	static double px2note(unsigned px);
-	unsigned time2px(double t) const;
-	double px2time(double px) const;
 private:
 	MusicalScale scale;
 	QString fileName;
 	Paths paths;
-	double pixelsPerSecond;
+	double position;  ///< Position while analyzing
+	double duration;  ///< Song duration (or estimation while analyzing)
 	bool moreAvailable;
 	bool cancelled;
-	int curX;
-	std::size_t m_width;
-	void setWidth(std::size_t w);
 };
 

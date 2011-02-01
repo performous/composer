@@ -110,7 +110,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		QPoint newpos = pos() + event->pos() - m_hotspot;
 		move(newpos);
 		if (ngw) {
-			move(x(), ngw->n2px(ngw->px2n(y())));
+			move(x(), ngw->n2px(int(round(ngw->px2n(y() + height() / 2)))) - height() / 2);
 			ngw->updateNotes();
 		}
 		// Check if we need a new hotspot, because the note was constrained
@@ -151,7 +151,7 @@ void NoteLabel::updateNote()
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (ngw) {
 		// Update note pos
-		m_note.note = ngw->px2n(y());
+		m_note.note = round(ngw->px2n(y() + height() / 2));
 		m_note.begin = ngw->px2s(x());
 		// Update note length
 		m_note.end = m_note.begin + ngw->px2s(width());

@@ -35,6 +35,7 @@ struct Moment {
 	Tones m_tones;
 	double m_time;
 	Moment(double t);
+	double time() const { return m_time; }
 	void stealTones(Tones& tones);
 };
 

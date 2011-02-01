@@ -57,9 +57,8 @@ public:
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
-	int n2px(int note) const;
-	int px2n(int px) const;
-	int h() const { return m_pitch->height; }
+	int n2px(double note) const;
+	double px2n(int px) const;
 
 	VocalTrack getVocalTrack() const;
 	QString getCurrentSentence() const;
@@ -102,6 +101,7 @@ private:
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
 	int m_analyzeTimer;
+	double m_pixelsPerSecond;
 };
 
 

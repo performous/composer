@@ -23,7 +23,7 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this)
+	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this), m_pixelsPerSecond(200.0)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
@@ -36,7 +36,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	// Initially expanding horizontally to fill the space
 	QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	setSizePolicy(sp);
-	setFixedHeight(PitchVis::height);
+	setFixedHeight(768);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
@@ -86,7 +86,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			QString word;
 			ts2 >> word;
 			if (!word.isEmpty()) {
-				m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24)), QSize(), !firstNote));
+				m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24) - m_noteHalfHeight), QSize(), !firstNote));
 				doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 				if (sentenceStart) setLineBreak(m_notes.back(), true);
 				firstNote = false;
@@ -102,15 +102,11 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	clearNotes();
 
-	setFixedSize(s2px(track.endTime), h());
-
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
-		if (it->type == Note::NORMAL || it->type == Note::GOLDEN || it->type == Note::FREESTYLE) {
-			m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note)),
-				QSize(s2px(it->length()), 0), false));
-			doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
-		}
+		if (it->type == Note::SLEEP) continue;
+		m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note) - m_noteHalfHeight), QSize(s2px(it->length()), 0), false));
+		doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
 	}
 
 	updateNotes();
@@ -142,13 +138,17 @@ void NoteGraphWidget::timerEvent(QTimerEvent*)
 {
 	if (m_pitch) {
 		QMutexLocker locker(&m_pitch->mutex);
-		emit analyzeProgress(m_pitch->getXValue(), width());
+		emit analyzeProgress(1000 * m_pitch->getProgress(), 1000);
 		if (m_pitch->newDataAvailable()) update();
 		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
 	}
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
+	double duration = 10.0;
+	if (m_pitch) duration = std::max(duration, m_pitch->getDuration());
+	// TODO: if (has notes) duration = std::max(duration, notes.duration);
+	setFixedSize(s2px(duration), height());
 	QScrollArea *scrollArea = NULL;
 	int x1 = 0, x2 = 0;
 	if (parentWidget())
@@ -206,7 +206,7 @@ void NoteGraphWidget::updateNotes()
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
 					double y = (*it2)->y();
 					// Try to find optimal pitch
-					if (m_pitch) y = n2px(m_pitch->guessNote(px2s(x), px2s(x + w + step), 24));
+					if (m_pitch) y = n2px(m_pitch->guessNote(px2s(x), px2s(x + w + step), 24)) - m_noteHalfHeight;
 					(*it2)->move(x, y);
 					(*it2)->resize(w, (*it2)->height());
 					x += w + step;
@@ -347,7 +347,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		if (m_selectedNote) {
 			m_selectedNote->startResizing(0);
 			m_selectedNote->startDragging(QPoint());
-			m_selectedNote->move(m_selectedNote->pos().x(), n2px(px2n(m_selectedNote->pos().y())));
+			m_selectedNote->move(m_selectedNote->pos().x(), n2px(round(px2n(m_selectedNote->pos().y() + m_noteHalfHeight))) - m_noteHalfHeight);
 			if (m_actionHappened) {
 				// Operation for undo stack & saving
 				Operation op("SETGEOM");
@@ -521,7 +521,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		if (m_selectedNote) {
 			Operation op("MOVE");
 			op << getNoteLabelId(m_selectedNote);
-			op << m_selectedNote->x() << n2px(px2n(m_selectedNote->y()) + 1);
+			op << m_selectedNote->x() << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
 			doOperation(op);
 		}
 		break;
@@ -529,7 +529,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		if (m_selectedNote) {
 			Operation op("MOVE");
 			op << getNoteLabelId(m_selectedNote);
-			op << m_selectedNote->x() << n2px(px2n(m_selectedNote->y()) - 1);
+			op << m_selectedNote->x() << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) - 1;
 			doOperation(op);
 		}
 		break;
@@ -570,7 +570,7 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 					n->resize(op.i(2), op.i(3));
 					n->setFloating(false);
 				} else if (action == "MOVE") {
-					n->move(op.i(2), op.i(3));
+					n->move(op.i(2), n2px(op.i(3)) - m_noteHalfHeight);
 					n->setFloating(false);
 				} else if (action == "FLOATING") {
 					n->setFloating(op.b(2));
@@ -592,12 +592,10 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 	}
 }
 
-// FIXME: duplicated functionality with PitchVis and funny handling for m_pitch == NULL
-int NoteGraphWidget::s2px(double sec) const { return m_pitch ? m_pitch->time2px(sec) : sec * 345.0; }
-double NoteGraphWidget::px2s(int px) const { return m_pitch ? m_pitch->px2time(px) : px / 345.0; }
-int NoteGraphWidget::n2px(int note) const { return PitchVis::note2px(note) - m_noteHalfHeight; }
-int NoteGraphWidget::px2n(int px) const { return PitchVis::px2note(px + m_noteHalfHeight); }
-
+int NoteGraphWidget::s2px(double sec) const { return sec * m_pixelsPerSecond; }
+double NoteGraphWidget::px2s(int px) const { return px / m_pixelsPerSecond; }
+int NoteGraphWidget::n2px(double note) const { return height() - 16.0 * note; }
+double NoteGraphWidget::px2n(int px) const { return (height() - px) / 16.0; }
 
 VocalTrack NoteGraphWidget::getVocalTrack() const
 {
@@ -651,7 +649,7 @@ QString NoteGraphWidget::dumpLyrics() const
 SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
-	QImage image(16, PitchVis::height, QImage::Format_ARGB32_Premultiplied);
+	QImage image(16, 768, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 	QLinearGradient gradient(0, 0, image.width()-1, 0);
 	gradient.setColorAt(0.00, QColor(255,255,0,0));
