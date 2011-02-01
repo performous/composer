@@ -155,7 +155,7 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
 	if (scrollArea && scrollArea->horizontalScrollBar()) {
 		x1 = scrollArea->horizontalScrollBar()->value();
-		x2 = x1 + 2000; // FIXME: Need to figure out the real viewport width from somewhere
+		x2 = x1 + scrollArea->width();
 	}
 	if (m_pitch) m_pitch->paint(this, x1, x2);
 }
