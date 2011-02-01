@@ -10,6 +10,7 @@ class QProgressBar;
 class QCloseEvent;
 class NoteLabel;
 class NoteGraphWidget;
+class GettingStartedDialog;
 namespace Phonon {
 	class MediaObject;
 	class AudioOutput;
@@ -100,6 +101,7 @@ protected:
 
 private:
 	Ui::EditorApp ui;
+	GettingStartedDialog *gettingStarted;
 	NoteGraphWidget *noteGraph;
 	OperationStack opStack;
 	OperationStack redoStack;

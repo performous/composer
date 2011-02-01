@@ -25,7 +25,7 @@ namespace {
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
-EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
+EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
 	readSettings();
@@ -480,8 +480,8 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 void EditorApp::on_actionGettingStarted_triggered()
 {
-	GettingStartedDialog dialog(this);
-	dialog.exec();
+	if (!gettingStarted) gettingStarted = new GettingStartedDialog(this);
+	gettingStarted->show();
 }
 
 void EditorApp::on_actionWhatsThis_triggered()
