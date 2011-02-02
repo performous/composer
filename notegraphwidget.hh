@@ -24,7 +24,57 @@ protected:
 };
 
 
-class NoteGraphWidget: public QLabel
+
+class NoteLabelManager: public QLabel
+{
+	Q_OBJECT
+public:
+	NoteLabelManager(QWidget *parent = 0);
+
+	virtual void updateNotes(bool leftToRight = true) {}
+
+	void selectNote(NoteLabel *note, bool clearPrevious = true);
+	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
+	NoteLabels& selectedNotes() { return m_selectedNotes; }
+	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
+
+	int getNoteLabelId(NoteLabel* note) const;
+	NoteLabels& noteLabels() { return m_notes; }
+
+	void split(NoteLabel *note, float ratio = 0.5f);
+	void del(NoteLabel *note);
+	void move(NoteLabel *note, int value);
+	void editLyric(NoteLabel *note);
+	void setFloating(NoteLabel *note, bool state);
+	void setLineBreak(NoteLabel *note, bool state);
+	void setType(NoteLabel *note, int newtype);
+
+	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
+
+	int s2px(double sec) const;
+	double px2s(int px) const;
+	int n2px(double note) const;
+	double px2n(int px) const;
+
+signals:
+	void updateNoteInfo(NoteLabel*);
+	void operationDone(const Operation&);
+
+public slots:
+	void selectNextSyllable(bool backwards = false, bool addToSelection = false);
+	void selectNextSentenceStart();
+
+protected:
+	NoteLabels m_notes;
+	NoteLabels m_selectedNotes;
+	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
+	int m_noteHalfHeight;
+	double m_pixelsPerSecond;
+};
+
+
+
+class NoteGraphWidget: public NoteLabelManager
 {
 	Q_OBJECT
 
@@ -36,33 +86,11 @@ public:
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
 	void analyzeMusic(QString filepath);
-	void updateNotes(bool leftToRight = true);
 
+	void updateNotes(bool leftToRight = true);
 	void updateMusicPos(qint64 time, bool smoothing);
 	void stopMusic();
 	void seek(int x);
-
-	void selectNote(NoteLabel *note, bool clearPrevious = true);
-	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
-	NoteLabels& selectedNotes() { return m_selectedNotes; }
-	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
-
-	void split(NoteLabel *note, float ratio = 0.5f);
-	void del(NoteLabel *note);
-	void move(NoteLabel *note, int value);
-	void editLyric(NoteLabel *note);
-	void setFloating(NoteLabel *note, bool state);
-	void setLineBreak(NoteLabel *note, bool state);
-	void setType(NoteLabel *note, int newtype);
-
-	int getNoteLabelId(NoteLabel* note) const;
-	NoteLabels& noteLabels() { return m_notes; }
-	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
-
-	int s2px(double sec) const;
-	double px2s(int px) const;
-	int n2px(double note) const;
-	double px2n(int px) const;
 
 	VocalTrack getVocalTrack() const;
 	QString getCurrentSentence() const;
@@ -71,13 +99,9 @@ public:
 public slots:
 	void timeSyllable();
 	void timeSentence();
-	void selectNextSyllable(bool backwards = false, bool addToSelection = false);
-	void selectNextSentenceStart();
 
 signals:
-	void updateNoteInfo(NoteLabel*);
 	void analyzeProgress(int, int);
-	void operationDone(const Operation&);
 	void seeked(qint64 time);
 
 protected:
@@ -95,17 +119,12 @@ private:
 	void timeCurrent();
 
 	int m_requiredWidth;
-	int m_noteHalfHeight;
 	QPoint m_panHotSpot;
-	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	bool m_seeking;
 	bool m_actionHappened;
-	NoteLabels m_notes;
-	NoteLabels m_selectedNotes;
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
 	int m_analyzeTimer;
-	double m_pixelsPerSecond;
 	double m_duration;
 };
 
