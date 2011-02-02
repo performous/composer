@@ -281,13 +281,13 @@ void NoteGraphWidget::timeSentence()
 	selectNextSentenceStart();
 }
 
-void NoteGraphWidget::selectNextSyllable(bool backwards)
+void NoteGraphWidget::selectNextSyllable(bool backwards, bool addToSelection)
 {
 	int i = getNoteLabelId(m_selectedNote);
 	if (!backwards && i < m_notes.size()-1)
-		selectNote(m_notes[i+1]);
-	else if (backwards && i > 1)
-		selectNote(m_notes[i-1]);
+		selectNote(m_notes[i+1], !addToSelection);
+	else if (backwards && i > 0)
+		selectNote(m_notes[i-1], !addToSelection);
 }
 
 void NoteGraphWidget::selectNextSentenceStart()
@@ -558,17 +558,9 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 	} else if (k == Qt::Key_Return) { // Edit lyric
 		editLyric(m_selectedNote);
 	} else if (k == Qt::Key_Left) { // Select note on the left
-		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
-			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-				if (m_selectedNote == *it) { selectNote(*(--it), !(m & Qt::ControlModifier)); break; }
-			}
-		}
+		selectNextSyllable(true, (m & Qt::ControlModifier));
 	} else if (k == Qt::Key_Right) { // Select note on the right
-		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
-			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-				if (m_selectedNote == *it) { selectNote(*(++it), !(m & Qt::ControlModifier)); break; }
-			}
-		}
+		selectNextSyllable(false, (m & Qt::ControlModifier));
 	} else if (k == Qt::Key_Up) { // Move note up
 		move(m_selectedNote, 1);
 	} else if (k == Qt::Key_Down) { // Move note down
