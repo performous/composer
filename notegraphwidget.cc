@@ -262,8 +262,9 @@ void NoteGraphWidget::timeCurrent()
 {
 	if (m_selectedNote) {
 		Operation op("MOVE");
-		op << px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + m_selectedNote->width())
-		  << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
+		op << getNoteLabelId(m_selectedNote)
+			<< px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + m_selectedNote->width())
+			<< int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
 		doOperation(op);
 	}
 }
@@ -371,7 +372,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 				if (m_actionHappened) {
 					// Operation for undo stack & saving
 					Operation op("MOVE");
-					op <<  getNoteLabelId(n)
+					op << getNoteLabelId(n)
 					  << px2s(n->x()) << px2n(n->x() + n->width())
 					  << int(round(px2n(n->y() + m_noteHalfHeight)));
 					doOperation(op, Operation::NO_EXEC);
