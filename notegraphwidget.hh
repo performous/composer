@@ -68,7 +68,7 @@ public:
 public slots:
 	void timeSyllable();
 	void timeSentence();
-	void selectNextSyllable();
+	void selectNextSyllable(bool backwards = false);
 	void selectNextSentenceStart();
 
 signals:

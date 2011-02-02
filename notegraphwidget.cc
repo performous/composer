@@ -281,30 +281,22 @@ void NoteGraphWidget::timeSentence()
 	selectNextSentenceStart();
 }
 
-void NoteGraphWidget::selectNextSyllable()
+void NoteGraphWidget::selectNextSyllable(bool backwards)
 {
-	bool currentFound = (m_selectedNote ? false : true);
-	if (m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
-		for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-			if (m_selectedNote == *it) currentFound = true;
-			else if (currentFound && (*it)->x() > m_seekHandle.curx()) {
-				selectNote(*it); break;
-			}
-		}
-	}
+	int i = getNoteLabelId(m_selectedNote);
+	if (!backwards && i < m_notes.size()-1)
+		selectNote(m_notes[i+1]);
+	else if (backwards && i > 1)
+		selectNote(m_notes[i-1]);
 }
 
 void NoteGraphWidget::selectNextSentenceStart()
 {
-	bool currentFound = (m_selectedNote ? false : true);
-	NoteLabel *prev = NULL;
-	if (m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
-		for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); prev = *it, ++it) {
-			if (m_selectedNote == *it) currentFound = true;
-			else if (currentFound && (*it)->x() > m_seekHandle.curx()
-					 && prev && prev->note().lineBreak) {
-				selectNote(*it); break;
-			}
+	// Start looking for the sentance start from the next NoteLabel
+	for (int i = getNoteLabelId(m_selectedNote) + 1; i < m_notes.size(); ++i) {
+		if (m_notes[i]->note().lineBreak) {
+			selectNote(m_notes[i]);
+			break;
 		}
 	}
 }
