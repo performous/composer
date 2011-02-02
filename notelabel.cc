@@ -88,6 +88,20 @@ void NoteLabel::createPixmap(QSize size)
 	updateNote();
 }
 
+void NoteLabel::setSelected(bool state) {
+	if (m_selected != state) {
+		m_selected = state; createPixmap(size());
+		if (!m_selected) {
+			if (nextSelected) nextSelected->prevSelected = prevSelected;
+			if (prevSelected) prevSelected->nextSelected = nextSelected;
+			nextSelected = NULL;
+			prevSelected = NULL;
+			startResizing(0); // Reset
+			startDragging(QPoint()); // Reset
+		}
+	}
+}
+
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
