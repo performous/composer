@@ -25,6 +25,8 @@ public:
 			if (!m_selected) {
 				if (nextSelected) nextSelected->prevSelected = prevSelected;
 				if (prevSelected) prevSelected->nextSelected = nextSelected;
+				nextSelected = NULL;
+				prevSelected = NULL;
 			}
 		}
 	}

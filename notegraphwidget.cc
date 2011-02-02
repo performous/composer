@@ -49,12 +49,13 @@ void NoteGraphWidget::selectNote(NoteLabel* note, bool clearPrevious)
 	if (!note) clearPrevious = true; // NULL means allways clear all
 
 	if (m_selectedNote) {
-		m_selectedNote->setSelected(false); // Pixmap reset
 		// Clear all selections
 		if (clearPrevious) {
 			// Assumes m_selectedNote is the first note in the selection chain
-			for (NoteLabel* n = m_selectedNote; n; n = n->nextSelected)
+			for (NoteLabel *n = m_selectedNote, *nn; n; n = nn) {
+				nn = n->nextSelected; // Need to put this into temp variable because it is cleared in setSelected(false)
 				n->setSelected(false);
+			}
 		} else {
 			// Add at the beginning of the chain
 			if (note && note != m_selectedNote && !note->isSelected()) {
@@ -332,17 +333,23 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	// Left Click
 	if (event->button() == Qt::LeftButton) {
 
-		selectNote(child);
 		// Determine if it is drag or resize
 		if (hotSpot.x() < NoteLabel::resize_margin || hotSpot.x() > child->width() - NoteLabel::resize_margin) {
 			// Start a resize
+			selectNote(child);
 			m_selectedAction = RESIZE;
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
 
 		} else {
-			// Start a drag
-			m_selectedAction = MOVE;
-			child->startDragging(hotSpot);
+			// Ctrl allows selecting multiple notes for dragging
+			selectNote(child, !(event->modifiers() & Qt::ControlModifier));
+			// FIXME: Drag disabled for multiple notes
+			if (m_selectedNote && !m_selectedNote->nextSelected) {
+				// Start a drag
+				m_selectedAction = MOVE;
+				child->startDragging(hotSpot);
+
+			}
 		}
 		child->createPixmap(child->size());
 
@@ -405,7 +412,7 @@ void NoteGraphWidget::split(NoteLabel *note, float ratio)
 	if (!note) return;
 
 	if (m_selectedNote == note)
-		m_selectedNote = NULL;
+		selectNote(NULL);
 
 	// Cut the text
 	int cutpos = int(std::ceil(note->lyric().length() * ratio));
@@ -425,10 +432,11 @@ void NoteGraphWidget::split(NoteLabel *note, float ratio)
 
 void NoteGraphWidget::del(NoteLabel *note)
 {
+	if (note && (note->nextSelected || note->prevSelected)) return;// FIXME: Multiple note handling
 	if (!note) return;
 
 	if (m_selectedNote == note)
-		m_selectedNote = NULL;
+		selectNote(NULL);
 
 	Operation op("DEL");
 	op << getNoteLabelId(note);
