@@ -336,20 +336,16 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 		// Determine if it is drag or resize
 		if (hotSpot.x() < NoteLabel::resize_margin || hotSpot.x() > child->width() - NoteLabel::resize_margin) {
 			// Start a resize
-			selectNote(child);
+			selectNote(child); // Resizing will deselect everything but one
 			m_selectedAction = RESIZE;
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
 
 		} else {
 			// Ctrl allows selecting multiple notes for dragging
 			selectNote(child, !(event->modifiers() & Qt::ControlModifier));
-			// FIXME: Drag disabled for multiple notes
-			if (m_selectedNote && !m_selectedNote->nextSelected) {
-				// Start a drag
-				m_selectedAction = MOVE;
-				child->startDragging(hotSpot);
-
-			}
+			m_selectedAction = MOVE;
+			for (NoteLabel *n = m_selectedNote; n; n = n->nextSelected)
+				n->startDragging(hotSpot);
 		}
 		child->createPixmap(child->size());
 

@@ -122,9 +122,13 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 	} else if (!m_hotspot.isNull()) {
 		// Moving
 		QPoint newpos = pos() + event->pos() - m_hotspot;
-		move(newpos);
+		int dx = newpos.x() - pos().x(), dy = newpos.y() - pos().y();
 		if (ngw) {
-			move(x(), ngw->n2px(int(round(ngw->px2n(y() + height() / 2)))) - height() / 2);
+			NoteLabel *n = this;
+			// Pick first note in the selection chain
+			while (n->prevSelected) n = n->prevSelected;
+			for (n; n; n = n->nextSelected)
+				n->move(n->x() + dx, ngw->n2px(int(round(ngw->px2n(n->y() + dy + height() / 2)))) - height() / 2);
 			ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
 		}
 		// Check if we need a new hotspot, because the note was constrained
