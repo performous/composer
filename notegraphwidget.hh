@@ -68,6 +68,8 @@ public:
 public slots:
 	void timeSyllable();
 	void timeSentence();
+	void selectNextSyllable();
+	void selectNextSentenceStart();
 
 signals:
 	void updateNoteInfo(NoteLabel*);
@@ -88,8 +90,6 @@ protected:
 private:
 	void finalizeNewLyrics();
 	void timeCurrent();
-	void selectNextSyllableAfterSeekHandle();
-	void selectNextSentenceStart();
 
 	int m_requiredWidth;
 	int m_noteHalfHeight;

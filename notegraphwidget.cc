@@ -272,7 +272,7 @@ void NoteGraphWidget::timeCurrent()
 void NoteGraphWidget::timeSyllable()
 {
 	timeCurrent();
-	selectNextSyllableAfterSeekHandle();
+	selectNextSyllable();
 }
 
 void NoteGraphWidget::timeSentence()
@@ -281,7 +281,7 @@ void NoteGraphWidget::timeSentence()
 	selectNextSentenceStart();
 }
 
-void NoteGraphWidget::selectNextSyllableAfterSeekHandle()
+void NoteGraphWidget::selectNextSyllable()
 {
 	bool currentFound = (m_selectedNote ? false : true);
 	if (m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
@@ -404,7 +404,7 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 	if (!child) {
 		// Double click empty space = seek there
 		seek(event->x());
-		selectNextSyllableAfterSeekHandle();
+		selectNextSyllable();
 		return;
 	}
 
