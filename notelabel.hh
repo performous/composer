@@ -18,14 +18,8 @@ public:
 	QString lyric() const { return m_note.syllable; }
 	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(size()); }
 
-	/**
-	 * This function handles note selecting and deselecting.
-	 * Upon deselecting, clean-up is done and item is removed
-	 * from the selection list.
-	 * This function does not add new entry to selection list.
-	 */
-	void setSelected(bool state = true);
 	bool isSelected() const { return m_selected; }
+	void setSelected(bool state = true);
 
 	Note& note() { return m_note; }
 	Note note() const { return m_note; }
@@ -41,9 +35,6 @@ public:
 	void startDragging(const QPoint& point);
 
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
-
-	NoteLabel* nextSelected;
-	NoteLabel* prevSelected;
 
 public slots:
 	void showContextMenu(const QPoint &pos);

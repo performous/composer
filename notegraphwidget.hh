@@ -43,7 +43,10 @@ public:
 	void seek(int x);
 
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
-	NoteLabel* selectedNote() const { return m_selectedNote; }
+	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
+	NoteLabels& selectedNotes() { return m_selectedNotes; }
+	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
+
 	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);
 	void move(NoteLabel *note, int value);
@@ -94,11 +97,11 @@ private:
 	int m_requiredWidth;
 	int m_noteHalfHeight;
 	QPoint m_panHotSpot;
-	NoteLabel* m_selectedNote;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	bool m_seeking;
 	bool m_actionHappened;
 	NoteLabels m_notes;
+	NoteLabels m_selectedNotes;
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
 	int m_analyzeTimer;

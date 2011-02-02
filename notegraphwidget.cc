@@ -23,7 +23,8 @@ namespace {
 }
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedNote(), m_selectedAction(NONE), m_seeking(), m_actionHappened(), m_pitch(), m_seekHandle(this), m_pixelsPerSecond(200.0), m_duration(10.0)
+	: QLabel(parent), m_noteHalfHeight(), m_panHotSpot(), m_selectedAction(NONE), m_seeking(), m_actionHappened(),
+	m_pitch(), m_seekHandle(this), m_pixelsPerSecond(200.0), m_duration(10.0)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
@@ -46,33 +47,21 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 void NoteGraphWidget::selectNote(NoteLabel* note, bool clearPrevious)
 {
-	if (!note) clearPrevious = true; // NULL means allways clear all
-
-	if (m_selectedNote) {
-		// Clear all selections
-		if (clearPrevious) {
-			// Assumes m_selectedNote is the first note in the selection chain
-			for (NoteLabel *n = m_selectedNote, *nn; n; n = nn) {
-				nn = n->nextSelected; // Need to put this into temp variable because it is cleared in setSelected(false)
-				n->setSelected(false);
-			}
-		} else {
-			// Add at the beginning of the chain
-			if (note && note != m_selectedNote && !note->isSelected()) {
-				m_selectedNote->prevSelected = note;
-				note->nextSelected = m_selectedNote;
-			}
-		}
+	// Clear all previous selections?
+	if (!note || clearPrevious) { // NULL means allways clear all
+		for (int i = 0; i < m_selectedNotes.size(); ++i)
+			m_selectedNotes[i]->setSelected(false);
+		m_selectedNotes.clear();
 	}
 
-	// Assign new selection as the first selected note
-	m_selectedNote = note;
-	if (m_selectedNote) {
-		m_selectedNote->setSelected();
-	} else m_selectedAction = NONE;
+	// Add at the beginning of the chain
+	if (note && !note->isSelected()) {
+		m_selectedNotes.push_front(note);
+		note->setSelected(true);
+	} else if (!note) m_selectedAction = NONE;
 
 	// Signal UI about the change
-	emit updateNoteInfo(m_selectedNote);
+	emit updateNoteInfo(selectedNote());
 }
 
 void NoteGraphWidget::clearNotes()
@@ -260,11 +249,11 @@ void NoteGraphWidget::seek(int x)
 
 void NoteGraphWidget::timeCurrent()
 {
-	if (m_selectedNote) {
+	if (selectedNote()) {
 		Operation op("MOVE");
-		op << getNoteLabelId(m_selectedNote)
-			<< px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + m_selectedNote->width())
-			<< int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
+		op << getNoteLabelId(selectedNote())
+			<< px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + selectedNote()->width())
+			<< int(round(px2n(selectedNote()->y() + m_noteHalfHeight))) + 1;
 		doOperation(op);
 	}
 }
@@ -283,7 +272,7 @@ void NoteGraphWidget::timeSentence()
 
 void NoteGraphWidget::selectNextSyllable(bool backwards, bool addToSelection)
 {
-	int i = getNoteLabelId(m_selectedNote);
+	int i = getNoteLabelId(selectedNote());
 	if (!backwards && i < m_notes.size()-1)
 		selectNote(m_notes[i+1], !addToSelection);
 	else if (backwards && i > 0)
@@ -293,10 +282,10 @@ void NoteGraphWidget::selectNextSyllable(bool backwards, bool addToSelection)
 void NoteGraphWidget::selectNextSentenceStart()
 {
 	// Start looking for the sentance start from the next NoteLabel
-	for (int i = getNoteLabelId(m_selectedNote) + 1; i < m_notes.size(); ++i) {
+	for (int i = getNoteLabelId(selectedNote()) + 1; i < m_notes.size(); ++i) {
 		if (m_notes[i]->note().lineBreak) {
 			selectNote(m_notes[i]);
-			break;
+			return;
 		}
 	}
 }
@@ -356,9 +345,10 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	(void)*event;
 	if (m_selectedAction != NONE) {
-		if (m_selectedNote) {
+		if (selectedNote()) {
 			int movecount = 0;
-			for (NoteLabel *n = m_selectedNote; n; n = n->nextSelected) {
+			for (int i = 0; i < m_selectedNotes.size(); ++i) {
+				NoteLabel *n = m_selectedNotes[i];
 				n->startResizing(0);
 				n->startDragging(QPoint());
 				if (m_actionHappened) {
@@ -407,7 +397,7 @@ void NoteGraphWidget::split(NoteLabel *note, float ratio)
 {
 	if (!note) return;
 
-	if (m_selectedNote == note)
+	if (selectedNote() == note)
 		selectNote(NULL);
 
 	// Cut the text
@@ -431,22 +421,25 @@ void NoteGraphWidget::del(NoteLabel *note)
 	if (!note) return;
 
 	// If delete is directed to a selected note, all selected notes will be deleted
-	if (note->isSelected() && m_selectedNote) {
-		note = m_selectedNote;
-		m_selectedNote = NULL;
-	}
+	if (note->isSelected()) {
+		int i = 0; // We need this after the loop
+		for (; i < m_selectedNotes.size(); ++i) {
+			Operation op("DEL");
+			op << getNoteLabelId(m_selectedNotes[i]);
+			doOperation(op);
+		}
+		// Combine to one undo operation
+		if (i > 1) {
+			Operation op("COMBINER"); op << i; doOperation(op);
+		}
+		// Clear all
+		m_selectedNotes.clear();
 
-	int delcount = 0;
-	for (NoteLabel *n = note, *nn; n; n = nn, ++delcount) {
-		nn = n->nextSelected; // Need to put this into temp variable because it is cleared in setSelected(false)
+	} else {
+		// Here we have non-selected note up for deletion
 		Operation op("DEL");
-		op << getNoteLabelId(n);
+		op << getNoteLabelId(note);
 		doOperation(op);
-	}
-
-	// Combine to one undo operation
-	if (delcount > 1) {
-		Operation op("COMBINER"); op << delcount; doOperation(op);
 	}
 }
 
@@ -454,8 +447,9 @@ void NoteGraphWidget::move(NoteLabel *note, int value)
 {
 	if (!note) return;
 
-	int movecount = 0;
-	for (NoteLabel *n = note ; n; n = n->nextSelected, ++movecount) {
+	int i = 0; // We need this after the loop
+	for (; i < m_selectedNotes.size(); ++i) {
+		NoteLabel *n = m_selectedNotes[i];
 		Operation op("MOVE");
 		op << getNoteLabelId(n)
 		  << px2s(n->x()) << px2s(n->x() + n->width())
@@ -464,8 +458,8 @@ void NoteGraphWidget::move(NoteLabel *note, int value)
 	}
 
 	// Combine to one undo operation
-	if (movecount > 1) {
-		Operation op("COMBINER"); op << movecount; doOperation(op);
+	if (i > 1) {
+		Operation op("COMBINER"); op << i; doOperation(op);
 	}
 }
 
@@ -518,9 +512,10 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	if (!m_actionHappened) {
 		m_actionHappened = true; // We have movement, so resize/move can be accepted
 		// See if the note needs to be unfloated
-		if (m_selectedAction != NONE && m_selectedNote && m_selectedNote->isFloating()) {
+		// TODO: Maybe unfloat all selected notes?
+		if (m_selectedAction != NONE && selectedNote() && selectedNote()->isFloating()) {
 			// Undo op is handled later by the MOVE constructed at drop
-			m_selectedNote->setFloating(false);
+			selectedNote()->setFloating(false);
 		}
 	}
 
@@ -544,7 +539,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
-	emit updateNoteInfo(m_selectedNote);
+	emit updateNoteInfo(selectedNote());
 }
 
 void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
@@ -556,17 +551,17 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		for (int i = m_notes.size()-1; i >= 0; --i) // Traverse in reverse order to get the first note first
 			selectNote(m_notes[i], false);
 	} else if (k == Qt::Key_Return) { // Edit lyric
-		editLyric(m_selectedNote);
+		editLyric(selectedNote());
 	} else if (k == Qt::Key_Left) { // Select note on the left
 		selectNextSyllable(true, (m & Qt::ControlModifier));
 	} else if (k == Qt::Key_Right) { // Select note on the right
 		selectNextSyllable(false, (m & Qt::ControlModifier));
 	} else if (k == Qt::Key_Up) { // Move note up
-		move(m_selectedNote, 1);
+		move(selectedNote(), 1);
 	} else if (k == Qt::Key_Down) { // Move note down
-		move(m_selectedNote, -1);
+		move(selectedNote(), -1);
 	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
-		del(m_selectedNote);
+		del(selectedNote());
 	} else {
 		QWidget::keyPressEvent(event);
 	}
@@ -592,7 +587,6 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 			NoteLabel *n = m_notes.at(op.i(1));
 			if (n) {
 				if (action == "DEL") {
-					n->setSelected(false); // Remove from selection list
 					n->close();
 					m_notes.removeAt(op.i(1));
 				} else if (action == "RESIZE") {
@@ -617,7 +611,7 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 	}
 	if (!(flags & Operation::NO_EMIT)) {
 		emit operationDone(op);
-		emit updateNoteInfo(m_selectedNote);
+		emit updateNoteInfo(selectedNote());
 	}
 }
 
@@ -645,8 +639,8 @@ VocalTrack NoteGraphWidget::getVocalTrack() const
 QString NoteGraphWidget::getCurrentSentence() const
 {
 	QString lyrics;
-	if (!m_notes.isEmpty() && m_selectedNote && !m_selectedNote->nextSelected) {
-		int id = getNoteLabelId(m_selectedNote);
+	if (!m_notes.isEmpty() && selectedNote()) {
+		int id = getNoteLabelId(selectedNote());
 		for (int i = id; i < m_notes.size(); ++i) {
 			if (i != id && m_notes[i]->note().lineBreak) break;
 			lyrics += m_notes[i]->lyric() + " ";

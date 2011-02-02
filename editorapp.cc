@@ -148,7 +148,7 @@ void EditorApp::updateMenuStates()
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
 	// For now we disable all controls when multiple notes are selected
-	if (note && !note->nextSelected) {
+	if (note && noteGraph && noteGraph->selectedNotes().size() == 1) {
 		MusicalScale ms;
 		ui.valNoteBegin->setText(QString::number(note->note().begin, 'f', 2) + tr(" s"));
 		ui.valNoteEnd->setText(QString::number(note->note().end, 'f', 2) + tr(" s"));

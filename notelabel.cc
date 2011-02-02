@@ -16,7 +16,7 @@ const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 100; // The preferred size of notes
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
-	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot(), nextSelected(), prevSelected()
+	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	createPixmap(size);
 	if (!position.isNull())
@@ -92,10 +92,6 @@ void NoteLabel::setSelected(bool state) {
 	if (m_selected != state) {
 		m_selected = state; createPixmap(size());
 		if (!m_selected) {
-			if (nextSelected) nextSelected->prevSelected = prevSelected;
-			if (prevSelected) prevSelected->nextSelected = nextSelected;
-			nextSelected = NULL;
-			prevSelected = NULL;
 			startResizing(0); // Reset
 			startDragging(QPoint()); // Reset
 		}
@@ -124,11 +120,11 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 		QPoint newpos = pos() + event->pos() - m_hotspot;
 		int dx = newpos.x() - pos().x(), dy = newpos.y() - pos().y();
 		if (ngw) {
-			NoteLabel *n = this;
-			// Pick first note in the selection chain
-			while (n->prevSelected) n = n->prevSelected;
-			for (; n; n = n->nextSelected)
+			NoteLabels& labels = ngw->selectedNotes();
+			for (int i = 0; i < labels.size(); ++i) {
+				NoteLabel *n = labels[i];
 				n->move(n->x() + dx, ngw->n2px(int(round(ngw->px2n(n->y() + dy + height() / 2)))) - height() / 2);
+			}
 			ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
 		}
 		// Check if we need a new hotspot, because the note was constrained
