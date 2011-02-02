@@ -135,7 +135,9 @@ void NoteGraphWidget::finalizeNewLyrics()
 		Operation floatop("FLOATING"); floatop << (int)m_notes.size()-1 << false;
 		doOperation(floatop);
 		Operation moveop("MOVE");
-		moveop << (int)m_notes.size()-1 << width() - m_notes.back()->width() << m_notes.back()->y();
+		moveop << (int)m_notes.size()-1
+		  << px2s(width() - m_notes.back()->width()) << px2s(width() - m_notes.back()->width() + m_notes.back()->x())
+		  << px2n(m_notes.back()->y() + m_noteHalfHeight);
 		doOperation(moveop);
 		// Make sure there is enough room
 		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
@@ -259,10 +261,9 @@ void NoteGraphWidget::seek(int x)
 void NoteGraphWidget::timeCurrent()
 {
 	if (m_selectedNote) {
-		// TODO: Automatic pitch detection
 		Operation op("MOVE");
-		op <<  getNoteLabelId(m_selectedNote)
-			<< m_seekHandle.curx() << m_selectedNote->y();
+		op << px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + m_selectedNote->width())
+		  << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
 		doOperation(op);
 	}
 }
@@ -369,9 +370,10 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 				n->startDragging(QPoint());
 				if (m_actionHappened) {
 					// Operation for undo stack & saving
-					Operation op("SETGEOM");
+					Operation op("MOVE");
 					op <<  getNoteLabelId(n)
-						<< n->x() << n->y() << n->width() << n->height();
+					  << px2s(n->x()) << px2n(n->x() + n->width())
+					  << int(round(px2n(n->y() + m_noteHalfHeight)));
 					doOperation(op, Operation::NO_EXEC);
 					++movecount;
 				}
@@ -523,7 +525,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		m_actionHappened = true; // We have movement, so resize/move can be accepted
 		// See if the note needs to be unfloated
 		if (m_selectedAction != NONE && m_selectedNote && m_selectedNote->isFloating()) {
-			// Undo op is handled later by the SETGEOM constructed at drop
+			// Undo op is handled later by the MOVE constructed at drop
 			m_selectedNote->setFloating(false);
 		}
 	}
@@ -607,14 +609,11 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 					n->setSelected(false); // Remove from selection list
 					n->close();
 					m_notes.removeAt(op.i(1));
-				} else if (action == "SETGEOM") {
-					n->setGeometry(op.i(2), op.i(3), op.i(4), op.i(5));
-					n->setFloating(false);
 				} else if (action == "RESIZE") {
 					n->resize(op.i(2), op.i(3));
 					n->setFloating(false);
 				} else if (action == "MOVE") {
-					n->move(op.i(2), n2px(op.i(3)) - m_noteHalfHeight);
+					n->setGeometry(s2px(op.i(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.i(3) - op.i(2)), 2 * m_noteHalfHeight);
 					n->setFloating(false);
 				} else if (action == "FLOATING") {
 					n->setFloating(op.b(2));
