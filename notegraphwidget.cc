@@ -551,27 +551,25 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 }
 
 void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
- {
+{
 	int k = event->key(), m = event->modifiers();
 
 	if (k == Qt::Key_A && (m & Qt::ControlModifier)) { // Select all
 		selectNote(NULL); // Clear previous
 		for (int i = m_notes.size()-1; i >= 0; --i) // Traverse in reverse order to get the first note first
 			selectNote(m_notes[i], false);
-
 	} else if (k == Qt::Key_Return) { // Edit lyric
 		editLyric(m_selectedNote);
-
 	} else if (k == Qt::Key_Left) { // Select note on the left
 		if (m_selectedNote && m_notes.size() > 1  && m_selectedNote != m_notes.front()) {
 			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-				if (m_selectedNote == *it) { selectNote(*(--it)); break; }
+				if (m_selectedNote == *it) { selectNote(*(--it), !(m & Qt::ControlModifier)); break; }
 			}
 		}
 	} else if (k == Qt::Key_Right) { // Select note on the right
 		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
 			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
-				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
+				if (m_selectedNote == *it) { selectNote(*(++it), !(m & Qt::ControlModifier)); break; }
 			}
 		}
 	} else if (k == Qt::Key_Up) { // Move note up
@@ -582,8 +580,8 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		del(m_selectedNote);
 	} else {
 		QWidget::keyPressEvent(event);
-	 }
- }
+	}
+}
 
 void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags flags)
 {
