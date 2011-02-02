@@ -363,18 +363,22 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 	(void)*event;
 	if (m_selectedAction != NONE) {
 		if (m_selectedNote) {
+			int movecount = 0;
 			for (NoteLabel *n = m_selectedNote; n; n = n->nextSelected) {
 				n->startResizing(0);
 				n->startDragging(QPoint());
+				if (m_actionHappened) {
+					// Operation for undo stack & saving
+					Operation op("SETGEOM");
+					op <<  getNoteLabelId(n)
+						<< n->x() << n->y() << n->width() << n->height();
+					doOperation(op, Operation::NO_EXEC);
+					++movecount;
+				}
 			}
-			if (m_actionHappened) {
-				// TODO: Undo multiple note move
-				// Operation for undo stack & saving
-				Operation op("SETGEOM");
-				op <<  getNoteLabelId(m_selectedNote)
-					<< m_selectedNote->x() << m_selectedNote->y()
-					<< m_selectedNote->width() << m_selectedNote->height();
-				doOperation(op, Operation::NO_EXEC);
+			// Combine to one undo operation
+			if (movecount > 1) {
+				Operation op("COMBINER"); op << movecount; doOperation(op);
 			}
 		}
 		m_selectedAction = NONE;
