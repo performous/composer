@@ -464,8 +464,9 @@ void NoteGraphWidget::move(NoteLabel *note, int value)
 	int movecount = 0;
 	for (NoteLabel *n = note ; n; n = n->nextSelected, ++movecount) {
 		Operation op("MOVE");
-		op << getNoteLabelId(n);
-		op << n->x() << int(round(px2n(n->y() + m_noteHalfHeight))) + value;
+		op << getNoteLabelId(n)
+		  << px2s(n->x()) << px2s(n->x() + n->width())
+		  << int(round(px2n(n->y() + m_noteHalfHeight))) + value;
 		doOperation(op);
 	}
 
