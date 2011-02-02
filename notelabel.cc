@@ -127,7 +127,7 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			NoteLabel *n = this;
 			// Pick first note in the selection chain
 			while (n->prevSelected) n = n->prevSelected;
-			for (n; n; n = n->nextSelected)
+			for (; n; n = n->nextSelected)
 				n->move(n->x() + dx, ngw->n2px(int(round(ngw->px2n(n->y() + dy + height() / 2)))) - height() / 2);
 			ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
 		}
