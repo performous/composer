@@ -344,8 +344,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			// Ctrl allows selecting multiple notes for dragging
 			selectNote(child, !(event->modifiers() & Qt::ControlModifier));
 			m_selectedAction = MOVE;
-			for (NoteLabel *n = m_selectedNote; n; n = n->nextSelected)
-				n->startDragging(hotSpot);
+			child->startDragging(hotSpot);
 		}
 		child->createPixmap(child->size());
 
@@ -364,10 +363,12 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 	(void)*event;
 	if (m_selectedAction != NONE) {
 		if (m_selectedNote) {
-			m_selectedNote->startResizing(0);
-			m_selectedNote->startDragging(QPoint());
-			m_selectedNote->move(m_selectedNote->pos().x(), n2px(round(px2n(m_selectedNote->pos().y() + m_noteHalfHeight))) - m_noteHalfHeight);
+			for (NoteLabel *n = m_selectedNote; n; n = n->nextSelected) {
+				n->startResizing(0);
+				n->startDragging(QPoint());
+			}
 			if (m_actionHappened) {
+				// TODO: Undo multiple note move
 				// Operation for undo stack & saving
 				Operation op("SETGEOM");
 				op <<  getNoteLabelId(m_selectedNote)
