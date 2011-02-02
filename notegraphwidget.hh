@@ -46,6 +46,7 @@ public:
 	NoteLabel* selectedNote() const { return m_selectedNote; }
 	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);
+	void move(NoteLabel *note, int value);
 	void editLyric(NoteLabel *note);
 	void setFloating(NoteLabel *note, bool state);
 	void setLineBreak(NoteLabel *note, bool state);

@@ -454,6 +454,24 @@ void NoteGraphWidget::del(NoteLabel *note)
 	}
 }
 
+void NoteGraphWidget::move(NoteLabel *note, int value)
+{
+	if (!note) return;
+
+	int movecount = 0;
+	for (NoteLabel *n = note ; n; n = n->nextSelected, ++movecount) {
+		Operation op("MOVE");
+		op << getNoteLabelId(n);
+		op << n->x() << int(round(px2n(n->y() + m_noteHalfHeight))) + value;
+		doOperation(op);
+	}
+
+	// Combine to one undo operation
+	if (movecount > 1) {
+		Operation op("COMBINER"); op << movecount; doOperation(op);
+	}
+}
+
 void NoteGraphWidget::setType(NoteLabel *note, int index)
 {
 	if (note && note->note().getTypeInt() != index) {
@@ -550,33 +568,18 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 				if (m_selectedNote == *it) { selectNote(*(--it)); break; }
 			}
 		}
-
 	} else if (k == Qt::Key_Right) { // Select note on the right
 		if (m_selectedNote && m_notes.size() > 1 && m_selectedNote != m_notes.back()) {
 			for (NoteLabels::iterator it = m_notes.begin(); it != m_notes.end(); ++it) {
 				if (m_selectedNote == *it) { selectNote(*(++it)); break; }
 			}
 		}
-
 	} else if (k == Qt::Key_Up) { // Move note up
-		if (m_selectedNote) {
-			Operation op("MOVE");
-			op << getNoteLabelId(m_selectedNote);
-			op << m_selectedNote->x() << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) + 1;
-			doOperation(op);
-		}
-
+		move(m_selectedNote, 1);
 	} else if (k == Qt::Key_Down) { // Move note down
-		if (m_selectedNote) {
-			Operation op("MOVE");
-			op << getNoteLabelId(m_selectedNote);
-			op << m_selectedNote->x() << int(round(px2n(m_selectedNote->y() + m_noteHalfHeight))) - 1;
-			doOperation(op);
-		}
-
+		move(m_selectedNote, -1);
 	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
 		del(m_selectedNote);
-
 	} else {
 		QWidget::keyPressEvent(event);
 	 }
