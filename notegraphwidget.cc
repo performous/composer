@@ -432,15 +432,26 @@ void NoteGraphWidget::split(NoteLabel *note, float ratio)
 
 void NoteGraphWidget::del(NoteLabel *note)
 {
-	if (note && (note->nextSelected || note->prevSelected)) return;// FIXME: Multiple note handling
 	if (!note) return;
 
-	if (m_selectedNote == note)
-		selectNote(NULL);
+	// If delete is directed to a selected note, all selected notes will be deleted
+	if (note->isSelected() && m_selectedNote) {
+		note = m_selectedNote;
+		m_selectedNote = NULL;
+	}
 
-	Operation op("DEL");
-	op << getNoteLabelId(note);
-	doOperation(op);
+	int delcount = 0;
+	for (NoteLabel *n = note, *nn; n; n = nn, ++delcount) {
+		nn = n->nextSelected; // Need to put this into temp variable because it is cleared in setSelected(false)
+		Operation op("DEL");
+		op << getNoteLabelId(n);
+		doOperation(op);
+	}
+
+	// Combine to one undo operation
+	if (delcount > 1) {
+		Operation op("COMBINER"); op << delcount; doOperation(op);
+	}
 }
 
 void NoteGraphWidget::setType(NoteLabel *note, int index)
@@ -563,7 +574,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 			doOperation(op);
 		}
 
-	} else if (k == Qt::Key_Delete) { // Delete selected note
+	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
 		del(m_selectedNote);
 
 	} else {
@@ -591,6 +602,7 @@ void NoteGraphWidget::doOperation(const Operation& op, Operation::OperationFlags
 			NoteLabel *n = m_notes.at(op.i(1));
 			if (n) {
 				if (action == "DEL") {
+					n->setSelected(false); // Remove from selection list
 					n->close();
 					m_notes.removeAt(op.i(1));
 				} else if (action == "SETGEOM") {
@@ -646,7 +658,7 @@ VocalTrack NoteGraphWidget::getVocalTrack() const
 QString NoteGraphWidget::getCurrentSentence() const
 {
 	QString lyrics;
-	if (!m_notes.isEmpty() && m_selectedNote) {
+	if (!m_notes.isEmpty() && m_selectedNote && !m_selectedNote->nextSelected) {
 		int id = getNoteLabelId(m_selectedNote);
 		for (int i = id; i < m_notes.size(); ++i) {
 			if (i != id && m_notes[i]->note().lineBreak) break;
