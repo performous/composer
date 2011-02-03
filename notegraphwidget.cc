@@ -442,11 +442,9 @@ QString NoteGraphWidget::dumpLyrics() const
 	QString lyrics;
 	if (!m_notes.isEmpty()) {
 		for (int i = 0; i < m_notes.size(); ++i) {
+			if(!lyrics.isEmpty() && m_notes[i]->note().lineBreak) lyrics += '\n';
 			lyrics += m_notes[i]->lyric() + " ";
-			if (m_notes[i]->note().lineBreak)
-				lyrics.replace(lyrics.size()-1, 1, QString("\n"));
 		}
-		lyrics.replace(lyrics.size()-1, 1, QString("\n"));
 	}
 	return lyrics;
 }
