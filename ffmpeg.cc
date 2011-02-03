@@ -74,18 +74,6 @@ void FFmpeg::open() {
 	if (audioStream == -1) throw std::runtime_error("No audio stream found");
 	AVCodecContext* cc = pFormatCtx->streams[audioStream]->codec;
 	pAudioCodec = avcodec_find_decoder(cc->codec_id);
-	// Awesome HACK for AAC to work (unfortunately libavformat fails to decode this information from MPEG ADTS)
-	if (pAudioCodec->name == std::string("aac") && cc->extradata_size == 0) {
-		cc->extradata = static_cast<quint8*>(malloc(2));
-		unsigned profile = 1; // 0 = MAIN, 1 = LC/LOW
-		unsigned srate_idx = 3; // 3 = 48000 Hz
-		unsigned channels = 2; // Just the number of channels
-		cc->extradata[0] = ((profile + 1) << 3) | ((srate_idx & 0xE) >> 1);
-		cc->extradata[1] = ((srate_idx & 0x1) << 7) | (channels << 3);
-		cc->extradata_size = 2;
-		cc->sample_rate = 48000;
-		cc->channels = 2;
-	}
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
 	if (avcodec_open(cc, pAudioCodec) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;
@@ -100,6 +88,7 @@ void FFmpeg::run() {
 			m_eof = false;
 			errors = 0;
 		} catch (eof_error&) {
+			audioQueue.setEof();
 			m_eof = true;
 			msleep(100);
 		} catch (std::exception& e) {

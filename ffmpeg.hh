@@ -32,6 +32,7 @@ public:
 	void setEof(bool eof = true) {
 		QMutexLocker lock(&m_mutex);
 		m_eof = eof;
+		m_needData.wakeOne();
 	}
 	bool output(std::vector<da::sample_t>& out) {
 		QMutexLocker lock(&m_mutex);
