@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QList>
 #include <QScopedPointer>
+#include <QElapsedTimer>
 
 class NoteLabel;
 typedef QList<NoteLabel*> NoteLabels;
@@ -17,10 +18,10 @@ class SeekHandle: public QLabel
 public:
 	SeekHandle(QWidget *parent = 0);
 	int curx() const { return x() + width() / 2; }
-	int moveTimerId;
+	bool wrapToViewport;
 protected:
 	void mouseMoveEvent(QMouseEvent *event);
-	void timerEvent(QTimerEvent *event);
+	void moveEvent(QMoveEvent *event);
 };
 
 
@@ -88,7 +89,7 @@ public:
 	void analyzeMusic(QString filepath);
 
 	void updateNotes(bool leftToRight = true);
-	void updateMusicPos(qint64 time, bool smoothing);
+	void updateMusicPos(qint64 time, bool smoothing = true);
 	void stopMusic();
 	void seek(int x);
 
@@ -99,6 +100,7 @@ public:
 public slots:
 	void timeSyllable();
 	void timeSentence();
+	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }
 
 signals:
 	void analyzeProgress(int, int);
@@ -125,6 +127,9 @@ private:
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
 	int m_analyzeTimer;
+	int m_playbackTimer;
+	QElapsedTimer m_playbackInterval;
+	qint64 m_playbackPos;
 	double m_duration;
 };
 

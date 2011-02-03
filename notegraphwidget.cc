@@ -22,7 +22,7 @@ namespace {
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_panHotSpot(), m_seeking(), m_actionHappened(),
-	m_pitch(), m_seekHandle(this), m_duration(10.0)
+	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_duration(10.0)
 {
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: rgb(32, 32, 32); }");
@@ -115,9 +115,13 @@ void NoteGraphWidget::analyzeMusic(QString filepath)
 	m_analyzeTimer = startTimer(100);
 }
 
-void NoteGraphWidget::timerEvent(QTimerEvent*)
+void NoteGraphWidget::timerEvent(QTimerEvent* event)
 {
-	if (m_pitch) {
+	if (event->timerId() == m_playbackTimer) {
+		m_playbackPos += m_playbackInterval.restart();
+		updateMusicPos(m_playbackPos);
+
+	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
 		QMutexLocker locker(&m_pitch->mutex);
 		emit analyzeProgress(1000 * m_pitch->getProgress(), 1000);
 		if (m_pitch->newDataAvailable()) {
@@ -196,16 +200,18 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 
 void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
 {
-	int x = s2px(time / 1000.0) - m_seekHandle.width() / 2;
-	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
+	m_playbackPos = time;
+	int x = s2px(m_playbackPos / 1000.0) - m_seekHandle.width() / 2;
+	killTimer(m_playbackTimer);
 	m_seekHandle.move(x, 0);
 	if (smoothing)
-		m_seekHandle.moveTimerId = m_seekHandle.startTimer(std::ceil(px2s(1) * 1000));
+		m_playbackTimer = startTimer(17); // Hope for 60 fps
+	m_playbackInterval.restart();
 }
 
 void NoteGraphWidget::stopMusic()
 {
-	m_seekHandle.killTimer(m_seekHandle.moveTimerId);
+	killTimer(m_playbackTimer);
 }
 
 void NoteGraphWidget::seek(int x)
@@ -480,12 +486,10 @@ void SeekHandle::mouseMoveEvent(QMouseEvent *event)
 	event->ignore();
 }
 
-void SeekHandle::timerEvent(QTimerEvent*)
+void SeekHandle::moveEvent(QMoveEvent*)
 {
-	move(x() + 1, 0);
-
 	// Make handle always visible in the ScrollArea
-	if (parentWidget() && parentWidget()->parentWidget()) {
+	if (wrapToViewport && parentWidget() && parentWidget()->parentWidget()) {
 		QScrollArea *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget()->parent());
 		if (scrollArea) {
 			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
