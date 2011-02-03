@@ -200,9 +200,6 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				if (action == "DEL") {
 					n->close();
 					m_notes.removeAt(op.i(1));
-				} else if (action == "RESIZE") {
-					n->resize(op.i(2), op.i(3));
-					n->setFloating(false);
 				} else if (action == "MOVE") {
 					n->setGeometry(s2px(op.i(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.i(3) - op.i(2)), 2 * m_noteHalfHeight);
 					n->setFloating(false);
