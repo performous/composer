@@ -46,6 +46,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
+	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 
 	show(); // Needed in order to get real values from width()
 
