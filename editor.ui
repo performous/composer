@@ -447,7 +447,7 @@
           </widget>
           <widget class="QWidget" name="tabLyrics">
            <attribute name="title">
-            <string>Lyrics</string>
+            <string>&amp;Lyrics</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="1" column="0">
