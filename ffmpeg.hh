@@ -57,7 +57,10 @@ public:
 		m_needSpace.wakeOne();
 		return true;
 	}
-	unsigned samplesPerSecond() const { return 44100; /* FIXME */ }
+	unsigned samplesPerSecond() const { return m_channels * m_rate; }
+	void setRateChannels(unsigned rate, unsigned channels) { m_rate = rate; m_channels = channels; }
+	unsigned getRate() { return m_rate; }
+	unsigned getChannels() { return m_channels; }
 	AudioQueue(unsigned capacity = (2 << 20)): m_ring(capacity), m_channels(), m_position(), m_size(), m_eof() {}
 	
 private:
@@ -65,6 +68,7 @@ private:
 	QWaitCondition m_needData, m_needSpace;
 	typedef std::vector<da::sample_t> Ring;
 	Ring m_ring;
+	unsigned m_rate;
 	unsigned m_channels;
 	unsigned m_position;
 	unsigned m_size;

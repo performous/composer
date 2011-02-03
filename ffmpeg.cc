@@ -74,6 +74,7 @@ void FFmpeg::open() {
 	if (audioStream == -1) throw std::runtime_error("No audio stream found");
 	AVCodecContext* cc = pFormatCtx->streams[audioStream]->codec;
 	pAudioCodec = avcodec_find_decoder(cc->codec_id);
+	audioQueue.setRateChannels(cc->sample_rate, cc->channels);
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
 	if (avcodec_open(cc, pAudioCodec) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;

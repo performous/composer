@@ -15,7 +15,12 @@ struct PitchFragment {
 	PitchFragment(float time, float note, float level): time(time), note(note), level(level) {}
 };
 
-typedef std::vector<PitchFragment> PitchPath;
+struct PitchPath {
+	typedef std::vector<PitchFragment> Fragments;
+	Fragments fragments;
+	unsigned channel;
+	PitchPath(unsigned channel): channel(channel) {}
+};
 
 class NoteGraphWidget;
 
