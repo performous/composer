@@ -24,22 +24,23 @@ void PitchVis::run()
 		Analyzer analyzer(rate, "");
 		// Process the entire song
 		{
-			unsigned step = 1024;
 			// Initialize FFmpeg decoding
-			FFmpeg mpeg(fileName.toStdString(), rate);
+			FFmpeg mpeg(fileName.toStdString());
 			{
 				QMutexLocker locker(&mutex);
 				paths.clear();
 				position = 0.0;
 				duration = mpeg.duration(); // Estimation
 			}
+			std::vector<float> data;
 			unsigned x = 0;
-			for (std::vector<float> data(step*2); mpeg.audioQueue(&*data.begin(), &*data.end(), x * step * 2); ++x, std::fill(data.begin(), data.end(), 0.0f)) {
-				// Mix stereo into mono (FIXME: FFmpeg converting into stereo and then converting back here is really stupid)
-				for (unsigned j = 0; j < step; ++j) data[j] = 0.5 * (data[2*j] + data[2*j + 1]);
-				// Process
-				analyzer.input(&data[0], &data[step]);
-				analyzer.process();
+			while (mpeg.audioQueue.output(data)) {
+				// Read until enough data is available
+				if (data.size() - x < analyzer.processSize()) continue;
+				// Pitch detection
+				analyzer.process(&data[x]);
+				x += analyzer.processStep();
+				
 				QMutexLocker locker(&mutex);
 				if (cancelled) return;
 				Analyzer::Moments const& moments = analyzer.getMoments();

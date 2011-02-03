@@ -2,97 +2,72 @@
 
 #include "util.hh"
 #include "libda/sample.hpp"
-#include <boost/circular_buffer.hpp>
 #include <QThread>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <QScopedPointer>
+#include <memory>
 #include <vector>
 
-
-/// single audio frame
-struct AudioFrame {
-	/// timestamp of audio frame
-	double timestamp;
-	/// audio data
-	std::vector<qint16> data;
-	/// constructor
-	template <typename InIt> AudioFrame(double ts, InIt begin, InIt end): timestamp(ts), data(begin, end) {}
-	AudioFrame(): timestamp(getInf()) {} // EOF marker
-};
-
-class AudioBuffer {
-  public:
-	AudioBuffer(size_t size = 2000000): m_data(size), m_pos(), m_posReq(), m_sps(), m_duration(getNaN()), m_quit() {}
-	/// Reset from FFMPEG side (seeking to beginning or terminate stream)
+class AudioQueue {
+public:
 	void reset() {
-		QMutexLocker l(&m_mutex);
-		m_data.clear();
-		m_pos = 0;
-		l.unlock();
-		m_cond.wakeOne();
+		QMutexLocker lock(&m_mutex);
+		m_size = 0;
+		m_needData.wakeOne();
+		m_needSpace.wakeOne();
 	}
-	void quit() {
-		QMutexLocker l(&m_mutex);
-		m_quit = true;
-		l.unlock();
-		m_cond.wakeOne();
-	}
-	/// set samples per second
-	void setSamplesPerSecond(unsigned sps) { m_sps = sps; }
-	/// get samples per second
-	unsigned getSamplesPerSecond() { return m_sps; }
-	void push(std::vector<qint16> const& data, double timestamp) {
-		QMutexLocker l(&m_mutex);
-		while (!condition()) m_cond.wait(&m_mutex);
-		if (m_quit) return;
-		if (m_pos == 0 && timestamp != 0.0) {
-			//std::cerr << "Warning: The first audio frame begins at " << timestamp << " seconds instead of zero, compensating." << std::endl;
-			m_pos = timestamp * m_sps;
+	template <typename Iterator> void input(Iterator begin, Iterator end) {
+		QMutexLocker lock(&m_mutex);
+		unsigned count = end - begin;
+		unsigned capacity = m_ring.size();
+		if (capacity < count) throw std::logic_error("AudioQueue input chunk is bigger than capacity");
+		while (capacity - m_size < count) m_needSpace.wait(&m_mutex);
+		for (unsigned i = 0; i < count; ++i) {
+			m_ring[m_position + m_size++] = da::conv_from_s16(*begin++);
 		}
-		m_data.insert(m_data.end(), data.begin(), data.end());
-		m_pos += data.size();
+		m_needData.wakeOne();
 	}
-	bool prepare(int64_t pos) {
-		if (!m_mutex.tryLock()) return false;
-		if (pos < 0) pos = 0;
-		m_posReq = pos;
-		bool ret = m_pos > m_posReq + m_data.capacity() / 4 && m_pos - m_data.size() <= m_pos;
-		m_mutex.unlock();
-		return ret;
+	void setEof(bool eof = true) {
+		QMutexLocker lock(&m_mutex);
+		m_eof = eof;
 	}
-	bool operator()(float* begin, float* end, int64_t pos, float volume = 1.0f) {
-		QMutexLocker l(&m_mutex);
-		size_t idx = pos + m_data.size() - m_pos;
-		size_t samples = end - begin;
-		for (size_t s = 0; s < samples; ++s, ++idx) {
-			if (idx < m_data.size()) begin[s] += volume * da::conv_from_s16(m_data[idx]);
+	bool output(std::vector<da::sample_t>& out) {
+		QMutexLocker lock(&m_mutex);
+		while (m_size == 0) {
+			if (m_eof) return false;
+			m_needData.wait(&m_mutex);
 		}
-		m_posReq = pos + samples;
-		l.unlock();
-		if (wantSeek()) reset();
-		if (condition()) m_cond.wakeOne();
-		return !eof(pos);
+		std::size_t outsz = out.size();
+		out.resize(outsz + m_size);
+		da::sample_t* outptr = &out[outsz];
+		Ring::iterator b = m_ring.begin() + m_position,
+		  e = m_ring.begin() + (m_position + m_size) % m_ring.size();
+		if (e < b) {
+			// Two parts copied separately
+			std::copy(b, m_ring.end(), outptr);
+			std::copy(m_ring.begin(), e, outptr);
+		} else {
+			// All in one part
+			std::copy(b, e, outptr);
+		}
+		m_size = 0;
+		m_needSpace.wakeOne();
+		return true;
 	}
-	bool eof(int64_t pos) const { return double(pos) / m_sps >= m_duration; }
-	double duration() const { return m_duration; }
-	void setDuration(double seconds) { m_duration = seconds; }
-	bool wantSeek() {
-		size_t oldest = m_pos - m_data.size();
-		return oldest > 0 && m_posReq < int64_t(oldest);
-	}
-  private:
-	bool wantMore() { return int64_t(m_pos) - int64_t(m_data.capacity() / 2) < m_posReq; }
-	bool condition() { return m_quit || wantMore() || wantSeek(); }
-	mutable QMutex m_mutex;
-	QWaitCondition m_cond;
-	boost::circular_buffer<qint16> m_data;
-	size_t m_pos;
-	int64_t m_posReq;
-	unsigned m_sps;
-	double m_duration;
-	bool m_quit;
+	unsigned samplesPerSecond() const { return 44100; /* FIXME */ }
+	AudioQueue(unsigned capacity = (2 << 20)): m_ring(capacity), m_channels(), m_position(), m_size(), m_eof() {}
+	
+private:
+	QMutex m_mutex;
+	QWaitCondition m_needData, m_needSpace;
+	typedef std::vector<da::sample_t> Ring;
+	Ring m_ring;
+	unsigned m_channels;
+	unsigned m_position;
+	unsigned m_size;
+	bool m_eof;
 };
 
 // ffmpeg forward declarations
@@ -108,12 +83,12 @@ extern "C" {
 class FFmpeg: public QThread {
   public:
 	/// constructor
-	FFmpeg(std::string const& file, unsigned int rate = 48000);
+	FFmpeg(std::string const& file);
 	~FFmpeg();
 	/// Thread runs here, don't call directly
 	void run();
 	/// Queue for audio
-	AudioBuffer  audioQueue;
+	AudioQueue audioQueue;
 	/** Seek to the chosen time. Will block until the seek is done, if wait is true. **/
 	void seek(double time, bool wait = true);
 	/// Duration
@@ -132,8 +107,6 @@ class FFmpeg: public QThread {
 	volatile bool m_eof;
 	volatile double m_seekTarget;
 	AVFormatContext* pFormatCtx;
-	ReSampleContext* pResampleCtx;
-	SwsContext* img_convert_ctx;
 
 	AVCodecContext* pAudioCodecCtx;
 	AVCodec* pAudioCodec;

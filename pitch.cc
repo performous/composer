@@ -24,10 +24,7 @@ Analyzer::Analyzer(double rate, std::string id):
   m_rate(rate),
   m_id(id),
   m_window(FFT_N),
-  m_bufRead(0),
-  m_bufWrite(0),
   m_fftLastPhase(FFT_N / 2),
-  m_level(-getInf()),
   m_oldfreq(0.0)
 {
   	// Hamming window
@@ -36,24 +33,15 @@ Analyzer::Analyzer(double rate, std::string id):
 	}
 }
 
+unsigned Analyzer::processSize() const { return FFT_N; }
+unsigned Analyzer::processStep() const { return FFT_STEP; }
+
+void Analyzer::calcFFT(float* pcm) {
+	m_fft = da::fft<FFT_P>(pcm, m_window);
+}
+
 namespace {
 	bool sqrLT(float a, float b) { return a * a < b * b; }
-}
-
-bool Analyzer::calcFFT() {
-	float pcm[FFT_N];
-	size_t r = m_bufRead;
-	// Test if there is enough audio available
-	if ((BUF_N + m_bufWrite - r) % BUF_N <= FFT_N) return false;
-	// Copy audio to local buffer
-	for (size_t i = 0; i < FFT_N; ++i) pcm[i] = m_buf[(r + i) % BUF_N];
-	m_bufRead = (r + FFT_STEP) % BUF_N;
-	// Calculate FFT
-	m_fft = da::fft<FFT_P>(pcm, m_window);
-	return true;
-}
-
-namespace {
 	bool matchFreq(double f1, double f2) {
 		return std::abs(f1 / f2 - 1.0) < 0.06;  // Semitone difference
 	}
@@ -69,8 +57,6 @@ void Combo::combine(Peak const& p) {
 }
 
 bool Combo::match(double freqOther) const { return matchFreq(freq, freqOther); }
-
-#include <iostream>
 
 void Analyzer::calcTones() {
 	// Precalculated constants
@@ -109,7 +95,6 @@ void Analyzer::calcTones() {
 	// Convert sum frequencies into averages
 	for (Combos::iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
 		it->freq /= it->level;
-		if (it->freq != it->freq) std::cout << it->freq << ", " << it->level << std::endl;
 	}
 	// Only keep a reasonable amount of strongest combos
 	std::sort(combos.rbegin(), combos.rend(), Combo::cmpByLevel);
@@ -167,11 +152,6 @@ void Analyzer::temporalMerge(Tones& tones) {
 	}
 	m_moments.push_back(Moment(m_moments.size() * FFT_STEP / m_rate));
 	m_moments.back().stealTones(tones);  // No pointers are invalidated
-}
-
-void Analyzer::process() {
-	// Try calculating FFT and calculate tones until no more data in input buffer
-	while (calcFFT()) calcTones();
 }
 
 Moment::Moment(double t): m_time(t) {}

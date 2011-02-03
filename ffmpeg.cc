@@ -12,31 +12,42 @@
 extern "C" {
 #include AVCODEC_INCLUDE
 #include AVFORMAT_INCLUDE
-#include SWSCALE_INCLUDE
 }
 
-#define AUDIO_CHANNELS 2
+/// A custom allocator that uses av_malloc for aligned buffers
+template <typename T> class AvMalloc: public std::allocator<T> {
+public:
+/*	pointer allocate(size_type count, allocator<void>::const_pointer* = 0) {
+		pointer ptr = static_cast<pointer>(m(count * sizeof(T)));
+		if (!ptr) throw std::bad_alloc();
+		return ptr;
+	}
+    void deallocate(pointer ptr, size_type) { f(ptr); }*/
+private:
+	void* m(size_t n) { return av_malloc(n); }
+	void f(void* ptr) { av_free(ptr); }
+};
+
 
 /*static*/ QMutex FFmpeg::s_avcodec_mutex;
 
-FFmpeg::FFmpeg(std::string const& _filename, unsigned int rate):
-  m_filename(_filename), m_rate(rate), m_quit(), m_running(), m_eof(), m_seekTarget(getNaN()),
-  pFormatCtx(), pResampleCtx(), img_convert_ctx(), pAudioCodecCtx(), pAudioCodec(),
+FFmpeg::FFmpeg(std::string const& _filename):
+  m_filename(_filename), m_quit(), m_running(), m_eof(),
+  pFormatCtx(), pAudioCodecCtx(), pAudioCodec(),
   audioStream(-1), m_position()
 {
 	open(); // Throws on error
 	m_running = true;
-	audioQueue.setDuration(duration());
 	start();
 }
 
 FFmpeg::~FFmpeg() {
 	m_quit = true;
-	audioQueue.quit();
+	audioQueue.setEof();
+	audioQueue.reset();
 	wait();
 	// TODO: use RAII for freeing resources (to prevent memory leaks)
 	QMutexLocker l(&s_avcodec_mutex); // avcodec_close is not thread-safe
-	if (pResampleCtx) audio_resample_close(pResampleCtx);
 	if (pAudioCodecCtx) avcodec_close(pAudioCodecCtx);
 	if (pFormatCtx) av_close_input_file(pFormatCtx);
 }
@@ -78,21 +89,12 @@ void FFmpeg::open() {
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
 	if (avcodec_open(cc, pAudioCodec) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;
-#if LIBAVCODEC_VERSION_INT > ((52<<16)+(12<<8)+0)
-	pResampleCtx = av_audio_resample_init(AUDIO_CHANNELS, cc->channels, m_rate, cc->sample_rate,
-		SAMPLE_FMT_S16, SAMPLE_FMT_S16, 16, 10, 0, 0.8);
-#else
-	pResampleCtx = audio_resample_init(AUDIO_CHANNELS, cc->channels, m_rate, cc->sample_rate);
-#endif
-	if (!pResampleCtx) throw std::runtime_error("Cannot create resampling context");
-	audioQueue.setSamplesPerSecond(AUDIO_CHANNELS * m_rate);
 }
 
 void FFmpeg::run() {
 	int errors = 0;
 	while (!m_quit) {
 		try {
-			if (audioQueue.wantSeek()) m_seekTarget = 0.0;
 			if (m_seekTarget == m_seekTarget) seek_internal();
 			decodeNextFrame();
 			m_eof = false;
@@ -105,6 +107,7 @@ void FFmpeg::run() {
 			if (++errors > 2) { std::cerr << "FFMPEG terminating due to errors" << std::endl; m_quit = true; }
 		}
 	}
+	audioQueue.setEof();
 	m_running = false;
 	m_eof = true;
 }
@@ -151,18 +154,6 @@ void FFmpeg::decodeNextFrame() {
 		AVFrame* operator->() { return m_frame; }
 	} videoFrame;
 
-	class AudioBuffer {
-	  public:
-		AudioBuffer(size_t _size): m_buffer((qint16*)av_malloc(_size*sizeof(qint16))) {
-			if (!m_buffer) throw std::runtime_error("Unable to allocate AudioBuffer");
-		}
-		~AudioBuffer() { av_free(m_buffer); }
-		operator  qint16*() { return m_buffer; }
-		qint16* operator->() { return m_buffer; }
-	  private:
-		qint16* m_buffer;
-	};
-
 	int frameFinished=0;
 	while (!frameFinished) {
 		ReadFramePacket packet(pFormatCtx);
@@ -172,12 +163,12 @@ void FFmpeg::decodeNextFrame() {
 			while (packetSize) {
 				if (packetSize < 0) throw std::logic_error("negative audio packet size?!");
 				if (m_quit || m_seekTarget == m_seekTarget) return;
-				AudioBuffer audioFrames(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+				std::vector<qint16, AvMalloc<qint16> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE*sizeof(qint16);
 #if LIBAVCODEC_VERSION_INT > ((52<<16)+(25<<8)+0)
-				int decodeSize = avcodec_decode_audio3(pAudioCodecCtx, audioFrames, &outsize, &packet);
+				int decodeSize = avcodec_decode_audio3(pAudioCodecCtx, &decodedBuffer[0], &outsize, &packet);
 #else
-				int decodeSize = avcodec_decode_audio2(pAudioCodecCtx, audioFrames, &outsize, packetData, packetSize);
+				int decodeSize = avcodec_decode_audio2(pAudioCodecCtx, &decodedBuffer[0], &outsize, packetData, packetSize);
 #endif
 				// Handle special cases
 				if (decodeSize == 0) break;
@@ -188,14 +179,11 @@ void FFmpeg::decodeNextFrame() {
 				packetData += decodeSize;
 				// Convert outsize from bytes into number of frames (samples)
 				outsize /= sizeof(qint16) * pAudioCodecCtx->channels;
-				std::vector<qint16> resampled(AVCODEC_MAX_AUDIO_FRAME_SIZE);
-				int frames = audio_resample(pResampleCtx, &resampled[0], audioFrames, outsize);
-				resampled.resize(frames * AUDIO_CHANNELS);
 				// Calculate new positions
 				if (packet.time() == packet.time()) m_position = packet.time();
-				else m_position += double(resampled.size())/double(audioQueue.getSamplesPerSecond());
+				else m_position += outsize / audioQueue.samplesPerSecond();
 				// Push to output queue (may block)
-				audioQueue.push(resampled, m_position);
+				audioQueue.input(decodedBuffer.begin(), decodedBuffer.begin() + outsize);
 			}
 			// Audio frames are always finished
 			frameFinished = 1;

@@ -59,8 +59,6 @@ struct Combo {
 };
 
 
-static const std::size_t BUF_N = 100000;  // Ringbuffer size in samples, major b0rkage will happen if this is too small; it won't cause latency, only wasted RAM
-
 /// analyzer class
  /** class to analyze input audio and transform it into useable data
  */
@@ -72,52 +70,33 @@ public:
 	typedef std::list<Moment> Moments; ///< Time-serie history of time and tones
 	/// constructor
 	Analyzer(double rate, std::string id);
-	/** Add input data to buffer. This is thread-safe (against other functions). **/
-	template <typename InIt> void input(InIt begin, InIt end) {
-		size_t r = m_bufRead;  // The read position
-		size_t w = m_bufWrite;  // The write position
-		bool overflow = false;
-		while (begin != end) {
-			float s = *begin++;  // Read input sample
-			if (sizeof(*begin) == 2) s /= 32767.0;  // Integer samples (normalize)
-			// Peak level calculation
-			float p = s * s;
-			if (p > m_level) m_level = p; else m_level *= 0.9995;
-			m_buf[w] = s;
-			// Cursor updates
-			w = (w + 1) % BUF_N;
-			if (w == r) overflow = true;
-		}
-		m_bufWrite = w;
-		if (overflow) m_bufRead = (w + 1) % BUF_N;  // Reset read pointer on overflow
-	}
-	/** Call this to process all data input so far. **/
-	void process();
 	/** Get the fourier transform. **/
 	Fourier const& getFourier() const { return m_fft; }
 	/** Get the peak frequencies. **/
 	Peaks const& getPeaks() const { return m_peaks; }
-	/** Get the peak level in dB (negative value, 0.0 means clipping, sometimes clipping may occur at lower levels too). **/
-	double getLevel() const { return 10.0 * log10(m_level); }
 	/** Get a list of all tones detected. **/
 	Moments const& getMoments() const { return m_moments; }
 	/** Find a tone within the singing range; prefers strong tones around 200-400 Hz. **/
 	//Tone const* findTone(double minfreq = 70.0, double maxfreq = 700.0) const;
 	std::string const& getId() const { return m_id; }
-
+	/// Process processSize() samples from RndIt input
+	template<typename RndIt> void process(RndIt input) {
+		std::vector<float> pcm(input, input + processSize());  // Needs local modifyable copy for calculations
+		calcFFT(&pcm[0]);
+		calcTones();
+	}
+	unsigned processSize() const;  ///< The number of samples required by process()
+	unsigned processStep() const;  ///< The number of samples to increment the input position after each call to process()
 private:
 	double m_rate;
 	std::string m_id;
 	std::vector<float> m_window;
-	float m_buf[2 * BUF_N];
-	volatile size_t m_bufRead, m_bufWrite;
 	Fourier m_fft;
 	std::vector<float> m_fftLastPhase;
-	double m_level;
 	Peaks m_peaks;
 	Moments m_moments;
 	mutable double m_oldfreq;
-	bool calcFFT();
+	void calcFFT(float* pcm);
 	void calcTones();
 	void temporalMerge(Tones& tones);
 };
