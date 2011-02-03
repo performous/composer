@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QString>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -211,6 +212,8 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 					n->setLyric(op.s(2));
 				} else if (action == "TYPE") {
 					n->setType(op.i(2));
+				} else {
+					std::cerr << "Error: Unkown operation type " << action.toStdString() << std::endl;
 				}
 				n->createPixmap(n->size());
 			}
