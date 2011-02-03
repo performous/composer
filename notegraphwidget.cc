@@ -308,7 +308,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 					// Operation for undo stack & saving
 					Operation op("MOVE");
 					op << getNoteLabelId(n)
-					  << px2s(n->x()) << px2n(n->x() + n->width())
+					  << px2s(n->x()) << px2s(n->x() + n->width())
 					  << int(round(px2n(n->y() + m_noteHalfHeight)));
 					doOperation(op, Operation::NO_EXEC);
 					++movecount;
