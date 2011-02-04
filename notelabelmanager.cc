@@ -190,8 +190,8 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 			NoteLabel *newLabel = new NoteLabel(
 				Note(op.s(2)), // Note(lyric)
 				this, // parent
-				QPoint(s2px(op.i(3)), n2px(op.i(5))), // x,y
-				QSize(s2px(op.i(4) - op.i(3)), 2 * m_noteHalfHeight), // w,h
+				QPoint(s2px(op.d(3)), n2px(op.i(5))), // x,y
+				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
 				op.b(6) // floating
 				);
 			if (m_notes.isEmpty()) m_notes.push_back(newLabel);
@@ -203,7 +203,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 					n->close();
 					m_notes.removeAt(op.i(1));
 				} else if (action == "MOVE") {
-					n->setGeometry(s2px(op.i(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.i(3) - op.i(2)), 2 * m_noteHalfHeight);
+					n->setGeometry(s2px(op.d(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.d(3) - op.d(2)), 2 * m_noteHalfHeight);
 					n->setFloating(false);
 				} else if (action == "FLOATING") {
 					n->setFloating(op.b(2));
