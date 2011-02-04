@@ -150,7 +150,7 @@ void Analyzer::temporalMerge(Tones& tones) {
 			}
 		}
 	}
-	m_moments.push_back(Moment(m_moments.size() * FFT_STEP / m_rate));
+	m_moments.push_back(Moment(m_moments.size() * processStep() / m_rate));
 	m_moments.back().stealTones(tones);  // No pointers are invalidated
 }
 

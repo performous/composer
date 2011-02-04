@@ -167,8 +167,8 @@ void FFmpeg::decodeNextFrame() {
 				// Move forward within the packet
 				packetSize -= decodeSize;
 				packetData += decodeSize;
-				// Convert outsize from bytes into number of frames (samples)
-				outsize /= sizeof(qint16) * pAudioCodecCtx->channels;
+				// Convert outsize from bytes into number of samples
+				outsize /= sizeof(qint16);
 				// Calculate new positions
 				if (packet.time() == packet.time()) m_position = packet.time();
 				else m_position += outsize / audioQueue.samplesPerSecond();

@@ -28,28 +28,31 @@ void PitchVis::run()
 			position = 0.0;
 			duration = mpeg.duration(); // Estimation
 		}
+		unsigned rate = mpeg.audioQueue.getRate();
 		unsigned channels = mpeg.audioQueue.getChannels();
 		if (channels == 0) throw std::runtime_error("No audio channels found");
-		std::vector<Analyzer> analyzers(channels, Analyzer(mpeg.audioQueue.getRate(), ""));
+		std::vector<Analyzer> analyzers(channels, Analyzer(rate, ""));
 		// Process the entire song
 		std::vector<float> data;
+		data.reserve((duration + 1.0) * rate * channels);
 		unsigned x = 0;
 		while (mpeg.audioQueue.output(data)) {
-			// Read until enough data is available
-			if (data.size() / channels - x < analyzers[0].processSize()) continue;
-			// Pitch detection
-			for (unsigned ch = 0; ch < channels; ++ch) {
-				analyzers[ch].process(da::step_iterator<float>(&data[x * channels + ch], channels));
-			}
-			x += analyzers[0].processStep();
-			// Update progress and check for quit flag
-			QMutexLocker locker(&mutex);
-			if (cancelled) return;
-			Analyzer::Moments const& moments = analyzers[0].getMoments();
-			if (!moments.empty()) {
-				double t = moments.back().time();
-				position = t;
-				duration = std::max(duration, t + 0.01);
+			// Process as much as can be processed at this point
+			while (data.size() / channels - x >= analyzers[0].processSize()) {
+				// Pitch detection
+				for (unsigned ch = 0; ch < channels; ++ch) {
+					analyzers[ch].process(da::step_iterator<float>(&data[x * channels + ch], channels));
+				}
+				x += analyzers[0].processStep();
+				// Update progress and check for quit flag
+				QMutexLocker locker(&mutex);
+				if (cancelled) return;
+				Analyzer::Moments const& moments = analyzers[0].getMoments();
+				if (!moments.empty()) {
+					double t = moments.back().time();
+					position = t;
+					duration = std::max(duration, t + 0.01);
+				}
 			}
 		}
 		// Filter the analyzer output data into QPainterPaths.

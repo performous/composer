@@ -61,7 +61,7 @@ public:
 	void setRateChannels(unsigned rate, unsigned channels) { m_rate = rate; m_channels = channels; }
 	unsigned getRate() { return m_rate; }
 	unsigned getChannels() { return m_channels; }
-	AudioQueue(unsigned capacity = (2 << 20)): m_ring(capacity), m_channels(), m_position(), m_size(), m_eof() {}
+	AudioQueue(unsigned capacity = 32768): m_ring(capacity), m_channels(), m_position(), m_size(), m_eof() {}
 	
 private:
 	QMutex m_mutex;
