@@ -190,7 +190,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 			NoteLabel *newLabel = new NoteLabel(
 				Note(op.s(2)), // Note(lyric)
 				this, // parent
-				QPoint(s2px(op.d(3)), n2px(op.i(5))), // x,y
+				QPoint(s2px(op.d(3)), n2px(op.i(5)) - m_noteHalfHeight), // x,y
 				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
 				op.b(6) // floating
 				);
