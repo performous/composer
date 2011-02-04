@@ -75,13 +75,14 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	int cutpos = int(std::ceil(note->lyric().length() * ratio));
 	QString firstst = note->lyric().left(cutpos);
 	QString secondst = note->lyric().right(note->lyric().length() - cutpos);
-	int w1 = ratio * note->width();
+
+	const Note& n = note->note();
 
 	// Create operations for adding the new labels and deleting the old one
 	int id = getNoteLabelId(note);
 	Operation new1("NEW"), new2("NEW");
-	new1 << id << firstst << note->pos().x() << note->pos().y() << w1 << 0 << note->isFloating();
-	new2 << id+1 << secondst << note->pos().x() + w1 << note->pos().y() << note->width() - w1 << 0 << note->isFloating();
+	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating();
+	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating();
 	Operation del("DEL"); del << id+2;
 	Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
 	doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
@@ -189,9 +190,9 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 			NoteLabel *newLabel = new NoteLabel(
 				Note(op.s(2)), // Note(lyric)
 				this, // parent
-				QPoint(op.i(3), op.i(4)), // x,y
-				QSize(op.i(5), op.i(6)), // w,h
-				op.b(7) // floating
+				QPoint(s2px(op.i(3)), n2px(op.i(5))), // x,y
+				QSize(s2px(op.i(4) - op.i(3)), 2 * m_noteHalfHeight), // w,h
+				op.b(6) // floating
 				);
 			if (m_notes.isEmpty()) m_notes.push_back(newLabel);
 			else m_notes.insert(op.i(1), newLabel);

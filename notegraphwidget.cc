@@ -13,9 +13,9 @@
 
 
 namespace {
-	static Operation opFromNote(const NoteLabel& note, int id) {
+	static Operation opFromNote(const Note& note, int id, bool floating) {
 		Operation op("NEW");
-		op << id << note.lyric() << note.x() << note.y() << note.width() << note.height() << note.isFloating();
+		op << id << note.syllable << note.begin << note.end << note.note << floating;
 		return op;
 	}
 }
@@ -65,8 +65,8 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			QString word;
 			ts2 >> word;
 			if (!word.isEmpty()) {
-				m_notes.push_back(new NoteLabel(Note(word), this, QPoint(0, n2px(24) - m_noteHalfHeight), QSize(), !firstNote));
-				doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+				Note note(word); note.note = 24;
+				doOperation(opFromNote(note, m_notes.size(), !firstNote));
 				if (sentenceStart) setLineBreak(m_notes.back(), true);
 				firstNote = false;
 				sentenceStart = false;
@@ -84,8 +84,7 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
-		m_notes.push_back(new NoteLabel(*it, this, QPoint(s2px(it->begin), n2px(it->note) - m_noteHalfHeight), QSize(s2px(it->length()), 0), false));
-		doOperation(opFromNote(*m_notes.back(), m_notes.size()-1), Operation::NO_EXEC);
+		doOperation(opFromNote(*it, m_notes.size(), false));
 	}
 
 	updateNotes();
