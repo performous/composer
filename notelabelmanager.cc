@@ -85,7 +85,10 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating();
 	Operation del("DEL"); del << id+2;
 	Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
-	doOperation(new1); doOperation(new2); doOperation(del); doOperation(combiner);
+	doOperation(new1, Operation::NO_UPDATE);
+	doOperation(new2, Operation::NO_UPDATE);
+	doOperation(del, Operation::NO_UPDATE);
+	doOperation(combiner);
 }
 
 void NoteLabelManager::del(NoteLabel *note)
@@ -219,7 +222,8 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				n->createPixmap(n->size());
 			}
 		}
-		updateNotes();
+		if (!(flags & Operation::NO_UPDATE))
+			updateNotes();
 	}
 	if (!(flags & Operation::NO_EMIT)) {
 		emit operationDone(op);
