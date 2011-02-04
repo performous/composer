@@ -81,8 +81,8 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	// Create operations for adding the new labels and deleting the old one
 	int id = getNoteLabelId(note);
 	Operation new1("NEW"), new2("NEW");
-	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating();
-	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating();
+	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating() << n.lineBreak;
+	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating() << false;
 	doOperation(new1, Operation::NO_UPDATE);
 	doOperation(new2, Operation::NO_UPDATE);
 	doOperation(Operation("DEL", id+2), Operation::NO_UPDATE);
@@ -180,8 +180,10 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 		if (action == "BLOCK" || action == "COMBINER") {
 			; // No op
 		} else if (action == "NEW") {
+			Note newnote(op.s(2)); // lyric
+			newnote.lineBreak = op.b(7); // lineBreak
 			NoteLabel *newLabel = new NoteLabel(
-				Note(op.s(2)), // Note(lyric)
+				newnote, // Note(lyric)
 				this, // parent
 				QPoint(s2px(op.d(3)), n2px(op.i(5)) - m_noteHalfHeight), // x,y
 				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h

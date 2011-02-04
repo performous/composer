@@ -15,7 +15,7 @@
 namespace {
 	static Operation opFromNote(const Note& note, int id, bool floating) {
 		Operation op("NEW");
-		op << id << note.syllable << note.begin << note.end << note.note << floating;
+		op << id << note.syllable << note.begin << note.end << note.note << floating << note.lineBreak;
 		return op;
 	}
 }
@@ -66,8 +66,8 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			ts2 >> word;
 			if (!word.isEmpty()) {
 				Note note(word); note.note = 24;
+				if (sentenceStart) note.lineBreak = true;
 				doOperation(opFromNote(note, m_notes.size(), !firstNote));
-				if (sentenceStart) setLineBreak(m_notes.back(), true);
 				firstNote = false;
 				sentenceStart = false;
 			}
