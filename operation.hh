@@ -12,13 +12,13 @@ struct Operation
 
 	Operation() { }
 	Operation(const QString &opString) { *this << opString; }
+	Operation(const QString &opString, int id) { *this << opString << id; }
+	Operation(const QString &opString, int id, bool state) { *this << opString << id << state; }
 
 	// Functions to add parameters to Operation
 
 	Operation& operator<<(const QString &str) { m_params.push_back(QVariant(str)); return *this; }
-	//Operation& operator<<(char c) { m_params.push_back(QVariant(c)); return *this; }
 	Operation& operator<<(int i) { m_params.push_back(QVariant(i)); return *this; }
-	//Operation& operator<<(unsigned u) { m_params.push_back(QVariant(u)); return *this; }
 	Operation& operator<<(bool b) { m_params.push_back(QVariant(b)); return *this; }
 	Operation& operator<<(float f) { m_params.push_back(QVariant(f)); return *this; }
 	Operation& operator<<(double d) { m_params.push_back(QVariant(d)); return *this; }

@@ -83,12 +83,10 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	Operation new1("NEW"), new2("NEW");
 	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating();
 	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating();
-	Operation del("DEL"); del << id+2;
-	Operation combiner("COMBINER"); combiner << 3; // This will combine the previous ones to one undo action
 	doOperation(new1, Operation::NO_UPDATE);
 	doOperation(new2, Operation::NO_UPDATE);
-	doOperation(del, Operation::NO_UPDATE);
-	doOperation(combiner);
+	doOperation(Operation("DEL", id+2), Operation::NO_UPDATE);
+	doOperation(Operation("COMBINER", 3)); // This will combine the previous ones to one undo action
 }
 
 void NoteLabelManager::del(NoteLabel *note)
@@ -105,16 +103,14 @@ void NoteLabelManager::del(NoteLabel *note)
 		}
 		// Combine to one undo operation
 		if (i > 1) {
-			Operation op("COMBINER"); op << i; doOperation(op);
+			doOperation(Operation("COMBINER", i));
 		}
 		// Clear all
 		m_selectedNotes.clear();
 
 	} else {
 		// Here we have non-selected note up for deletion
-		Operation op("DEL");
-		op << getNoteLabelId(note);
-		doOperation(op);
+		doOperation(Operation("DEL", getNoteLabelId(note)));
 	}
 }
 
@@ -134,7 +130,7 @@ void NoteLabelManager::move(NoteLabel *note, int value)
 
 	// Combine to one undo operation
 	if (i > 1) {
-		Operation op("COMBINER"); op << i; doOperation(op);
+		doOperation(Operation("COMBINER", i));
 	}
 }
 
@@ -149,20 +145,14 @@ void NoteLabelManager::setType(NoteLabel *note, int index)
 
 void NoteLabelManager::setFloating(NoteLabel *note, bool state)
 {
-	if (note && note->isFloating() != state) {
-		Operation op("FLOATING");
-		op << getNoteLabelId(note) << state;
-		doOperation(op);
-	}
+	if (note && note->isFloating() != state)
+		doOperation(Operation("FLOATING", getNoteLabelId(note), state));
 }
 
 void NoteLabelManager::setLineBreak(NoteLabel *note, bool state)
 {
-	if (note && note->isLineBreak() != state) {
-		Operation op("LINEBREAK");
-		op << getNoteLabelId(note) << state;
-		doOperation(op);
-	}
+	if (note && note->isLineBreak() != state)
+		doOperation(Operation("LINEBREAK", getNoteLabelId(note), state));
 }
 
 void NoteLabelManager::editLyric(NoteLabel *note) {
