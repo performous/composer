@@ -105,21 +105,23 @@ void Analyzer::calcTones() {
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
 		Tone tone;
-		for (Combos::const_iterator harm = it + 1; harm != itend; ++harm) {
-			double ratio = harm->freq / it->freq;
-			unsigned n = round(ratio);
-			if (n == 0) {
-				continue;
+		for (int div = 1; div <= 3; ++div) {  // Missing fundamental processing
+			double basefreq = it->freq / div;
+			if (basefreq < FFT_MINFREQ) break;  // Do not try any lower frequencies
+			for (Combos::const_iterator harm = it; harm != itend; ++harm) {
+				double ratio = harm->freq / basefreq;
+				unsigned n = round(ratio);
+				if (n == 0) throw std::logic_error("combos not correctly sorted");
+				if (n > Tone::MAXHARM) break; // No more harmonics can be found
+				if (std::abs(ratio - n) > 0.03) continue; // Frequency doesn't match
+				double l = harm->level;
+				tone.harmonics[n - 1] += l;
+				tone.level += l;
+				tone.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
 			}
-			if (n > Tone::MAXHARM) break; // No more harmonics can be found
-			if (std::abs(ratio - n) > 0.03) continue; // Frequency doesn't match
-			double l = harm->level;
-			tone.harmonics[n - 1] += l;
-			tone.level += l;
-			tone.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
+			tone.freq /= tone.level;  // Average instead of sum
+			tones.push_back(tone);
 		}
-		tone.freq /= tone.level;  // Average instead of sum
-		tones.push_back(tone);
 	}
 	// Clean harmonics misdetected as fundamental
 	tones.sort();
