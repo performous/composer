@@ -21,7 +21,8 @@ void PitchVis::run()
 {
 	try {
 		// Initialize FFmpeg decoding
-		FFmpeg mpeg(fileName.toStdString());
+		std::string file(fileName.toLocal8Bit().data(), fileName.toLocal8Bit().size());
+		FFmpeg mpeg(file);
 		{
 			QMutexLocker locker(&mutex);
 			paths.clear();
