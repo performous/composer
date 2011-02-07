@@ -188,7 +188,7 @@ void NoteLabel::showContextMenu(const QPoint &pos)
 	actionFloating.setChecked(isFloating());
 
 	QAction actionLineBreak(NULL);
-	actionLineBreak.setCheckable(this);
+	actionLineBreak.setCheckable(true);
 	actionLineBreak.setChecked(isLineBreak());
 
 	QAction actionNormal(NULL);
