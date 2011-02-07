@@ -15,6 +15,17 @@ NoteLabelManager::NoteLabelManager(QWidget *parent)
 	templabel.close();
 }
 
+void NoteLabelManager::clearNotes()
+{
+	selectNote(NULL);
+	// Clear NoteLabels
+	const QObjectList &childlist = children();
+	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
+		NoteLabel *child = qobject_cast<NoteLabel*>(*it);
+		if (child) child->close();
+	}
+	m_notes.clear();
+}
 
 void NoteLabelManager::selectNote(NoteLabel* note, bool clearPrevious)
 {
@@ -186,6 +197,8 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 		QString action = op.op();
 		if (action == "BLOCK" || action == "COMBINER") {
 			; // No op
+		} else if (action == "CLEAR") {
+			clearNotes();
 		} else if (action == "NEW") {
 			Note newnote(op.s(2)); // lyric
 			newnote.lineBreak = op.b(7); // lineBreak

@@ -43,23 +43,12 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	updateNotes();
 }
 
-void NoteGraphWidget::clearNotes()
-{
-	selectNote(NULL);
-	// Clear NoteLabels
-	const QObjectList &childlist = children();
-	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
-		NoteLabel *child = qobject_cast<NoteLabel*>(*it);
-		if (child) child->close();
-	}
-	m_notes.clear();
-}
 
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 
-	clearNotes();
+	doOperation(Operation("CLEAR"));
 	bool firstNote = true;
 	while (!ts.atEnd()) {
 		// We want to loop one line at the time to insert line breaks
@@ -84,7 +73,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 
 void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
-	clearNotes();
+	doOperation(Operation("CLEAR"));
 	m_duration = std::max(m_duration, track.endTime);
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
@@ -92,13 +81,14 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 		doOperation(opFromNote(*it, m_notes.size(), false));
 	}
 
-	updateNotes();
+	finalizeNewLyrics();
 }
 
 void NoteGraphWidget::finalizeNewLyrics()
 {
+	int ops = m_notes.size();
 	// Set first and last to non-floating and put the last one to the end of the song
-	if (m_notes.size() > 1) {
+	if (ops > 1 && m_notes[ops-1]->isFloating()) {
 		Operation floatop("FLOATING"); floatop << (int)m_notes.size()-1 << false;
 		doOperation(floatop);
 		Operation moveop("MOVE");
@@ -108,7 +98,10 @@ void NoteGraphWidget::finalizeNewLyrics()
 		doOperation(moveop);
 		// Make sure there is enough room
 		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
+		ops += 2; // Amount of extra Operations added here
 	}
+	// Combine the import into one undo action
+	doOperation(Operation("COMBINER", ops));
 	// Calculate floating note positions
 	updateNotes();
 }

@@ -34,6 +34,7 @@ public:
 
 	virtual void updateNotes(bool leftToRight = true) {}
 
+	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	void selectAll();
 	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
@@ -84,7 +85,6 @@ public:
 
 	NoteGraphWidget(QWidget *parent = 0);
 
-	void clearNotes();
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
 	void analyzeMusic(QString filepath);
