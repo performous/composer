@@ -367,19 +367,6 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="cmdTimeSyllable">
-              <property name="toolTip">
-               <string>Set selected note start to cursor position.</string>
-              </property>
-              <property name="text">
-               <string>Time syllable (N)</string>
-              </property>
-              <property name="shortcut">
-               <string>N</string>
-              </property>
-             </widget>
-            </item>
             <item row="5" column="0">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
@@ -393,46 +380,6 @@
               </property>
              </spacer>
             </item>
-            <item row="4" column="0" colspan="2">
-             <widget class="QLabel" name="lblCurrentSentence">
-              <property name="text">
-               <string>Current sentence:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QPushButton" name="cmdTimeSentence">
-              <property name="toolTip">
-               <string>Set selected note start to cursor position and move to next sentence start.</string>
-              </property>
-              <property name="text">
-               <string>Time sentence (M)</string>
-              </property>
-              <property name="shortcut">
-               <string>M</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QPushButton" name="cmdSkipSyllable">
-              <property name="text">
-               <string>Skip syllable (J)</string>
-              </property>
-              <property name="shortcut">
-               <string>J</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QPushButton" name="cmdSkipSentence">
-              <property name="text">
-               <string>Skip Sentence (K)</string>
-              </property>
-              <property name="shortcut">
-               <string>K</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="0">
              <widget class="QCheckBox" name="chkGrabSeekHandle">
               <property name="text">
@@ -440,6 +387,36 @@
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="cmdTimeSentence">
+              <property name="toolTip">
+               <string>Set selected note start to cursor position and move to next sentence start.</string>
+              </property>
+              <property name="text">
+               <string>Time phrase (N)</string>
+              </property>
+              <property name="shortcut">
+               <string>N</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="cmdSkipSentence">
+              <property name="text">
+               <string>Skip phrase (M)</string>
+              </property>
+              <property name="shortcut">
+               <string>M</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1" colspan="2">
+             <widget class="QLabel" name="lblCurrentSentence">
+              <property name="text">
+               <string>Current sentence:</string>
               </property>
              </widget>
             </item>

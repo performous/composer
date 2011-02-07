@@ -40,9 +40,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	// Custom signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
-	connect(ui.cmdTimeSyllable, SIGNAL(pressed()), noteGraph, SLOT(timeSyllable()));
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
-	connect(ui.cmdSkipSyllable, SIGNAL(pressed()), noteGraph, SLOT(selectNextSyllable()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
