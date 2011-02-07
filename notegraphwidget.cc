@@ -126,13 +126,21 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 		updateMusicPos(m_playbackPos);
 
 	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
-		QMutexLocker locker(&m_pitch->mutex);
-		emit analyzeProgress(1000 * m_pitch->getProgress(), 1000);
-		if (m_pitch->newDataAvailable()) {
-			m_duration = std::max(m_duration, m_pitch->getDuration());
+		double progress, duration;
+		bool needUpdate, done;
+		{
+			QMutexLocker locker(&m_pitch->mutex);
+			progress = m_pitch->getProgress();
+			needUpdate = m_pitch->newDataAvailable();
+			duration = m_pitch->getDuration();
+			done = m_pitch->isFinished();
+		}
+		emit analyzeProgress(1000 * progress, 1000);
+		if (needUpdate) {
+			m_duration = std::max(m_duration, duration);
 			update();
 		}
-		if (m_pitch->isFinished()) killTimer(m_analyzeTimer);
+		if (done) killTimer(m_analyzeTimer);
 	}
 }
 
