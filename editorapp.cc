@@ -65,17 +65,7 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 
 	// NoteGraph setup down here so that the objects we setup signals are already created
 	setupNoteGraph();
-
-	show(); // Needed in order to get real values from width()
-
-	// We must set the initial lyrics here, because constructor doesn't have
-	// signals yet ready, which leads to empty undo stack (and thus b0rked saving)
-	noteGraph->setLyrics(tr("Please add music file and lyrics text."));
-	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
-	noteGraph->updateNotes();
 	updateNoteInfo(NULL);
-	// Scroll to middle to show the initial lyrics
-	ui.noteGraphScroller->ensureVisible(0, noteGraph->height()/2, 0, ui.noteGraphScroller->height()/2);
 
 	song.reset(new Song);
 
