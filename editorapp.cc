@@ -30,35 +30,6 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	ui.setupUi(this);
 	readSettings();
 
-	noteGraph = new NoteGraphWidget(NULL);
-	ui.noteGraphScroller->setWidget(noteGraph);
-
-	// Splitter sizes cannot be set through designer :(
-	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
-	ui.splitter->setSizes(ss);
-
-	// Custom signals/slots
-	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
-	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
-	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
-	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
-	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
-	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
-	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
-
-	show(); // Needed in order to get real values from width()
-
-	// We must set the initial lyrics here, because constructor doesn't have
-	// signals yet ready, which leads to empty undo stack (and thus b0rked saving)
-	noteGraph->setLyrics(tr("Please add music file and lyrics text."));
-	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
-	noteGraph->updateNotes();
-	updateNoteInfo(NULL);
-	// Scroll to middle to show the initial lyrics
-	ui.noteGraphScroller->ensureVisible(0, noteGraph->height()/2, 0, ui.noteGraphScroller->height()/2);
-
-	song.reset(new Song);
-
 	// Some icons to make menus etc prettier
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new", QIcon(":/icons/document-new.png")));
 	ui.actionOpen->setIcon(QIcon::fromTheme("document-open", QIcon(":/icons/document-open.png")));
@@ -78,7 +49,6 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	statusbarProgress = new QProgressBar(NULL);
 	ui.statusbar->addPermanentWidget(statusbarProgress);
 	statusbarProgress->hide();
-	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 
 	hasUnsavedChanges = false;
 	updateMenuStates();
@@ -92,11 +62,47 @@ EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), pr
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
-	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
+
+	// NoteGraph setup down here so that the objects we setup signals are already created
+	setupNoteGraph();
+
+	show(); // Needed in order to get real values from width()
+
+	// We must set the initial lyrics here, because constructor doesn't have
+	// signals yet ready, which leads to empty undo stack (and thus b0rked saving)
+	noteGraph->setLyrics(tr("Please add music file and lyrics text."));
+	noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
+	noteGraph->updateNotes();
+	updateNoteInfo(NULL);
+	// Scroll to middle to show the initial lyrics
+	ui.noteGraphScroller->ensureVisible(0, noteGraph->height()/2, 0, ui.noteGraphScroller->height()/2);
+
+	song.reset(new Song);
 
 	QSettings settings;
 	if (settings.value("showhelp", true).toBool())
 		on_actionGettingStarted_triggered();
+}
+
+void EditorApp::setupNoteGraph()
+{
+	noteGraph = new NoteGraphWidget(NULL);
+	ui.noteGraphScroller->setWidget(noteGraph);
+
+	// Splitter sizes cannot be set through designer :(
+	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
+	ui.splitter->setSizes(ss);
+
+	// Custom signals/slots
+	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
+	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
+	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
+	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
+	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
+	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
+	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
+	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -195,8 +201,16 @@ void EditorApp::analyzeProgress(int value, int maximum)
 void EditorApp::on_actionNew_triggered()
 {
 	if (promptSaving()) {
-		noteGraph->clearNotes();
+		player->clear();
+		song.reset(new Song);
+		setupNoteGraph();
 		projectFileName = "";
+		opStack.clear();
+		redoStack.clear();
+		updateNoteInfo(NULL);
+		statusbarProgress->hide();
+		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
+		ui.valMusicFile->clear();
 	}
 	updateMenuStates();
 }
@@ -252,10 +266,6 @@ void EditorApp::on_actionOpen_triggered()
 				song.reset(new Song(QString(finfo.path()+"/"), finfo.fileName()));
 				noteGraph->setLyrics(song->getVocalTrack());
 				updateSongMeta(true);
-				// Combine the import into one undo action
-				Operation combiner("COMBINER"); combiner << opStack.size();
-				operationDone(combiner);
-				//noteGraph->doOperation(Operation("BLOCK")); // Lock the undo stack
 			}
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());

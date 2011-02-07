@@ -38,6 +38,7 @@ public:
 	void showExportMenu() { ui.menuExport->exec(pos() + QPoint(0, ui.menubar->height())); }
 
 private:
+	void setupNoteGraph();
 	bool promptSaving();
 	void saveProject(QString fileName);
 	void exportSong(QString format, QString dialogTitle);
