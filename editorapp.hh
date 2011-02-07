@@ -39,6 +39,7 @@ public:
 
 private:
 	void setupNoteGraph();
+	void setMusic(QString filepath);
 	bool promptSaving();
 	void saveProject(QString fileName);
 	void exportSong(QString format, QString dialogTitle);

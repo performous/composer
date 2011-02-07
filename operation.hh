@@ -14,6 +14,7 @@ struct Operation
 	Operation(const QString &opString) { *this << opString; }
 	Operation(const QString &opString, int id) { *this << opString << id; }
 	Operation(const QString &opString, int id, bool state) { *this << opString << id << state; }
+	Operation(const QString &opString, const QString &str1, const QString &str2) { *this << opString << str1 << str2; }
 
 	// Functions to add parameters to Operation
 

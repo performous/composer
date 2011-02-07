@@ -107,16 +107,36 @@ void EditorApp::operationDone(const Operation &op)
 void EditorApp::doOpStack()
 {
 	noteGraph->clearNotes();
+	QString newMusic = "";
 	// Re-apply all operations in the stack
-	// FIXME: This technique cannot work quickly enough, since analyzing would also be started from scratch
 	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
 		//std::cout << "Doing op: " << opit->dump() << std::endl;
-		// FIXME: This should check from the operation what class will implement it
-		// and call the appropriate object. QObject meta info could be very useful.
 		try {
-			noteGraph->doOperation(*opit, Operation::NO_EMIT);
+			if (opit->op() == "META") {
+				// META ops are handled differently:
+				// They are run once and then removed from the stack.
+				// They are written to disk when saving though.
+				QString metakey = opit->s(1), metavalue = opit->s(2);
+				if (metakey == "MUSICFILE") {
+					newMusic = metavalue;
+				} else if (metakey == "TITLE") {
+					song->title = metavalue;
+				} else if (metakey == "ARTIST") {
+					song->artist = metavalue;
+				} else if (metakey == "GENRE") {
+					song->genre = metavalue;
+				} else if (metakey == "DATE") {
+					song->year = metavalue;
+				} else throw std::runtime_error("Unknown META key " + metakey.toStdString());
+
+				updateSongMeta(true);
+
+			} else // Regular note operations
+				noteGraph->doOperation(*opit, Operation::NO_EMIT);
 		} catch (std::exception& e) { std::cout << e.what() << std::endl; }
 	}
+
+	if (!newMusic.isEmpty()) setMusic(newMusic);
 	updateMenuStates();
 }
 
@@ -312,8 +332,18 @@ void EditorApp::saveProject(QString fileName)
 		QDataStream out(&f);
 		out.setVersion(PROJECT_SAVE_FILE_STREAM_VERSION);
 		out << PROJECT_SAVE_FILE_MAGIC << PROJECT_SAVE_FILE_VERSION;
+
+		// Notes
 		foreach (Operation op, opStack)
 			out << op;
+
+		// Song metadata
+		out << Operation("META", "TITLE", song->title)
+			<< Operation("META", "ARTIST", song->artist)
+			<< Operation("META", "GENRE", song->genre)
+			<< Operation("META", "DATE", song->year)
+			<< Operation("META", "MUSICFILE", ui.valMusicFile->text());
+
 		projectFileName = fileName;
 		hasUnsavedChanges = false;
 	} else
@@ -425,6 +455,16 @@ void EditorApp::on_actionAntiAliasing_toggled(bool checked)
 // Insert menu
 
 
+void EditorApp::setMusic(QString filepath)
+{
+	ui.valMusicFile->setText(filepath);
+	// Metadata is updated when it becomes available (signal)
+	player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
+	noteGraph->updateMusicPos(0, false);
+	// Fire up analyzer
+	noteGraph->analyzeMusic(filepath);
+}
+
 void EditorApp::on_actionMusicFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
@@ -433,12 +473,7 @@ void EditorApp::on_actionMusicFile_triggered()
 
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName); latestPath = finfo.path();
-		ui.valMusicFile->setText(fileName);
-		// Metadata is updated when it becomes available (signal)
-		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(fileName)));
-		noteGraph->updateMusicPos(0, false);
-		// Fire up analyzer
-		noteGraph->analyzeMusic(fileName);
+		setMusic(fileName);
 	}
 }
 
@@ -506,7 +541,7 @@ void EditorApp::on_actionAbout_triggered()
 void EditorApp::updateSongMeta(bool readFromSongToUI)
 {
 	if (!song) return;
-	// TODO: Undo
+
 	if (!readFromSongToUI) {
 		if (ui.txtTitle->text() != song->title) {
 			song->title = ui.txtTitle->text();
