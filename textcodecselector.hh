@@ -95,11 +95,19 @@ public:
 		QString data = "";
 		QByteArray ba = file.readAll();
 		if (!ba.isEmpty()) {
-			data = QString::fromLocal8Bit(ba, ba.size());
-			if (data.toLocal8Bit().size() != ba.size()) {
-				// Not UTF8 :(
-				QTextCodec* codec = codecForContent(ba, parent);
-				if (codec) data = codec->toUnicode(ba);
+			data = QString::fromUtf8(ba, ba.size());
+			if (data.toUtf8().size() != ba.size()) {
+				// Not UTF-8 :(
+				data = QString::fromLatin1(ba, ba.size());
+				if (data.toLatin1().size() != ba.size()) {
+					// Not Latin1 :(
+					data = QString::fromLocal8Bit(ba, ba.size());
+					if (data.toLocal8Bit().size() != ba.size()) {
+						// Not Local 8-bit :(
+						QTextCodec* codec = codecForContent(ba, parent);
+						if (codec) data = codec->toUnicode(ba);
+					}
+				}
 			}
 		}
 		return data;
