@@ -98,6 +98,7 @@ public:
 	QString dumpLyrics() const;
 
 public slots:
+	void showContextMenu(const QPoint &pos);
 	void timeSyllable();
 	void timeSentence();
 	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }

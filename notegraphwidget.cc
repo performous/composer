@@ -3,6 +3,7 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QPainter>
+#include <QMenu>
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -34,6 +35,10 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 	setFocusPolicy(Qt::StrongFocus);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
+
+	// Context menu
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 
 	updateNotes();
 }
@@ -402,6 +407,32 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		del(selectedNote());
 	} else {
 		QWidget::keyPressEvent(event);
+	}
+}
+
+
+void NoteGraphWidget::showContextMenu(const QPoint &pos)
+{
+	QAction actionNew(NULL);
+	QAction actionSelectAll(NULL);
+	QAction actionDeselect(NULL);
+	QMenu menuContext(NULL);
+
+	menuContext.addAction(&actionNew);
+	menuContext.addSeparator();
+	menuContext.addAction(&actionSelectAll);
+	menuContext.addAction(&actionDeselect);
+
+	actionNew.setText(tr("New note"));
+	actionSelectAll.setText(tr("Select all"));
+	actionDeselect.setText(tr("Deselect"));
+
+	QPoint globalPos = mapToGlobal(pos);
+	QAction *sel = menuContext.exec(globalPos);
+	if (sel) {
+		if (sel == &actionNew) ;
+		else if (sel == &actionSelectAll) ;
+		else if (sel == &actionDeselect) ;
 	}
 }
 
