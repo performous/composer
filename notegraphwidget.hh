@@ -35,6 +35,7 @@ public:
 	virtual void updateNotes(bool leftToRight = true) {}
 
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
+	void selectAll();
 	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
 	NoteLabels& selectedNotes() { return m_selectedNotes; }
 	NoteLabels const& selectedNotes() const { return m_selectedNotes; }

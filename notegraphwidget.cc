@@ -256,9 +256,6 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			// Left click empty area = pan
 			if (event->button() == Qt::LeftButton)
 				m_panHotSpot = event->pos();
-			// Right click empty area = deselect
-			if (event->button() == Qt::RightButton)
-				selectNote(NULL);
 		} else {
 			// Seeking
 			m_seeking = true;
@@ -390,9 +387,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 	int k = event->key(), m = event->modifiers();
 
 	if (k == Qt::Key_A && (m & Qt::ControlModifier)) { // Select all
-		selectNote(NULL); // Clear previous
-		for (int i = m_notes.size()-1; i >= 0; --i) // Traverse in reverse order to get the first note first
-			selectNote(m_notes[i], false);
+		selectAll();
 	} else if (k == Qt::Key_Return) { // Edit lyric
 		editLyric(selectedNote());
 	} else if (k == Qt::Key_Left) { // Select note on the left
@@ -430,9 +425,9 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	QPoint globalPos = mapToGlobal(pos);
 	QAction *sel = menuContext.exec(globalPos);
 	if (sel) {
-		if (sel == &actionNew) ;
-		else if (sel == &actionSelectAll) ;
-		else if (sel == &actionDeselect) ;
+		if (sel == &actionNew) /*TODO*/;
+		else if (sel == &actionSelectAll) selectAll();
+		else if (sel == &actionDeselect) selectNote(NULL);
 	}
 }
 

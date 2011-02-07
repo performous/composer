@@ -35,6 +35,13 @@ void NoteLabelManager::selectNote(NoteLabel* note, bool clearPrevious)
 	emit updateNoteInfo(selectedNote());
 }
 
+void NoteLabelManager::selectAll()
+{
+	selectNote(NULL); // Clear previous
+	for (int i = m_notes.size()-1; i >= 0; --i) // Traverse in reverse order to get the first note first
+		selectNote(m_notes[i], false);
+}
+
 int NoteLabelManager::getNoteLabelId(NoteLabel* note) const
 {
 	for (int i = 0; i < m_notes.size(); ++i)
