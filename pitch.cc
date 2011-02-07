@@ -17,7 +17,7 @@ Tone::Tone(): freq(), level(), prev(), next() {
 }
 
 bool Tone::operator==(double f) const {
-	return std::abs(freq / f - 1.0) < 0.03;  // Half semitone
+	return std::abs(freq / f - 1.0) < 0.06;  // Half semitone
 }
 
 Analyzer::Analyzer(double rate, std::string id):
@@ -43,11 +43,7 @@ void Analyzer::calcFFT(float* pcm) {
 namespace {
 	bool sqrLT(float a, float b) { return a * a < b * b; }
 	bool matchFreq(double f1, double f2) {
-		return std::abs(f1 / f2 - 1.0) < 0.06;  // Semitone difference
-	}
-	bool matchHarm(double ff, double hf) {
-		for (std::size_t n = 1; n < Tone::MAXHARM; ++n) if (matchFreq(n*ff, hf)) return true;
-		return false;
+		return std::abs(f1 / f2 - 1.0) < 0.06;
 	}
 }
 
@@ -86,7 +82,7 @@ void Analyzer::calcTones() {
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		if (p.level < 1e-6) continue;
+		if (p.level < 1e-4) continue;
 		if (p.freq < FFT_MINFREQ || p.freq > FFT_MAXFREQ) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
@@ -111,9 +107,9 @@ void Analyzer::calcTones() {
 			for (Combos::const_iterator harm = it; harm != itend; ++harm) {
 				double ratio = harm->freq / basefreq;
 				unsigned n = round(ratio);
-				if (n == 0) throw std::logic_error("combos not correctly sorted");
 				if (n > Tone::MAXHARM) break; // No more harmonics can be found
 				if (std::abs(ratio - n) > 0.03) continue; // Frequency doesn't match
+				if (n == 0) throw std::logic_error("combos not correctly sorted");
 				double l = harm->level;
 				tone.harmonics[n - 1] += l;
 				tone.level += l;
@@ -129,8 +125,13 @@ void Analyzer::calcTones() {
 		Tones::iterator it2 = it;
 		++it2;
 		while (it2 != tones.end()) {
-			if (matchHarm(it->freq, it2->freq)) it2 = tones.erase(it2);
-			else ++it2;
+			double ratio = it2->freq / it->freq;
+			double diff = std::abs(ratio - round(ratio));
+			bool erase = false;
+			if (diff < 0.02 && it2->level < 2.0 * it->level) erase = true;  // Precisely harmonic and not much stronger than fundamental
+			else if (diff < 0.06 && it2->harmonics[0] == 0.0) erase = true;  // Missing fundamental
+			// Perform the action
+			if (erase) it2 = tones.erase(it2); else ++it2;
 		}
 	}
 	temporalMerge(tones);
