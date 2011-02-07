@@ -665,6 +665,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 		QFile f(":/docs/Authors.txt");
 		f.open(QIODevice::ReadOnly);
 		QTextStream in(&f);
+		in.setCodec("UTF-8");
 		txtAuthors->setPlainText(in.readAll());
 	}
 	// Poplate License text
@@ -672,6 +673,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 		QFile f(":/docs/License.txt");
 		f.open(QIODevice::ReadOnly);
 		QTextStream in(&f);
+		in.setCodec("UTF-8");
 		txtLicense->setPlainText(in.readAll());
 	}
 
