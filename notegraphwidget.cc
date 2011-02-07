@@ -349,11 +349,11 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
 	if (!m_actionHappened) {
 		m_actionHappened = true; // We have movement, so resize/move can be accepted
-		// See if the note needs to be unfloated
-		// TODO: Maybe unfloat all selected notes?
-		if (m_selectedAction != NONE && selectedNote() && selectedNote()->isFloating()) {
+		// Unfloat all selected notes, otherwise the move would be b0rked by auto-pitch
+		if (m_selectedAction != NONE && selectedNote()) {
 			// Undo op is handled later by the MOVE constructed at drop
-			selectedNote()->setFloating(false);
+			for (int i = 0; i < m_selectedNotes.size(); ++i)
+				m_selectedNotes[i]->setFloating(false);
 		}
 	}
 
