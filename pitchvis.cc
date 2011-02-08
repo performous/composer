@@ -48,12 +48,9 @@ void PitchVis::run()
 				// Update progress and check for quit flag
 				QMutexLocker locker(&mutex);
 				if (cancelled) return;
-				Analyzer::Moments const& moments = analyzers[0].getMoments();
-				if (!moments.empty()) {
-					double t = moments.back().time();
-					position = t;
-					duration = std::max(duration, t + 0.01);
-				}
+				double t = analyzers[0].getTime();
+				position = t;
+				duration = std::max(duration, t + 0.01);
 			}
 		}
 		// DEBUG: std::ofstream("audio.raw", std::ios::binary).write(reinterpret_cast<char*>(&data[0]), data.size() * sizeof(float));

@@ -88,6 +88,7 @@ public:
 	}
 	unsigned processSize() const;  ///< The number of samples required by process()
 	unsigned processStep() const;  ///< The number of samples to increment the input position after each call to process()
+	double getTime() const { return m_moments.empty() ? 0.0 : m_moments.back().time(); }
 private:
 	double m_rate;
 	std::string m_id;
