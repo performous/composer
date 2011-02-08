@@ -12,7 +12,7 @@
 #include <QSettings>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QWidget(parent), QThread(), mutex(), fileName(filename), moreAvailable(), cancelled()
+	: QWidget(parent), QThread(), mutex(), fileName(filename), duration(), moreAvailable(), cancelled()
 {
 	start(); // Launch the thread
 }

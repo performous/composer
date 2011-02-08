@@ -124,8 +124,8 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 		{
 			QMutexLocker locker(&m_pitch->mutex);
 			progress = m_pitch->getProgress();
-			needUpdate = m_pitch->newDataAvailable();
 			duration = m_pitch->getDuration();
+			needUpdate = m_pitch->newDataAvailable() || duration != m_duration;
 			done = m_pitch->isFinished();
 		}
 		emit analyzeProgress(1000 * progress, 1000);
