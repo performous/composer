@@ -188,7 +188,8 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.chkFloating->setChecked(note->isFloating());
 		ui.chkLineBreak->setEnabled(true);
 		ui.chkLineBreak->setChecked(note->note().lineBreak);
-		ui.lblCurrentSentence->setText(tr("Current sentence:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
+		ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
+		ui.lblPrevSentence->setText(tr("Previous phrase:") + " " + noteGraph->getPrevSentence());
 	} else {
 		ui.valNoteBegin->setText("-");
 		ui.valNoteEnd->setText("-");
@@ -197,7 +198,8 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 		ui.chkLineBreak->setEnabled(false);
-		ui.lblCurrentSentence->setText(tr("Current sentence:") + " -");
+		ui.lblCurrentSentence->setText(tr("Current phrase:") + " -");
+		ui.lblPrevSentence->setText(tr("Previous phrase:") + " -");
 	}
 	updateTitle();
 }

@@ -106,6 +106,7 @@ public:
 
 	VocalTrack getVocalTrack() const;
 	QString getCurrentSentence() const;
+	QString getPrevSentence() const;
 	QString dumpLyrics() const;
 
 public slots:
