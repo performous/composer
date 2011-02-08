@@ -25,7 +25,9 @@ namespace {
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
-EditorApp::EditorApp(QWidget *parent): QMainWindow(parent), gettingStarted(), projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
+EditorApp::EditorApp(QWidget *parent)
+	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), statusbarProgress(),
+	projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
 	readSettings();

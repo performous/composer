@@ -116,10 +116,12 @@ void NoteGraphWidget::analyzeMusic(QString filepath)
 void NoteGraphWidget::timerEvent(QTimerEvent* event)
 {
 	if (event->timerId() == m_playbackTimer) {
+		// Playback position update
 		m_playbackPos += m_playbackInterval.restart();
 		updateMusicPos(m_playbackPos);
 
 	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
+		// PitchVis stuff
 		double progress, duration;
 		bool needUpdate, done;
 		{
@@ -129,7 +131,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 			needUpdate = m_pitch->newDataAvailable() || duration != m_duration;
 			done = m_pitch->isFinished();
 		}
-		emit analyzeProgress(1000 * progress, 1000);
+		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
 		if (needUpdate) {
 			m_duration = std::max(m_duration, duration);
 			update();
@@ -488,7 +490,7 @@ QString NoteGraphWidget::getCurrentSentence() const
 			if (m_notes[i]->isSelected()) lyrics += "</span>";
 			lyrics += " ";
 		}
-		lyrics = lyrics.left(lyrics.size() - 1);
+		lyrics = lyrics.left(lyrics.size() - 1); // Remove trailing space
 	}
 	return lyrics;
 }
@@ -507,7 +509,7 @@ QString NoteGraphWidget::getPrevSentence() const
 			if (i != id && m_notes[i]->note().lineBreak) break;
 			lyrics += m_notes[i]->lyric() + " ";
 		}
-		lyrics = lyrics.left(lyrics.size() - 1);
+		lyrics = lyrics.left(lyrics.size() - 1); // Remove trailing space
 	}
 	return lyrics;
 }

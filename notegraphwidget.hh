@@ -133,7 +133,6 @@ private:
 	void finalizeNewLyrics();
 	void timeCurrent();
 
-	int m_requiredWidth;
 	QPoint m_panHotSpot;
 	bool m_seeking;
 	bool m_actionHappened;
