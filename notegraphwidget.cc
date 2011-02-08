@@ -140,6 +140,8 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
 	setFixedSize(s2px(m_duration), height());
+
+	// Find out the horizontal viewport
 	QScrollArea *scrollArea = NULL;
 	int x1 = 0, x2 = 0;
 	if (parentWidget())
@@ -148,7 +150,18 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 		x1 = scrollArea->horizontalScrollBar()->value();
 		x2 = x1 + scrollArea->width();
 	}
+
+	// Pitch
 	if (m_pitch) m_pitch->paint(this, x1, x2);
+
+	// Octave lines
+	QPainter painter;
+	painter.begin(this);
+	QPen pen; pen.setWidth(1); pen.setColor(QColor("#666"));
+	painter.setPen(pen);
+	for (int i = 1; i < 4; ++i)
+		painter.drawLine(x1, n2px(i*12), x2, n2px(i*12));
+	painter.end();
 }
 
 void NoteGraphWidget::updateNotes(bool leftToRight)
