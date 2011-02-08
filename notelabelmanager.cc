@@ -243,6 +243,20 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 	}
 }
 
+void NoteLabelManager::zoom(float steps) {
+	m_pixelsPerSecond += steps * 20;
+	if (m_pixelsPerSecond < 100) m_pixelsPerSecond = 100;
+	else if (m_pixelsPerSecond > 300) m_pixelsPerSecond = 300;
+
+	for (int i = 0; i < m_notes.size(); ++i) {
+		const Note &n = m_notes[i]->note();
+		m_notes[i]->setGeometry(s2px(n.begin), m_notes[i]->y(), s2px(n.length()), m_notes[i]->height());
+	}
+
+	update();
+	std::cout << "pixPerSec: " << m_pixelsPerSecond << std::endl;
+}
+
 int NoteLabelManager::s2px(double sec) const { return sec * m_pixelsPerSecond; }
 double NoteLabelManager::px2s(int px) const { return px / m_pixelsPerSecond; }
 int NoteLabelManager::n2px(double note) const { return height() - 16.0 * note; }

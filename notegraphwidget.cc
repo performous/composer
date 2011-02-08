@@ -332,6 +332,14 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
+	// Ctrl + Wheel = Zoom
+	if (event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical) {
+		float numDegrees = event->delta() / 8;
+		float numSteps = numDegrees / 15;
+		zoom(numSteps);
+		event->accept();
+		return;
+	}
 	event->ignore();
 }
 
@@ -401,6 +409,10 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		move(selectedNote(), -1);
 	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
 		del(selectedNote());
+	} else if (k == Qt::Key_Plus && (m & Qt::ControlModifier)) {
+		zoom(1.0);
+	} else if (k == Qt::Key_Minus && (m & Qt::ControlModifier)) {
+		zoom(-1.0);
 	} else {
 		QWidget::keyPressEvent(event);
 	}

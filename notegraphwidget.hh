@@ -54,6 +54,8 @@ public:
 
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
 
+	void zoom(float steps);
+
 	int s2px(double sec) const;
 	double px2s(int px) const;
 	int n2px(double note) const;
