@@ -183,62 +183,49 @@ void NoteLabel::updateNote()
 
 void NoteLabel::showContextMenu(const QPoint &pos)
 {
-	QAction actionFloating(NULL);
-	actionFloating.setCheckable(true);
-	actionFloating.setChecked(isFloating());
-
-	QAction actionLineBreak(NULL);
-	actionLineBreak.setCheckable(true);
-	actionLineBreak.setChecked(isLineBreak());
-
-	QAction actionNormal(NULL);
-	actionNormal.setCheckable(true);
-	actionNormal.setChecked(m_note.type == Note::NORMAL);
-
-	QAction actionGolden(NULL);
-	actionGolden.setCheckable(true);
-	actionGolden.setChecked(m_note.type == Note::GOLDEN);
-
-	QAction actionFreestyle(NULL);
-	actionFreestyle.setCheckable(true);
-	actionFreestyle.setChecked(m_note.type == Note::FREESTYLE);
-
-	QAction actionSplit(NULL);
-	QAction actionDelete(NULL);
-
 	QMenu menuContext(NULL);
-	QMenu menuType(NULL);
+	QMenu menuType(tr("Type"), NULL);
 
-	menuContext.addAction(&actionFloating);
-	menuContext.addSeparator();
-	menuContext.addAction(&actionLineBreak);
+	QAction *actionFloating = menuContext.addAction(tr("Floating"));
+	actionFloating->setCheckable(true);
+	actionFloating->setChecked(isFloating());
+
+	QAction *actionLineBreak = menuContext.addAction(tr("Line break"));
+	actionLineBreak->setCheckable(true);
+	actionLineBreak->setChecked(isLineBreak());
+
 	menuContext.addSeparator();
 	menuContext.addAction(menuType.menuAction());
-	menuContext.addAction(&actionSplit);
-	menuContext.addAction(&actionDelete);
-	menuType.addAction(&actionNormal);
-	menuType.addAction(&actionGolden);
-	menuType.addAction(&actionFreestyle);
 
-	actionFloating.setText(tr("Floating"));
-	actionLineBreak.setText(tr("Line break"));
-	actionNormal.setText(tr("Normal"));
-	actionGolden.setText(tr("Golden"));
-	actionFreestyle.setText(tr("Freestyle"));
-	actionSplit.setText(tr("Split"));
-	actionDelete.setText(tr("Delete"));
-	menuType.setTitle(tr("Type"));
+	QAction *actionNormal = menuType.addAction(tr("Normal"));
+	actionNormal->setCheckable(true);
+	actionNormal->setChecked(m_note.type == Note::NORMAL);
 
+	QAction *actionGolden = menuType.addAction(tr("Golden"));
+	actionGolden->setCheckable(true);
+	actionGolden->setChecked(m_note.type == Note::GOLDEN);
+
+	QAction *actionFreestyle = menuType.addAction(tr("Freestyle"));
+	actionFreestyle->setCheckable(true);
+	actionFreestyle->setChecked(m_note.type == Note::FREESTYLE);
+
+	menuContext.addSeparator();
+	QAction *actionSplit = menuContext.addAction(tr("Split"));
+	QAction *actionDelete = menuContext.addAction(tr("Delete"));
+
+	// Show maenu and wait for action
 	QPoint globalPos = mapToGlobal(pos);
 	QAction *sel = menuContext.exec(globalPos);
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (sel && ngw) {
-		if (sel == &actionSplit) ngw->split(this);
-		else if (sel == &actionFloating) ngw->setFloating(this, !isFloating());
-		else if (sel == &actionLineBreak) ngw->setLineBreak(this, !isLineBreak());
-		else if (sel == &actionNormal) ngw->setType(this, 0);
-		else if (sel == &actionGolden) ngw->setType(this, 1);
-		else if (sel == &actionFreestyle) ngw->setType(this, 2);
-		else if (sel == &actionDelete) ngw->del(this);
+		if (sel == actionSplit) ngw->split(this);
+		else if (sel == actionFloating) ngw->setFloating(this, !isFloating());
+		else if (sel == actionLineBreak) ngw->setLineBreak(this, !isLineBreak());
+		else if (sel == actionNormal) ngw->setType(this, 0);
+		else if (sel == actionGolden) ngw->setType(this, 1);
+		else if (sel == actionFreestyle) ngw->setType(this, 2);
+		else if (sel == actionDelete) ngw->del(this);
 	}
+	menuType.clear();
+	menuContext.clear();
 }
