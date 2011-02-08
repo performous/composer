@@ -415,6 +415,8 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		zoom(1.0);
 	} else if (k == Qt::Key_Minus && (m & Qt::ControlModifier)) {
 		zoom(-1.0);
+	} else if (k == Qt::Key_0 && (m & Qt::ControlModifier)) {
+		zoom(getNaN());
 	} else {
 		QWidget::keyPressEvent(event);
 	}
