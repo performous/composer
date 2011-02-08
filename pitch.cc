@@ -82,7 +82,7 @@ void Analyzer::calcTones() {
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		bool ok = p.level > 1e-4 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ && std::abs(p.freqFFT - p.freq) < freqPerBin;
+		bool ok = p.level > 1e-3 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ && std::abs(p.freqFFT - p.freq) < freqPerBin;
 		if (!ok) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
@@ -94,7 +94,7 @@ void Analyzer::calcTones() {
 	}
 	// Only keep a reasonable amount of strongest combos
 	std::sort(combos.begin(), combos.end(), Combo::cmpByLevel);
-	if (combos.size() > 20) combos.resize(20);
+	if (combos.size() > 30) combos.resize(30);
 	// The order may not be strictly correct, fix it...
 	std::sort(combos.begin(), combos.end(), Combo::cmpByFreq);
 	// Try to combine combos into tones (collections of harmonics)
