@@ -82,7 +82,7 @@ void Analyzer::calcTones() {
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		bool ok = p.level > 1e-6 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ;
+		bool ok = p.level > 1e-4 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ && std::abs(p.freqFFT - p.freq) < freqPerBin;
 		if (!ok) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
@@ -93,7 +93,7 @@ void Analyzer::calcTones() {
 		it->freq /= it->level;
 	}
 	// Only keep a reasonable amount of strongest combos
-	std::sort(combos.rbegin(), combos.rend(), Combo::cmpByLevel);
+	std::sort(combos.begin(), combos.end(), Combo::cmpByLevel);
 	if (combos.size() > 20) combos.resize(20);
 	// The order may not be strictly correct, fix it...
 	std::sort(combos.begin(), combos.end(), Combo::cmpByFreq);
@@ -102,6 +102,7 @@ void Analyzer::calcTones() {
 	for (Combos::const_iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
 		Tone tone;
 		for (int div = 1; div <= 3; ++div) {  // Missing fundamental processing
+			int plausibleHarmonics = 0;
 			double basefreq = it->freq / div;
 			if (basefreq < FFT_MINFREQ) break;  // Do not try any lower frequencies
 			for (Combos::const_iterator harm = it; harm != itend; ++harm) {
@@ -110,11 +111,13 @@ void Analyzer::calcTones() {
 				if (n > Tone::MAXHARM) break; // No more harmonics can be found
 				if (std::abs(ratio - n) > 0.03) continue; // Frequency doesn't match
 				if (n == 0) throw std::logic_error("combos not correctly sorted");
+				if (n % div != 0) ++plausibleHarmonics;
 				double l = harm->level;
 				tone.harmonics[n - 1] += l;
 				tone.level += l;
 				tone.freq += l * harm->freq / n;  // The sum of all harmonics' fundies (weighted by l)
 			}
+			if (div > 1 && plausibleHarmonics < 3) continue;  // Not a proper missing fundamental
 			tone.freq /= tone.level;  // Average instead of sum
 			tones.push_back(tone);
 		}
@@ -129,7 +132,6 @@ void Analyzer::calcTones() {
 			double diff = std::abs(ratio - round(ratio));
 			bool erase = false;
 			if (diff < 0.02 && it2->level < 2.0 * it->level) erase = true;  // Precisely harmonic and not much stronger than fundamental
-			else if (diff < 0.06 && it2->harmonics[0] == 0.0) erase = true;  // Missing fundamental
 			// Perform the action
 			if (erase) it2 = tones.erase(it2); else ++it2;
 		}

@@ -21,6 +21,7 @@ struct Tone {
 	// Linked list of a continuous tone
 	Tone* prev;
 	Tone* next;
+	static bool cmpByLevel(Tone const& a, Tone const& b) { return a.level > b.level; }
 };
 
 static inline bool operator==(Tone const& lhs, Tone const& rhs) { return lhs == rhs.freq; }
@@ -55,7 +56,7 @@ struct Combo {
 	void combine(Peak const& p);
 	bool match(double freqOther) const;
 	static bool cmpByFreq(Combo const& a, Combo const& b) { return a.freq < b.freq; }
-	static bool cmpByLevel(Combo const& a, Combo const& b) { return a.level < b.level; }
+	static bool cmpByLevel(Combo const& a, Combo const& b) { return a.level > b.level; }
 };
 
 
