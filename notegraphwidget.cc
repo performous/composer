@@ -423,27 +423,24 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 
 void NoteGraphWidget::showContextMenu(const QPoint &pos)
 {
-	QAction actionNew(NULL);
-	QAction actionSelectAll(NULL);
-	QAction actionDeselect(NULL);
 	QMenu menuContext(NULL);
 
-	menuContext.addAction(&actionNew);
+	QAction *actionNew = menuContext.addAction(tr("New note"));
 	menuContext.addSeparator();
-	menuContext.addAction(&actionSelectAll);
-	menuContext.addAction(&actionDeselect);
-
-	actionNew.setText(tr("New note"));
-	actionSelectAll.setText(tr("Select all"));
-	actionDeselect.setText(tr("Deselect"));
+	QAction *actionResetZoom = menuContext.addAction(tr("Reset zoom"));
+	menuContext.addSeparator();
+	QAction *actionSelectAll = menuContext.addAction(tr("Select all"));
+	QAction *actionDeselect = menuContext.addAction(tr("Deselect"));
 
 	QPoint globalPos = mapToGlobal(pos);
 	QAction *sel = menuContext.exec(globalPos);
 	if (sel) {
-		if (sel == &actionNew) /*TODO*/;
-		else if (sel == &actionSelectAll) selectAll();
-		else if (sel == &actionDeselect) selectNote(NULL);
+		if (sel == actionNew) /*TODO*/;
+		else if (sel == actionResetZoom) zoom(getNaN());
+		else if (sel == actionSelectAll) selectAll();
+		else if (sel == actionDeselect) selectNote(NULL);
 	}
+	menuContext.clear();
 }
 
 

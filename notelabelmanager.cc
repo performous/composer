@@ -258,8 +258,10 @@ void NoteLabelManager::zoom(float steps) {
 		if (scrollArea) scrollSecs = px2s(scrollArea->horizontalScrollBar()->value() + scrollArea->width()/2);
 	}
 
-	// Update zoom factor
-	m_pixelsPerSecond += steps * ppsStep;
+	// Update zoom factor, NaN means reset
+	if (steps != steps) m_pixelsPerSecond = ppsNormal;
+	else m_pixelsPerSecond += steps * ppsStep;
+	// Limits
 	if (m_pixelsPerSecond < ppsMin) m_pixelsPerSecond = ppsMin;
 	else if (m_pixelsPerSecond > ppsMax) m_pixelsPerSecond = ppsMax;
 
