@@ -153,27 +153,40 @@ void FFmpeg::decodeNextFrame() {
 			while (packetSize) {
 				if (packetSize < 0) throw std::logic_error("negative audio packet size?!");
 				if (m_quit || m_seekTarget == m_seekTarget) return;
-				std::vector<qint16, AvMalloc<qint16> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
-				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE*sizeof(qint16);
+				std::vector<char, AvMalloc<char> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+				int bytesUsed;
+				{
+					short* decodedPtr = reinterpret_cast<short*>(&decodedBuffer[0]);
 #if LIBAVCODEC_VERSION_INT > ((52<<16)+(25<<8)+0)
-				int decodeSize = avcodec_decode_audio3(pAudioCodecCtx, &decodedBuffer[0], &outsize, &packet);
+					bytesUsed = avcodec_decode_audio3(pAudioCodecCtx, decodedPtr, &outsize, &packet);
 #else
-				int decodeSize = avcodec_decode_audio2(pAudioCodecCtx, &decodedBuffer[0], &outsize, packetData, packetSize);
+					bytesUsed = avcodec_decode_audio2(pAudioCodecCtx, decodedPtr, &outsize, packetData, packetSize);
 #endif
-				// Handle special cases
-				if (decodeSize == 0) break;
-				if (outsize == 0) continue;
-				if (decodeSize < 0) throw std::runtime_error("cannot decode audio frame");
+				}
+				// Negative means an error
+				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
 				// Move forward within the packet
-				packetSize -= decodeSize;
-				packetData += decodeSize;
-				// Convert outsize from bytes into number of samples
-				outsize /= sizeof(qint16);
-				// Calculate new positions
+				packetSize -= bytesUsed;
+				packetData += bytesUsed;
+				// Update position if timecode is available
 				if (packet.time() == packet.time()) m_position = packet.time();
-				else m_position += outsize / audioQueue.samplesPerSecond();
-				// Push to output queue (may block)
-				audioQueue.input(decodedBuffer.begin(), decodedBuffer.begin() + outsize);
+				// Output samples
+#define OUTPUT_SAMPLES(TYPE, MAX_VALUE) \
+	{\
+		outsize /= sizeof(TYPE); /* Convert bytes into samples */ \
+		TYPE* samples = reinterpret_cast<TYPE*>(&decodedBuffer[0]);\
+		audioQueue.input(samples, samples + outsize, 1.0 / MAX_VALUE);\
+	}
+				switch (pAudioCodecCtx->sample_fmt) {
+					case SAMPLE_FMT_S16: OUTPUT_SAMPLES(short, 32767.0); break;
+					case SAMPLE_FMT_S32: OUTPUT_SAMPLES(int, 8388607.0); break; // 24 bit samples padded to 32 bits
+					case SAMPLE_FMT_FLT: OUTPUT_SAMPLES(float, 1.0); break;
+					case SAMPLE_FMT_DBL: OUTPUT_SAMPLES(double, 1.0); break;
+					default: throw std::runtime_error("Unsupported sample format");
+				}
+#undef OUTPUT_SAMPLES
+				m_position += outsize / audioQueue.samplesPerSecond();  // New position in case the next packet doesn't have packet.time()
 			}
 			// Audio frames are always finished
 			frameFinished = 1;

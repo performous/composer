@@ -18,14 +18,14 @@ public:
 		m_needData.wakeOne();
 		m_needSpace.wakeOne();
 	}
-	template <typename Iterator> void input(Iterator begin, Iterator end) {
+	template <typename Iterator> void input(Iterator begin, Iterator end, double scale) {
 		QMutexLocker lock(&m_mutex);
 		unsigned count = end - begin;
 		unsigned capacity = m_ring.size();
 		if (capacity < count) throw std::logic_error("AudioQueue input chunk is bigger than capacity");
 		while (capacity - m_size < count) m_needSpace.wait(&m_mutex);
 		for (unsigned i = 0; i < count; ++i) {
-			m_ring[m_position + m_size++] = da::conv_from_s16(*begin++);
+			m_ring[m_position + m_size++] = *begin++ * scale;
 		}
 		m_needData.wakeOne();
 	}
