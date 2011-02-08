@@ -74,16 +74,18 @@ void PitchVis::run()
 					for (Tone const* n = &*it2; n; n = n->next) { tones.push_back(n); }
 					if (tones.size() < 3) continue;  // Too short tone, ignored
 					PitchPath path(ch);
+					double score = 0.0;
 					Analyzer::Moments::const_iterator momit = mit[ch];
 					// Store path used for rendering
 					for (unsigned i = 0; i < tones.size(); ++i, ++momit) {
 						float t = momit->m_time;
 						float n = scale.getNote(tones[i]->freq);
 						float level = level2dB(tones[i]->level);
+						score += tones[i]->level;
 						path.fragments.push_back(PitchFragment(t, n, level));
 					}
 					QMutexLocker locker(&mutex);
-					paths.push_back(path);
+					if (score > 1.0) paths.push_back(path);
 					moreAvailable = true;
 				}
 			}
