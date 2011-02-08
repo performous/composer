@@ -45,14 +45,14 @@ public:
 		da::sample_t* outptr = &out[outsz];
 		Ring::iterator b = m_ring.begin() + m_position,
 		  e = m_ring.begin() + (m_position + m_size) % m_ring.size();
-		if (e < b) {
-			// Two parts copied separately
+		if (e <= b) {
+			// Copy the first part
 			std::copy(b, m_ring.end(), outptr);
-			std::copy(m_ring.begin(), e, outptr);
-		} else {
-			// All in one part
-			std::copy(b, e, outptr);
+			outptr += m_ring.end() - b;
+			b = m_ring.begin();
 		}
+		// Copy the only/last part
+		std::copy(b, e, outptr);
 		m_size = 0;
 		m_needSpace.wakeOne();
 		return true;
