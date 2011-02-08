@@ -145,30 +145,25 @@ void FFmpeg::decodeNextFrame() {
 	} videoFrame;
 
 	int frameFinished=0;
+	std::vector<char, AvMalloc<char> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 	while (!frameFinished) {
 		ReadFramePacket packet(pFormatCtx);
-		int packetSize = packet.size;
-		quint8 *packetData = packet.data;
+		unsigned packetPos = 0;
 		if (packet.stream_index==audioStream) {
-			while (packetSize) {
-				if (packetSize < 0) throw std::logic_error("negative audio packet size?!");
+			while (packetPos < packet.size) {
 				if (m_quit || m_seekTarget == m_seekTarget) return;
-				std::vector<char, AvMalloc<char> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
-				int outsize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+				int outsize = decodedBuffer.size();  // In bytes
 				int bytesUsed;
 				{
 					short* decodedPtr = reinterpret_cast<short*>(&decodedBuffer[0]);
 #if LIBAVCODEC_VERSION_INT > ((52<<16)+(25<<8)+0)
 					bytesUsed = avcodec_decode_audio3(pAudioCodecCtx, decodedPtr, &outsize, &packet);
 #else
-					bytesUsed = avcodec_decode_audio2(pAudioCodecCtx, decodedPtr, &outsize, packetData, packetSize);
+					bytesUsed = avcodec_decode_audio2(pAudioCodecCtx, decodedPtr, &outsize, packet.data + packetPos, packet.size - packetPos);
 #endif
 				}
-				// Negative means an error
 				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
-				// Move forward within the packet
-				packetSize -= bytesUsed;
-				packetData += bytesUsed;
+				packetPos += bytesUsed;
 				// Update position if timecode is available
 				if (packet.time() == packet.time()) m_position = packet.time();
 				// Output samples

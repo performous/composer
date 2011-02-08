@@ -56,6 +56,7 @@ void PitchVis::run()
 				}
 			}
 		}
+		// DEBUG: std::ofstream("audio.raw", std::ios::binary).write(reinterpret_cast<char*>(&data[0]), data.size() * sizeof(float));
 		// Filter the analyzer output data into QPainterPaths.
 		std::vector<Analyzer::Moments::const_iterator> mit(channels), mend(channels);
 		for (unsigned ch = 0; ch < channels; ++ch) {
