@@ -55,6 +55,7 @@ public:
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
 
 	void zoom(float steps);
+	QString getZoomLevel();
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
@@ -70,11 +71,18 @@ public slots:
 	void selectNextSentenceStart();
 
 protected:
+
+	// Pixels Per Second values
+	static const double ppsStep = 20.0f;
+	static const double ppsMin = 100;
+	static const double ppsMax = 300;
+	static const double ppsNormal = 200;
+	double m_pixelsPerSecond;
+
 	NoteLabels m_notes;
 	NoteLabels m_selectedNotes;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	int m_noteHalfHeight;
-	double m_pixelsPerSecond;
 };
 
 

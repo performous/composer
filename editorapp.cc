@@ -155,10 +155,21 @@ void EditorApp::updateMenuStates()
 		ui.actionRedo->setEnabled(false);
 	else ui.actionRedo->setEnabled(true);
 	// Window title
+	updateTitle();
+}
+
+void EditorApp::updateTitle()
+{
+	// Project name
 	QFileInfo finfo(projectFileName);
 	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
 	if (hasUnsavedChanges) proName += "*";
-	setWindowTitle(QString(PACKAGE) + " - " + proName);
+	// Zoom level
+	QString zoom = "";
+	if (noteGraph && noteGraph->getZoomLevel() != "100 %")
+		zoom = " - " + noteGraph->getZoomLevel();
+	// Set the title
+	setWindowTitle(QString(PACKAGE) + " - " + proName + zoom);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
@@ -188,6 +199,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.chkLineBreak->setEnabled(false);
 		ui.lblCurrentSentence->setText(tr("Current sentence:") + " -");
 	}
+	updateTitle();
 }
 
 void EditorApp::analyzeProgress(int value, int maximum)

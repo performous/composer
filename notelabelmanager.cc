@@ -9,7 +9,7 @@
 #include "operation.hh"
 
 NoteLabelManager::NoteLabelManager(QWidget *parent)
-	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(200.0)
+	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
@@ -246,12 +246,9 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 }
 
 void NoteLabelManager::zoom(float steps) {
-	// Limits
-	const float ppsstep = 20.0f;
-	const float minpps = 100;
-	const float maxpps = 300;
-	if (m_pixelsPerSecond <= minpps && steps < 0) return;
-	else if (m_pixelsPerSecond >= maxpps && steps > 0) return;
+	// Check if we can do anything
+	if (m_pixelsPerSecond <= ppsMin && steps < 0) return;
+	else if (m_pixelsPerSecond >= ppsMax && steps > 0) return;
 
 	// Get scrollArea position
 	QScrollArea *scrollArea = NULL;
@@ -262,9 +259,9 @@ void NoteLabelManager::zoom(float steps) {
 	}
 
 	// Update zoom factor
-	m_pixelsPerSecond += steps * ppsstep;
-	if (m_pixelsPerSecond < minpps) m_pixelsPerSecond = minpps;
-	else if (m_pixelsPerSecond > maxpps) m_pixelsPerSecond = maxpps;
+	m_pixelsPerSecond += steps * ppsStep;
+	if (m_pixelsPerSecond < ppsMin) m_pixelsPerSecond = ppsMin;
+	else if (m_pixelsPerSecond > ppsMax) m_pixelsPerSecond = ppsMax;
 
 	// Update scroll bar position
 	if (scrollArea && scrollSecs >= 0) {
@@ -272,7 +269,6 @@ void NoteLabelManager::zoom(float steps) {
 		int y = 0;
 		if (scrollVer) y = scrollVer->value();
 		scrollArea->ensureVisible(s2px(scrollSecs), y, scrollArea->width()/2, 0);
-		std::cout << "YEAH" << std::endl;
 	}
 
 	// Update notes
@@ -283,8 +279,12 @@ void NoteLabelManager::zoom(float steps) {
 
 	// Update pitch visualization
 	update();
-	std::cout << "pixPerSec: " << m_pixelsPerSecond << std::endl;
+
+	// Update window title
+	emit updateNoteInfo(selectedNote());
 }
+
+QString NoteLabelManager::getZoomLevel() { return QString::number(int(m_pixelsPerSecond / ppsNormal * 100)) + " %"; }
 
 int NoteLabelManager::s2px(double sec) const { return sec * m_pixelsPerSecond; }
 double NoteLabelManager::px2s(int px) const { return px / m_pixelsPerSecond; }

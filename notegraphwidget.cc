@@ -4,6 +4,7 @@
 #include <QScrollBar>
 #include <QPainter>
 #include <QMenu>
+#include <QToolTip>
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -337,6 +338,7 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 		float numDegrees = event->delta() / 8; // Qt resolution is 8th of a degree
 		float numSteps = numDegrees / 15; // Usually mice have 15 degree steps
 		zoom(numSteps);
+		QToolTip::showText(event->globalPos(), "Zoom: " + getZoomLevel(), this);
 		event->accept();
 		return;
 	}

@@ -34,6 +34,7 @@ public:
 
 	void updateSongMeta(bool readFromSongToUI = false);
 	void updateMenuStates();
+	void updateTitle();
 	void showTab(int tab) { ui.tabWidget->setCurrentIndex(tab); }
 	void showExportMenu() { ui.menuExport->exec(pos() + QPoint(0, ui.menubar->height())); }
 
