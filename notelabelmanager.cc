@@ -2,6 +2,8 @@
 #include <QString>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QScrollArea>
+#include <QScrollBar>
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
 #include "operation.hh"
@@ -244,15 +246,42 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 }
 
 void NoteLabelManager::zoom(float steps) {
-	m_pixelsPerSecond += steps * 20;
-	if (m_pixelsPerSecond < 100) m_pixelsPerSecond = 100;
-	else if (m_pixelsPerSecond > 300) m_pixelsPerSecond = 300;
+	// Limits
+	const float ppsstep = 20.0f;
+	const float minpps = 100;
+	const float maxpps = 300;
+	if (m_pixelsPerSecond <= minpps && steps < 0) return;
+	else if (m_pixelsPerSecond >= maxpps && steps > 0) return;
 
+	// Get scrollArea position
+	QScrollArea *scrollArea = NULL;
+	double scrollSecs = -1;
+	if (parentWidget()) {
+		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+		if (scrollArea) scrollSecs = px2s(scrollArea->horizontalScrollBar()->value() + scrollArea->width()/2);
+	}
+
+	// Update zoom factor
+	m_pixelsPerSecond += steps * ppsstep;
+	if (m_pixelsPerSecond < minpps) m_pixelsPerSecond = minpps;
+	else if (m_pixelsPerSecond > maxpps) m_pixelsPerSecond = maxpps;
+
+	// Update scroll bar position
+	if (scrollArea && scrollSecs >= 0) {
+		QScrollBar *scrollVer = scrollArea->verticalScrollBar();
+		int y = 0;
+		if (scrollVer) y = scrollVer->value();
+		scrollArea->ensureVisible(s2px(scrollSecs), y, scrollArea->width()/2, 0);
+		std::cout << "YEAH" << std::endl;
+	}
+
+	// Update notes
 	for (int i = 0; i < m_notes.size(); ++i) {
 		const Note &n = m_notes[i]->note();
 		m_notes[i]->setGeometry(s2px(n.begin), m_notes[i]->y(), s2px(n.length()), m_notes[i]->height());
 	}
 
+	// Update pitch visualization
 	update();
 	std::cout << "pixPerSec: " << m_pixelsPerSecond << std::endl;
 }

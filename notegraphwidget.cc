@@ -334,8 +334,8 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
 	// Ctrl + Wheel = Zoom
 	if (event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical) {
-		float numDegrees = event->delta() / 8;
-		float numSteps = numDegrees / 15;
+		float numDegrees = event->delta() / 8; // Qt resolution is 8th of a degree
+		float numSteps = numDegrees / 15; // Usually mice have 15 degree steps
 		zoom(numSteps);
 		event->accept();
 		return;
@@ -531,7 +531,7 @@ void SeekHandle::moveEvent(QMoveEvent*)
 			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
 			int y = 0;
 			if (scrollVer) y = scrollVer->value();
-				scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);
+			scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);
 		}
 	}
 }
