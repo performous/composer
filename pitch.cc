@@ -100,8 +100,8 @@ void Analyzer::calcTones() {
 	// Try to combine combos into tones (collections of harmonics)
 	Tones tones;
 	for (Combos::const_iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
-		Tone tone;
 		for (int div = 1; div <= 3; ++div) {  // Missing fundamental processing
+			Tone tone;
 			int plausibleHarmonics = 0;
 			double basefreq = it->freq / div;
 			if (basefreq < FFT_MINFREQ) break;  // Do not try any lower frequencies
