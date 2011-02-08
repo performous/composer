@@ -82,8 +82,8 @@ void Analyzer::calcTones() {
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
-		if (p.level < 1e-4) continue;
-		if (p.freq < FFT_MINFREQ || p.freq > FFT_MAXFREQ) continue;
+		bool ok = p.level > 1e-4 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ;
+		if (!ok) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
 		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
 		combos.back().combine(p);
