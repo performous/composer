@@ -26,7 +26,7 @@ namespace {
 }
 
 EditorApp::EditorApp(QWidget *parent)
-	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), statusbarProgress(),
+	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), synth(), statusbarProgress(),
 	projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
@@ -599,9 +599,15 @@ void EditorApp::playButton()
 	if (player && player->state() == Phonon::PlayingState) {
 		ui.cmdPlay->setText(tr("Pause"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause", QIcon(":/icons/media-playback-pause.png")));
+		if (ui.chkSynth->isChecked()) {
+			synth.reset(new Synth(noteGraph->noteLabels()));
+			synth->start(player->currentTime());
+		}
 	} else {
 		ui.cmdPlay->setText(tr("Play"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
+		if (synth) synth->stop();
+		synth.reset();
 	}
 }
 

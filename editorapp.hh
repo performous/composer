@@ -5,6 +5,7 @@
 #include "ui_aboutdialog.h"
 #include "operation.hh"
 #include "song.hh"
+#include "synth.hh"
 
 class QProgressBar;
 class QCloseEvent;
@@ -110,6 +111,7 @@ private:
 	QScopedPointer<Song> song;
 	Phonon::MediaObject *player;
 	Phonon::AudioOutput *audioOutput;
+	QScopedPointer<Synth> synth;
 	QProgressBar *statusbarProgress;
 	QString projectFileName;
 	bool hasUnsavedChanges;

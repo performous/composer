@@ -427,6 +427,13 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="chkSynth">
+              <property name="text">
+               <string>Play synthesized notes</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="tabLyrics">
