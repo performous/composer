@@ -72,11 +72,11 @@ public slots:
 
 protected:
 
-	// Pixels Per Second values
-	static const double ppsStep = 20.0f;
-	static const double ppsMin = 100;
-	static const double ppsMax = 300;
-	static const double ppsNormal = 200;
+	// Zoom settings
+	static const double zoomStep = 0.5;  ///< Mouse wheel steps * zoomStep => double/half zoom factor
+	static const int zoomMin = -12;  ///< Number of steps to minimum zoom
+	static const int zoomMax = 6;  ///< Number of steps to maximum zoom
+	static const double ppsNormal = 200.0;  ///< Pixels per second with default zoom
 	double m_pixelsPerSecond;
 
 	NoteLabels m_notes;

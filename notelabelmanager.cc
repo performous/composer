@@ -246,10 +246,6 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 }
 
 void NoteLabelManager::zoom(float steps) {
-	// Check if we can do anything
-	if (m_pixelsPerSecond <= ppsMin && steps < 0) return;
-	else if (m_pixelsPerSecond >= ppsMax && steps > 0) return;
-
 	// Get scrollArea position
 	QScrollArea *scrollArea = NULL;
 	double scrollSecs = -1;
@@ -258,13 +254,21 @@ void NoteLabelManager::zoom(float steps) {
 		if (scrollArea) scrollSecs = px2s(scrollArea->horizontalScrollBar()->value() + scrollArea->width()/2);
 	}
 
-	// Update zoom factor, NaN means reset
-	if (steps != steps) m_pixelsPerSecond = ppsNormal;
-	else m_pixelsPerSecond += steps * ppsStep;
-	// Limits
-	if (m_pixelsPerSecond < ppsMin) m_pixelsPerSecond = ppsMin;
-	else if (m_pixelsPerSecond > ppsMax) m_pixelsPerSecond = ppsMax;
-
+	// Update m_pixelsPerSecond
+	{
+		double pps = m_pixelsPerSecond;
+		// Update zoom factor, NaN means reset
+		if (steps != steps) pps = ppsNormal;
+		else {
+			// A little trickier exponential adjustment to avoid accumulating rounding errors
+			double current = std::log(pps / ppsNormal) / std::log(2.0) / zoomStep;  // Find the steps for current level
+			int level = clamp(int(round(current + steps)), zoomMin, zoomMax);  // New level
+			pps = ppsNormal * std::pow(2.0, level * zoomStep);  // Calculate new zoom
+		}
+		if (pps == m_pixelsPerSecond) return;  // Nothing changed
+		m_pixelsPerSecond = pps;
+	}
+	
 	// Update scroll bar position
 	if (scrollArea && scrollSecs >= 0) {
 		QScrollBar *scrollVer = scrollArea->verticalScrollBar();
