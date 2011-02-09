@@ -112,6 +112,22 @@ void NoteGraphWidget::finalizeNewLyrics()
 	updateNotes();
 }
 
+void NoteGraphWidget::calcViewport(int &x1, int &y1, int &x2, int &y2) const
+{
+	QScrollArea *scrollArea = NULL;
+	x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+	if (parentWidget())
+		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	if (scrollArea) {
+		if (scrollArea->horizontalScrollBar())
+			x1 = scrollArea->horizontalScrollBar()->value();
+		x2 = x1 + scrollArea->width();
+		if (scrollArea->verticalScrollBar())
+			y1 = scrollArea->verticalScrollBar()->value();
+		y2 = y1 + scrollArea->height();
+	}
+}
+
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath, this));
@@ -129,37 +145,27 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
 		// PitchVis stuff
 		double progress, duration;
-		bool needUpdate;
 		{
 			QMutexLocker locker(&m_pitch->mutex);
 			progress = m_pitch->getProgress();
 			duration = m_pitch->getDuration();
-			needUpdate = m_pitch->newDataAvailable() || duration != m_duration;
 		}
 		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
-		if (needUpdate) {
-			m_duration = std::max(m_duration, duration);
-			update();
+		m_duration = std::max(m_duration, duration);
+		// Analyzing has ended?
+		if (progress == 1.0) {
+			killTimer(m_analyzeTimer);
+			updatePitch();
 		}
-		if (progress == 1) killTimer(m_analyzeTimer);
 	}
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*) {
 	setFixedSize(s2px(m_duration), height());
 
-	// Find out the horizontal viewport
-	QScrollArea *scrollArea = NULL;
-	int x1 = 0, x2 = 0;
-	if (parentWidget())
-		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
-	if (scrollArea && scrollArea->horizontalScrollBar()) {
-		x1 = scrollArea->horizontalScrollBar()->value();
-		x2 = x1 + scrollArea->width();
-	}
-
-	// Ask for a new render
-	if (m_pitch) m_pitch->paint(x1, 0, x2, height());
+	// Find out the viewport
+	int x1, y1, x2, y2;
+	calcViewport(x1, y1, x2, y2);
 
 	QPainter painter;
 	painter.begin(this);
@@ -183,6 +189,16 @@ void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
 	m_pixmap = QPixmap::fromImage(image);
 	m_pixmapPos = position;
 	update();
+}
+
+void NoteGraphWidget::updatePitch()
+{
+	if (!m_pitch) return;
+	// Find out the viewport
+	int x1, y1, x2, y2;
+	calcViewport(x1, y1, x2, y2);
+	// Ask for a new render
+	m_pitch->paint(x1, 0, x2, height());
 }
 
 void NoteGraphWidget::updateNotes(bool leftToRight)
@@ -245,7 +261,7 @@ void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
 	killTimer(m_playbackTimer);
 	m_seekHandle.move(x, 0);
 	if (smoothing)
-		m_playbackTimer = startTimer(17); // Hope for 60 fps
+		m_playbackTimer = startTimer(20); // Hope for 50 fps
 	m_playbackInterval.restart();
 }
 

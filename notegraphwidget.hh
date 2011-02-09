@@ -116,6 +116,7 @@ public slots:
 	void timeSentence();
 	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }
 	void updatePixmap(const QImage &image, const QPoint &position);
+	void updatePitch();
 
 signals:
 	void analyzeProgress(int, int);
@@ -130,10 +131,12 @@ protected:
 	void keyPressEvent(QKeyEvent *event);
 	void timerEvent(QTimerEvent *event);
 	void paintEvent(QPaintEvent*);
+	void resizeEvent(QResizeEvent *) { updatePitch(); }
 
 private:
 	void finalizeNewLyrics();
 	void timeCurrent();
+	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
 	QPoint m_panHotSpot;
 	bool m_seeking;

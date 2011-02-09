@@ -1,4 +1,5 @@
 #include <QProgressBar>
+#include <QScrollBar>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QDesktopServices>
@@ -85,9 +86,11 @@ void EditorApp::setupNoteGraph()
 	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
 	ui.splitter->setSizes(ss);
 
-	// Custom signals/slots
+	// Signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	connect(ui.noteGraphScroller->horizontalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
+	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
