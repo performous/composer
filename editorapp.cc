@@ -240,6 +240,7 @@ void EditorApp::on_actionNew_triggered()
 		statusbarProgress->hide();
 		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
 		ui.valMusicFile->clear();
+		hasUnsavedChanges = false;
 	}
 	updateMenuStates();
 }
