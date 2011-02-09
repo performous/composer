@@ -521,10 +521,12 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 	if (mimeData->hasText() && !mimeData->text().isEmpty()) {
 		QString text = mimeData->text();
-		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Replace lyrics"),
-			tr("Pasting lyrics from clipboard will replace the existing ones. Continue?"),
-			QMessageBox::Ok | QMessageBox::Cancel);
-		if (b == QMessageBox::Ok) {
+		if ((noteGraph && noteGraph->noteLabels().empty())
+			|| QMessageBox::question(this, tr("Replace lyrics"),
+				tr("Pasting lyrics from clipboard will replace the existing ones. Continue?"),
+				QMessageBox::Ok | QMessageBox::Cancel)
+			== QMessageBox::Ok)
+		{
 			noteGraph->setLyrics(text);
 		}
 	} else {
