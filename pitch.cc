@@ -6,7 +6,7 @@
 
 static const unsigned FFT_P = 12;  // FFT size setting, will use 2^FFT_P sample FFT
 static const std::size_t FFT_N = 1 << FFT_P;  // FFT size in samples
-static const std::size_t FFT_STEP = 1024;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
+static const std::size_t FFT_STEP = 512;  // Step size in samples, should be <= 0.25 * FFT_N. Low values cause high CPU usage.
 
 // Limit the range to avoid noise and useless computation
 static const double FFT_MINFREQ = 45.0;
