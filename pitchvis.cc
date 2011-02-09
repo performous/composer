@@ -130,12 +130,12 @@ void PitchVis::renderer() {
 		}
 
 		// Rendering
-		// TODO: Take y-size into account
+		// QImage allows drawing in non-main/non-GUI thread
 		QImage image(x2-x1, y2-y1, QImage::Format_RGB32);
-		QSettings settings; // Default QSettings parameters given in main()
-		bool aa = settings.value("anti-aliasing", true).toBool();
 		NoteGraphWidget *widget = qobject_cast<NoteGraphWidget*>(parent());
 		if (!widget) continue;
+		QSettings settings; // Default QSettings parameters given in main()
+		bool aa = settings.value("anti-aliasing", true).toBool();
 
 		QPainter painter;
 		painter.begin(&image);
@@ -155,6 +155,7 @@ void PitchVis::renderer() {
 			else if (widget->s2px(fragments.front().time) > x2) break;
 			// Iterate through the path points
 			for (PitchPath::Fragments::const_iterator it2 = fragments.begin(), it2end = fragments.end(); it2 != it2end; ++it2) {
+				// TODO: Take y-size into account (change also the paint calls in NoteGraphWidget)
 				int x = widget->s2px(it2->time) - x1;
 				int y = widget->n2px(it2->note);
 				pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
@@ -166,6 +167,7 @@ void PitchVis::renderer() {
 		painter.end();
 
 		// Send the image
+		// This is actually delivered by the reciever's event loop thread, and not called directly from here
 		emit renderedImage(image, QPoint(x1, y1));
 
 		mutex.lock();

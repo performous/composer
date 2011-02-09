@@ -186,6 +186,7 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
 {
 	// PitchVis sends its renderings here, let's save & draw them
+	// This gets actually called in our own thread by our own event loop (queued connection)
 	m_pixmap = QPixmap::fromImage(image);
 	m_pixmapPos = position;
 	update();
@@ -193,6 +194,8 @@ void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
 
 void NoteGraphWidget::updatePitch()
 {
+	// Called whenever pitch needs updating
+	// Note that the scrollbar change signals are connected here, so no need to call this from everywhere
 	if (!m_pitch) return;
 	// Find out the viewport
 	int x1, y1, x2, y2;
