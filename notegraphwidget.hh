@@ -92,6 +92,7 @@ class NoteGraphWidget: public NoteLabelManager
 	Q_OBJECT
 
 public:
+	static const QString BGColor;
 
 	NoteGraphWidget(QWidget *parent = 0);
 
@@ -114,6 +115,7 @@ public slots:
 	void timeSyllable();
 	void timeSentence();
 	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }
+	void updatePixmap(const QImage &image, const QPoint &position);
 
 signals:
 	void analyzeProgress(int, int);
@@ -143,6 +145,8 @@ private:
 	QElapsedTimer m_playbackInterval;
 	qint64 m_playbackPos;
 	double m_duration;
+	QPixmap m_pixmap;
+	QPoint m_pixmapPos;
 };
 
 

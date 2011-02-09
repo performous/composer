@@ -12,13 +12,21 @@
 #include <QSettings>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QWidget(parent), QThread(), mutex(), fileName(filename), duration(), moreAvailable(), cancelled()
+	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), condition()
 {
 	start(); // Launch the thread
 }
 
+void PitchVis::stop()
+{
+	QMutexLocker locker(&mutex);
+	cancelled = true;
+	condition.wakeOne();
+}
+
 void PitchVis::run()
 {
+	bool analyzingSuccess = false;
 	try {
 		// Initialize FFmpeg decoding
 		std::string file(fileName.toLocal8Bit().data(), fileName.toLocal8Bit().size());
@@ -83,47 +91,89 @@ void PitchVis::run()
 					}
 					QMutexLocker locker(&mutex);
 					if (score > 1.0) paths.push_back(path);
-					moreAvailable = true;
 				}
 			}
 		}
+		analyzingSuccess = true;
 
 	} catch (std::exception& e) {
 		std::cerr << std::string("Error loading audio: ") + e.what() + '\n' << std::flush;
 	}
-	QMutexLocker locker(&mutex);
-	moreAvailable = true;
-	position = duration;
+	{
+		QMutexLocker locker(&mutex);
+		moreAvailable = true;
+		position = duration;
+	}
+
+	// Start the renderer loop
+	if (analyzingSuccess) renderer();
 }
 
-void PitchVis::paint(NoteGraphWidget* widget, int x1, int x2) {
-	QSettings settings; // Default QSettings parameters given in main()
-	bool aa = settings.value("anti-aliasing", true).toBool();
+void PitchVis::paint(int x1, int y1, int x2, int y2)
+{
 	QMutexLocker locker(&mutex);
-	QPainter painter;
-	painter.begin(widget);
-	if (aa) painter.setRenderHint(QPainter::Antialiasing);
-	QPen pen;
-	pen.setWidth(8);
-	pen.setCapStyle(Qt::RoundCap);
-	PitchVis::Paths const& paths = getPaths();
-	for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
-		PitchPath::Fragments const& fragments = it->fragments;
-		int oldx, oldy;
-		// Only render paths in view
-		if (widget->s2px(fragments.back().time) < x1) continue;
-		else if (widget->s2px(fragments.front().time) > x2) break;
-		// Iterate through the path points
-		for (PitchPath::Fragments::const_iterator it2 = fragments.begin(), it2end = fragments.end(); it2 != it2end; ++it2) {
-			int x = widget->s2px(it2->time);
-			int y = widget->n2px(it2->note);
-			pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
-			painter.setPen(pen);
-			if (it2 != fragments.begin()) painter.drawLine(oldx, oldy, x, y);
-			oldx = x; oldy = y;
+	m_x1 = x1; m_y1 = y1;
+	m_x2 = x2; m_y2 = y2;
+
+	// Wake the thread
+	restart = true;
+	condition.wakeOne();
+}
+
+void PitchVis::renderer() {
+	forever {
+		int x1, x2, y1, y2;
+		{
+			QMutexLocker locker(&mutex);
+			if (cancelled) return;
+			x1 = m_x1, x2 = m_x2, y1 = m_y1, y2 = m_y2;
 		}
+
+		// Rendering
+		// TODO: Take y-size into account
+		QImage image(x2-x1, y2-y1, QImage::Format_RGB32);
+		QSettings settings; // Default QSettings parameters given in main()
+		bool aa = settings.value("anti-aliasing", true).toBool();
+		NoteGraphWidget *widget = qobject_cast<NoteGraphWidget*>(parent());
+		if (!widget) continue;
+
+		QPainter painter;
+		painter.begin(&image);
+		if (aa) painter.setRenderHint(QPainter::Antialiasing);
+		painter.fillRect(image.rect(), QColor(NoteGraphWidget::BGColor)); // Otherwise the image will have all kinds of carbage
+
+		QPen pen;
+		pen.setWidth(8);
+		pen.setCapStyle(Qt::RoundCap);
+
+		PitchVis::Paths const& paths = getPaths();
+		for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+			PitchPath::Fragments const& fragments = it->fragments;
+			int oldx, oldy;
+			// Only render paths in view
+			if (widget->s2px(fragments.back().time) < x1) continue;
+			else if (widget->s2px(fragments.front().time) > x2) break;
+			// Iterate through the path points
+			for (PitchPath::Fragments::const_iterator it2 = fragments.begin(), it2end = fragments.end(); it2 != it2end; ++it2) {
+				int x = widget->s2px(it2->time) - x1;
+				int y = widget->n2px(it2->note);
+				pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
+				painter.setPen(pen);
+				if (it2 != fragments.begin()) painter.drawLine(oldx, oldy, x, y);
+				oldx = x; oldy = y;
+			}
+		}
+		painter.end();
+
+		// Send the image
+		emit renderedImage(image, QPoint(x1, y1));
+
+		mutex.lock();
+		// If nothing to do, sleep here
+		if (!restart) condition.wait(&mutex);
+		restart = false;
+		mutex.unlock();
 	}
-	painter.end();
 }
 
 int PitchVis::guessNote(double begin, double end, int note) {

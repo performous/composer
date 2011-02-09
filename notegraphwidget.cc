@@ -22,12 +22,15 @@ namespace {
 	}
 }
 
+
+/*static*/ const QString NoteGraphWidget::BGColor = "#222";
+
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_panHotSpot(), m_seeking(), m_actionHappened(),
-	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_duration(10.0)
+	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_duration(10.0), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
-	setStyleSheet("QLabel[darkBackground=\"true\"] { background: rgb(32, 32, 32); }");
+	setStyleSheet("QLabel[darkBackground=\"true\"] { background: " + BGColor + "; }");
 
 	// Initially expanding horizontally to fill the space
 	QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -40,6 +43,8 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	// Context menu
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
+
+	qRegisterMetaType<QImage>("QImage"); // Needed for queued connections from other threads
 
 	updateNotes();
 }
@@ -110,6 +115,7 @@ void NoteGraphWidget::finalizeNewLyrics()
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath, this));
+	connect(m_pitch.data(), SIGNAL(renderedImage(QImage,QPoint)), this, SLOT(updatePixmap(QImage,QPoint)));
 	m_analyzeTimer = startTimer(100);
 }
 
@@ -123,20 +129,19 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
 		// PitchVis stuff
 		double progress, duration;
-		bool needUpdate, done;
+		bool needUpdate;
 		{
 			QMutexLocker locker(&m_pitch->mutex);
 			progress = m_pitch->getProgress();
 			duration = m_pitch->getDuration();
 			needUpdate = m_pitch->newDataAvailable() || duration != m_duration;
-			done = m_pitch->isFinished();
 		}
 		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
 		if (needUpdate) {
 			m_duration = std::max(m_duration, duration);
 			update();
 		}
-		if (done) killTimer(m_analyzeTimer);
+		if (progress == 1) killTimer(m_analyzeTimer);
 	}
 }
 
@@ -153,17 +158,31 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 		x2 = x1 + scrollArea->width();
 	}
 
-	// Pitch
-	if (m_pitch) m_pitch->paint(this, x1, x2);
+	// Ask for a new render
+	if (m_pitch) m_pitch->paint(x1, 0, x2, height());
 
-	// Octave lines
 	QPainter painter;
 	painter.begin(this);
+
+	// PitchVis pixmap
+	if (!m_pixmap.isNull())
+		painter.drawPixmap(m_pixmapPos, m_pixmap);
+
+	// Octave lines
 	QPen pen; pen.setWidth(1); pen.setColor(QColor("#666"));
 	painter.setPen(pen);
 	for (int i = 1; i < 4; ++i)
 		painter.drawLine(x1, n2px(i*12), x2, n2px(i*12));
+
 	painter.end();
+}
+
+void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
+{
+	// PitchVis sends its renderings here, let's save & draw them
+	m_pixmap = QPixmap::fromImage(image);
+	m_pixmapPos = position;
+	update();
 }
 
 void NoteGraphWidget::updateNotes(bool leftToRight)

@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 #include <QPainterPath>
 #include <cmath>
 #include <string>
@@ -24,7 +25,9 @@ struct PitchPath {
 
 class NoteGraphWidget;
 
-class PitchVis: public QWidget, public QThread {
+class PitchVis: public QThread
+{
+	Q_OBJECT
 public:
 	typedef std::vector<PitchPath> Paths;
 	QMutex mutex;
@@ -32,16 +35,23 @@ public:
 	PitchVis(QString const& filename, QWidget *parent = NULL);
 	~PitchVis() { stop(); wait(); }
 
-	void run(); // Thread runs here
-	void stop() { cancelled = true; }
-	void paint(NoteGraphWidget* widget, int x1, int x2);
-	Paths const& getPaths() { moreAvailable = false; return paths; }
+	void stop();
+	void paint(int x1, int y1, int x2, int y2);
 	bool newDataAvailable() const { return moreAvailable; }
 	double getProgress() const { return position / duration; }
 	double getDuration() const { return duration; }
 	int guessNote(double begin, double end, int initial);
 
+signals:
+	void renderedImage(const QImage &image, const QPoint &position);
+
+protected:
+	void run(); // Thread runs here
+
 private:
+	void renderer();
+	Paths const& getPaths() { moreAvailable = false; return paths; }
+
 	MusicalScale scale;
 	QString fileName;
 	Paths paths;
@@ -49,5 +59,8 @@ private:
 	double duration;  ///< Song duration (or estimation while analyzing)
 	bool moreAvailable;
 	bool cancelled;
+	bool restart;
+	QWaitCondition condition;
+	int m_x1, m_y1, m_x2, m_y2;
 };
 
