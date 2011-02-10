@@ -96,6 +96,9 @@ void EditorApp::setupNoteGraph()
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
 	connect(ui.noteGraphScroller->horizontalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
+	connect(ui.actionCut, SIGNAL(triggered()), noteGraph, SLOT(cut()));
+	connect(ui.actionCopy, SIGNAL(triggered()), noteGraph, SLOT(copy()));
+	connect(ui.actionPaste, SIGNAL(triggered()), noteGraph, SLOT(paste()));
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
@@ -474,21 +477,6 @@ void EditorApp::on_actionRedo_triggered()
 	opStack.push(redoStack.top());
 	redoStack.pop();
 	doOpStack();
-}
-
-void EditorApp::on_actionCut_triggered()
-{
-	//TODO
-}
-
-void EditorApp::on_actionCopy_triggered()
-{
-	//TODO
-}
-
-void EditorApp::on_actionPaste_triggered()
-{
-	//TODO
 }
 
 void EditorApp::on_actionDelete_triggered()

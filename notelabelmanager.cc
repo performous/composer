@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QMessageBox>
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
 #include "operation.hh"
@@ -382,3 +383,22 @@ int NoteLabelManager::s2px(double sec) const { return sec * m_pixelsPerSecond; }
 double NoteLabelManager::px2s(int px) const { return px / m_pixelsPerSecond; }
 int NoteLabelManager::n2px(double note) const { return height() - 16.0 * note; }
 double NoteLabelManager::px2n(int px) const { return (height() - px) / 16.0; }
+
+
+
+
+void NoteLabelManager::cut()
+{
+	// FIXME
+	QMessageBox::critical(this, tr("Error!"), tr("Oh noes, this feature is not implemented yet. :-("));
+}
+
+void NoteLabelManager::copy()
+{
+	cut(); // FIXME
+}
+
+void NoteLabelManager::paste()
+{
+	cut(); // FIXME
+}

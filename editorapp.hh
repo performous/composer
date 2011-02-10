@@ -78,9 +78,6 @@ public slots:
 	// Edit menu
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
-	void on_actionCut_triggered();
-	void on_actionCopy_triggered();
-	void on_actionPaste_triggered();
 	void on_actionDelete_triggered();
 	void on_actionSelectAll_triggered();
 	void on_actionAntiAliasing_toggled(bool checked);

@@ -73,6 +73,10 @@ public slots:
 	void selectNextSyllable(bool backwards = false, bool addToSelection = false);
 	void selectNextSentenceStart();
 
+	void cut();
+	void copy();
+	void paste();
+
 protected:
 
 	// Zoom settings

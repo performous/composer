@@ -592,9 +592,9 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 		else if (sel == actionGolden) setType(nl, 1);
 		else if (sel == actionFreestyle) setType(nl, 2);
 		else if (sel == actionResetZoom) zoom(getNaN());
-		else if (sel == actionCut) ; // TODO
-		else if (sel == actionCopy) ; // TODO
-		else if (sel == actionPaste) ; // TODO
+		else if (sel == actionCut) cut();
+		else if (sel == actionCopy) copy();
+		else if (sel == actionPaste) paste();
 		else if (sel == actionDelete) del(nl);
 		else if (sel == actionSelectAll) selectAll();
 		else if (sel == actionDeselect) selectNote(NULL);
