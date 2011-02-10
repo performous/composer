@@ -180,6 +180,14 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 	for (int i = 1; i < 4; ++i)
 		painter.drawLine(x1, n2px(i*12), x2, n2px(i*12));
 
+	// Selection box
+	if (!m_mouseHotSpot.isNull()) {
+		QPoint mousep = mapFromGlobal(QCursor::pos());
+		pen.setWidth(2); pen.setColor(QColor("#800"));
+		painter.setPen(pen);
+		painter.drawRect(QRect(m_mouseHotSpot, mousep));
+	}
+
 	painter.end();
 }
 
@@ -390,6 +398,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 	m_seeking = false;
 	setCursor(QCursor());
 	updateNotes();
+	update(); // Repaint to remove possible selection box
 }
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)
@@ -438,6 +447,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	// Box selection
 	} else if (!m_mouseHotSpot.isNull() && (event->buttons() & Qt::LeftButton) && !(event->modifiers() & Qt::AltModifier)) {
 		boxSelect(m_mouseHotSpot, event->pos());
+		update(); // Paint selection box
 
 	// Pan
 	} else if (!m_mouseHotSpot.isNull()) {
