@@ -30,6 +30,8 @@ class NoteLabelManager: public QLabel
 {
 	Q_OBJECT
 public:
+	static const QString MimeType;
+
 	NoteLabelManager(QWidget *parent = 0);
 
 	virtual void updateNotes(bool leftToRight = true) {}
@@ -88,6 +90,7 @@ protected:
 
 	NoteLabels m_notes;
 	NoteLabels m_selectedNotes;
+	NoteLabels m_cutNotes;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	int m_noteHalfHeight;
 };

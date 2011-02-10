@@ -5,9 +5,15 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QApplication>
+#include <QClipboard>
+#include <QMimeData>
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
 #include "operation.hh"
+
+
+/*static*/ const QString NoteLabelManager::MimeType = "application/x-notelabels";
 
 NoteLabelManager::NoteLabelManager(QWidget *parent)
 	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal)
@@ -44,6 +50,8 @@ void NoteLabelManager::selectNote(NoteLabel* note, bool clearPrevious)
 		m_selectedNotes.push_front(note);
 		note->setSelected(true);
 	} else if (!note) m_selectedAction = NONE;
+
+	m_cutNotes.clear(); // Clear cut buffer when selection changes
 
 	// Signal UI about the change
 	emit updateNoteInfo(selectedNote());
@@ -389,16 +397,63 @@ double NoteLabelManager::px2n(int px) const { return (height() - px) / 16.0; }
 
 void NoteLabelManager::cut()
 {
-	// FIXME
-	QMessageBox::critical(this, tr("Error!"), tr("Oh noes, this feature is not implemented yet. :-("));
+	if (m_selectedNotes.isEmpty()) return;
+	m_cutNotes.clear();
+	// Save selected notes for future deletion
+	for (int i = 0; i < m_selectedNotes.size(); ++i)
+		m_cutNotes.push_back(m_selectedNotes[i]);
+	// Copy
+	copy();
 }
 
 void NoteLabelManager::copy()
 {
-	cut(); // FIXME
+	if (m_selectedNotes.isEmpty()) return;
+
+	// Create operations of the notes and serialize to byte array
+	QByteArray buf;
+	QDataStream stream(&buf, QIODevice::WriteOnly);
+	for (int i = 0; i < m_selectedNotes.size(); ++i)
+		stream << (Operation)(*m_selectedNotes[i]);
+
+	QClipboard *clipboard = QApplication::clipboard();
+	if (!clipboard) return;
+
+	// Put the data to clipboard
+	QMimeData *mimeData = new QMimeData;
+	mimeData->setData(MimeType, buf);
+	clipboard->setMimeData(mimeData);
 }
 
 void NoteLabelManager::paste()
 {
-	cut(); // FIXME
+	const QClipboard *clipboard = QApplication::clipboard();
+	const QMimeData *mimeData = clipboard->mimeData();
+
+	if (mimeData->hasFormat(MimeType) && !mimeData->data(MimeType).isEmpty()) {
+		// Get data
+		QByteArray buf = mimeData->data(MimeType);
+		QDataStream stream(&buf, QIODevice::ReadOnly);
+
+		// FIXME
+		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs and crashes - pasting is so far only partially implemented. :-("));
+
+		// Delete all notes that were cut
+		if (!m_cutNotes.isEmpty()) {
+			int i = 0;
+			for (; i < m_cutNotes.size(); ++i)
+				doOperation(Operation("DEL", getNoteLabelId(m_cutNotes[i])));
+			doOperation(Operation("COMBINER", i)); // Combine into one undo-op
+			m_cutNotes.clear();
+		}
+
+		// Read and execute all NoteLabel Operations from the clipboard
+		while (!stream.atEnd()) {
+			Operation op;
+			stream >> op;
+			std::cout << "Pasted op: " << op.dump() << std::endl;
+			// TODO: Adjust position according to mouse
+			doOperation(op);
+		}
+	}
 }

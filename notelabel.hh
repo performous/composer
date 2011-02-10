@@ -2,6 +2,7 @@
 
 #include <QLabel>
 #include "notes.hh"
+#include "operation.hh"
 
 class NoteLabel: public QLabel
 {
@@ -33,6 +34,9 @@ public:
 
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);
+
+	/// Create Operation from NoteLabel
+	operator Operation();
 
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
 

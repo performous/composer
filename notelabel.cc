@@ -176,3 +176,13 @@ void NoteLabel::updateNote()
 		.arg(QString::number(m_note.end, 'f', 3))
 		);
 }
+
+NoteLabel::operator Operation()
+{
+	int id = 0;
+	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
+	if (ngw) id = ngw->getNoteLabelId(this);
+	Operation op("NEW", id);
+	op << m_note.syllable << m_note.begin << m_note.end << m_note.note << m_floating << m_note.lineBreak << m_note.getTypeInt();
+	return op;
+}
