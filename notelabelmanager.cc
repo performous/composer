@@ -55,6 +55,19 @@ void NoteLabelManager::selectAll()
 		selectNote(m_notes[i], false);
 }
 
+void NoteLabelManager::shiftSelect(NoteLabel* note)
+{
+	if (!note || note == selectedNote()) return;
+	if (!selectedNote()) { selectNote(note); return; }
+
+	// Select all notes between the last selection and this
+	int n = getNoteLabelId(selectedNote()), m = getNoteLabelId(note);
+	selectNote(NULL); // Unselect everything
+	if (m < n) std::swap(n, m);
+	for (int i = n; i <= m; ++i)
+		selectNote(m_notes[i], false);
+}
+
 int NoteLabelManager::getNoteLabelId(NoteLabel* note) const
 {
 	for (int i = 0; i < m_notes.size(); ++i)

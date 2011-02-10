@@ -37,6 +37,7 @@ public:
 	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	void selectAll();
+	void shiftSelect(NoteLabel *note);
 	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
 	NoteLabels& selectedNotes() { return m_selectedNotes; }
 	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
