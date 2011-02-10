@@ -584,7 +584,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 
 	QAction *sel = menuContext.exec(globalPos);
 	if (sel) {
-		if (sel == actionNew) createNote(mapFromGlobal(globalPos).x());
+		if (sel == actionNew) createNote(px2s(mapFromGlobal(globalPos).x()));
 		else if (sel == actionSplit) split(nl);
 		else if (sel == actionFloating) setFloating(nl, !nl->isFloating());
 		else if (sel == actionLineBreak) setLineBreak(nl, !nl->isLineBreak());

@@ -102,6 +102,14 @@ int NoteLabelManager::getNoteLabelId(NoteLabel* note) const
 	return -1;
 }
 
+int NoteLabelManager::findIdForTime(double time) const
+{
+	for (int i = 0; i < m_notes.size(); ++i) {
+		if (m_notes[i]->note().begin >= time) return i;
+	}
+	return m_notes.size();
+}
+
 void NoteLabelManager::selectNextSyllable(bool backwards, bool addToSelection)
 {
 	int i = getNoteLabelId(selectedNote());
@@ -124,19 +132,16 @@ void NoteLabelManager::selectNextSentenceStart()
 
 
 
-void NoteLabelManager::createNote(int x)
+void NoteLabelManager::createNote(double time)
 {
 	// Find the correct place for this note
-	int i = 0, nlvl = 24;
-	for (; i < m_notes.size(); ++i) {
-		nlvl = m_notes[i]->note().note;
-		if (m_notes[i]->x() >= x) break;
-	}
+	int id = findIdForTime(time);
+	int nlvl = (id > 0) ? m_notes[id-1]->note().note : 24;
 	// Create Operation
 	Operation op("NEW");
-	op << i << QString("")
-		<< px2s(x) // begin
-		<< px2s(x+10) // dummy end
+	op << id << QString("")
+		<< time // begin
+		<< time+1 // dummy end
 		<< nlvl // note
 		<< true // floating
 		<< false // linebreak
@@ -306,8 +311,10 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
 				op.b(6) // floating
 				);
-			if (m_notes.isEmpty() || op.i(1) > m_notes.size()) m_notes.push_back(newLabel);
-			else m_notes.insert(op.i(1), newLabel);
+			int id = op.i(1);
+			if (id < 0) id = findIdForTime(op.d(3)); // -1 = auto-choose
+			if (m_notes.isEmpty() || id > m_notes.size()) m_notes.push_back(newLabel);
+			else m_notes.insert(id, newLabel);
 		} else {
 			NoteLabel *n = m_notes.at(op.i(1));
 			if (n) {
@@ -436,15 +443,17 @@ void NoteLabelManager::paste()
 		QDataStream stream(&buf, QIODevice::ReadOnly);
 
 		// FIXME
-		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs and crashes - pasting is so far only partially implemented. :-("));
+		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs - pasting is so far only partially implemented. :-("));
 
 		// Delete all notes that were cut
+		// TODO: We need to clear cut buffer is clipboard contents has changed (by other instance/application)
 		if (!m_cutNotes.isEmpty()) {
 			int i = 0;
 			for (; i < m_cutNotes.size(); ++i)
 				doOperation(Operation("DEL", getNoteLabelId(m_cutNotes[i])));
 			doOperation(Operation("COMBINER", i)); // Combine into one undo-op
 			m_cutNotes.clear();
+			selectNote(NULL); // Clear selection as we might just have deleted some of it
 		}
 
 		// Read and execute all NoteLabel Operations from the clipboard
@@ -453,6 +462,7 @@ void NoteLabelManager::paste()
 			stream >> op;
 			std::cout << "Pasted op: " << op.dump() << std::endl;
 			// TODO: Adjust position according to mouse
+			// TODO: Could we select the new notes?
 			doOperation(op);
 		}
 	}

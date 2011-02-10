@@ -46,9 +46,10 @@ public:
 	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
 
 	int getNoteLabelId(NoteLabel* note) const;
+	int findIdForTime(double time) const;
 	NoteLabels& noteLabels() { return m_notes; }
 
-	void createNote(int x);
+	void createNote(double time);
 	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);
 	void move(NoteLabel *note, int value);
