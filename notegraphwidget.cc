@@ -522,6 +522,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 {
 	QPoint globalPos = mapToGlobal(pos);
 	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(mapFromGlobal(globalPos)));
+	if (child && !child->isSelected()) selectNote(child);
 	QMenu menuContext(NULL);
 	QMenu menuType(tr("Type"), NULL);
 
@@ -543,7 +544,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	actionGolden->setCheckable(true);
 	QAction *actionFreestyle = menuType.addAction(tr("Freestyle"));
 	actionFreestyle->setCheckable(true);
-	NoteLabel *nl = child ? child : selectedNote();
+	NoteLabel *nl = selectedNote();
 	if (!nl) {
 		actionFloating->setEnabled(false);
 		actionLineBreak->setEnabled(false);
