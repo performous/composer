@@ -152,28 +152,17 @@ void EditorApp::doOpStack()
 
 void EditorApp::updateMenuStates()
 {
-	// Save
-	if (hasUnsavedChanges)
-		ui.actionSave->setEnabled(true);
-	else ui.actionSave->setEnabled(false);
-	// Undo
-	if (opStack.isEmpty() || opStack.top().op() == "BLOCK")
-		ui.actionUndo->setEnabled(false);
-	else ui.actionUndo->setEnabled(true);
-	// Redo
-	if (redoStack.isEmpty())
-		ui.actionRedo->setEnabled(false);
-	else ui.actionRedo->setEnabled(true);
-	// Copy-paste stuff
-	if (noteGraph && noteGraph->selectedNote()) {
-		ui.actionCut->setEnabled(true);
-		ui.actionCopy->setEnabled(true);
-		ui.actionDelete->setEnabled(true);
-	} else {
-		ui.actionCut->setEnabled(false);
-		ui.actionCopy->setEnabled(false);
-		ui.actionDelete->setEnabled(false);
-	}
+	// File menu
+	ui.actionSave->setEnabled(hasUnsavedChanges);
+	// Edit menu
+	ui.actionUndo->setEnabled(!opStack.isEmpty() && opStack.top().op() != "BLOCK");
+	ui.actionRedo->setEnabled(!redoStack.isEmpty());
+	bool hasSelectedNotes = (noteGraph && noteGraph->selectedNote());
+	ui.actionCut->setEnabled(hasSelectedNotes);
+	ui.actionCopy->setEnabled(hasSelectedNotes);
+	ui.actionDelete->setEnabled(hasSelectedNotes);
+	bool hasNotes = (noteGraph && !noteGraph->noteLabels().isEmpty());
+	ui.actionSelectAll->setEnabled(hasNotes);
 	// Window title
 	updateTitle();
 }
