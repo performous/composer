@@ -36,9 +36,6 @@ public:
 
 	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
 
-public slots:
-	void showContextMenu(const QPoint &pos);
-
 protected:
 	void resizeEvent(QResizeEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);

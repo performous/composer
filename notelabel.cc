@@ -24,9 +24,6 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, 
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
-	// Context menu
-	setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 	show();
 }
 
@@ -178,55 +175,4 @@ void NoteLabel::updateNote()
 		.arg(QString::number(m_note.begin, 'f', 3))
 		.arg(QString::number(m_note.end, 'f', 3))
 		);
-}
-
-
-void NoteLabel::showContextMenu(const QPoint &pos)
-{
-	QMenu menuContext(NULL);
-	QMenu menuType(tr("Type"), NULL);
-
-	QAction *actionFloating = menuContext.addAction(tr("Floating"));
-	actionFloating->setCheckable(true);
-	actionFloating->setChecked(isFloating());
-
-	QAction *actionLineBreak = menuContext.addAction(tr("Line break"));
-	actionLineBreak->setCheckable(true);
-	actionLineBreak->setChecked(isLineBreak());
-
-	menuContext.addSeparator();
-	menuContext.addAction(menuType.menuAction());
-
-	QAction *actionNormal = menuType.addAction(tr("Normal"));
-	actionNormal->setCheckable(true);
-	actionNormal->setChecked(m_note.type == Note::NORMAL);
-
-	QAction *actionGolden = menuType.addAction(tr("Golden"));
-	actionGolden->setCheckable(true);
-	actionGolden->setChecked(m_note.type == Note::GOLDEN);
-
-	QAction *actionFreestyle = menuType.addAction(tr("Freestyle"));
-	actionFreestyle->setCheckable(true);
-	actionFreestyle->setChecked(m_note.type == Note::FREESTYLE);
-
-	menuContext.addSeparator();
-	QAction *actionSplit = menuContext.addAction(tr("Split"));
-	QAction *actionDelete = menuContext.addAction(tr("Delete"));
-	actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
-
-	// Show maenu and wait for action
-	QPoint globalPos = mapToGlobal(pos);
-	QAction *sel = menuContext.exec(globalPos);
-	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
-	if (sel && ngw) {
-		if (sel == actionSplit) ngw->split(this);
-		else if (sel == actionFloating) ngw->setFloating(this, !isFloating());
-		else if (sel == actionLineBreak) ngw->setLineBreak(this, !isLineBreak());
-		else if (sel == actionNormal) ngw->setType(this, 0);
-		else if (sel == actionGolden) ngw->setType(this, 1);
-		else if (sel == actionFreestyle) ngw->setType(this, 2);
-		else if (sel == actionDelete) ngw->del(this);
-	}
-	menuType.clear();
-	menuContext.clear();
 }

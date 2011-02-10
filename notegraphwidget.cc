@@ -520,42 +520,85 @@ void NoteGraphWidget::dropEvent(QDropEvent *event)
 
 void NoteGraphWidget::showContextMenu(const QPoint &pos)
 {
+	QPoint globalPos = mapToGlobal(pos);
+	NoteLabel *child = qobject_cast<NoteLabel*>(childAt(mapFromGlobal(globalPos)));
 	QMenu menuContext(NULL);
+	QMenu menuType(tr("Type"), NULL);
 
 	QAction *actionNew = menuContext.addAction(tr("New note"));
 	actionNew->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
+	actionNew->setEnabled(!child); // Only available when no notes under cursor
+	QAction *actionSplit = menuContext.addAction(tr("Split"));
+	actionSplit->setEnabled(m_selectedNotes.size() == 1); // Only available when exactly one note selected
 	menuContext.addSeparator();
+
+	QAction *actionFloating = menuContext.addAction(tr("Floating"));
+	actionFloating->setCheckable(true);
+	QAction *actionLineBreak = menuContext.addAction(tr("Line break"));
+	actionLineBreak->setCheckable(true);
+	menuContext.addAction(menuType.menuAction());
+	QAction *actionNormal = menuType.addAction(tr("Normal"));
+	actionNormal->setCheckable(true);
+	QAction *actionGolden = menuType.addAction(tr("Golden"));
+	actionGolden->setCheckable(true);
+	QAction *actionFreestyle = menuType.addAction(tr("Freestyle"));
+	actionFreestyle->setCheckable(true);
+	NoteLabel *nl = child ? child : selectedNote();
+	if (!nl) {
+		actionFloating->setEnabled(false);
+		actionLineBreak->setEnabled(false);
+		menuType.setEnabled(false);
+	} else {
+		actionFloating->setChecked(nl->isFloating());
+		actionLineBreak->setChecked(nl->isLineBreak());
+		actionNormal->setChecked(nl->note().type == Note::NORMAL);
+		actionGolden->setChecked(nl->note().type == Note::GOLDEN);
+		actionFreestyle->setChecked(nl->note().type == Note::FREESTYLE);
+	}
+	menuContext.addSeparator();
+
 	QAction *actionResetZoom = menuContext.addAction(tr("Reset zoom"));
 	actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
+	actionResetZoom->setEnabled(getZoomLevel() != "100 %");
 	menuContext.addSeparator();
+
 	QAction *actionCut = menuContext.addAction(tr("Cut"));
 	actionCut->setIcon(QIcon::fromTheme("edit-cut", QIcon(":/icons/edit-cut.png")));
-	if (m_selectedNotes.isEmpty()) actionCut->setEnabled(false);
+	actionCut->setEnabled(!m_selectedNotes.isEmpty());
 	QAction *actionCopy = menuContext.addAction(tr("Copy"));
 	actionCopy->setIcon(QIcon::fromTheme("edit-copy", QIcon(":/icons/edit-copy.png")));
-	if (m_selectedNotes.isEmpty()) actionCopy->setEnabled(false);
+	actionCopy->setEnabled(!m_selectedNotes.isEmpty());
 	QAction *actionPaste = menuContext.addAction(tr("Paste"));
 	actionPaste->setIcon(QIcon::fromTheme("edit-paste", QIcon(":/icons/edit-paste.png")));
 	QAction *actionDelete = menuContext.addAction(tr("Delete"));
 	actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
-	if (m_selectedNotes.isEmpty()) actionDelete->setEnabled(false);
+	actionDelete->setEnabled(!m_selectedNotes.isEmpty());
 	menuContext.addSeparator();
+
 	QAction *actionSelectAll = menuContext.addAction(tr("Select all"));
+	actionSelectAll->setEnabled(!m_notes.isEmpty());
 	actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	QAction *actionDeselect = menuContext.addAction(tr("Deselect"));
+	actionDeselect->setEnabled(!m_selectedNotes.isEmpty());
 
-	QPoint globalPos = mapToGlobal(pos);
 	QAction *sel = menuContext.exec(globalPos);
 	if (sel) {
 		if (sel == actionNew) createNote(mapFromGlobal(globalPos).x());
+		else if (sel == actionSplit) split(nl);
+		else if (sel == actionFloating) setFloating(nl, !nl->isFloating());
+		else if (sel == actionLineBreak) setLineBreak(nl, !nl->isLineBreak());
+		else if (sel == actionNormal) setType(nl, 0);
+		else if (sel == actionGolden) setType(nl, 1);
+		else if (sel == actionFreestyle) setType(nl, 2);
 		else if (sel == actionResetZoom) zoom(getNaN());
 		else if (sel == actionCut) ; // TODO
 		else if (sel == actionCopy) ; // TODO
 		else if (sel == actionPaste) ; // TODO
-		else if (sel == actionDelete) del(selectedNote());
+		else if (sel == actionDelete) del(nl);
 		else if (sel == actionSelectAll) selectAll();
 		else if (sel == actionDeselect) selectNote(NULL);
 	}
+	menuType.clear();
 	menuContext.clear();
 }
 
