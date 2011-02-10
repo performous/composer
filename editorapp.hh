@@ -53,6 +53,7 @@ private:
 public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
+	void selectAllNotes();
 	void analyzeProgress(int value, int maximum);
 	void metaDataChanged();
 	void audioTick(qint64 time);

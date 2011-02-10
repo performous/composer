@@ -450,9 +450,7 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 {
 	int k = event->key(), m = event->modifiers();
 
-	if (k == Qt::Key_A && (m & Qt::ControlModifier)) { // Select all
-		selectAll();
-	} else if (k == Qt::Key_Return) { // Edit lyric
+	if (k == Qt::Key_Return) { // Edit lyric
 		editLyric(selectedNote());
 	} else if (k == Qt::Key_Left) { // Select note on the left
 		selectNextSyllable(true, (m & Qt::ControlModifier));

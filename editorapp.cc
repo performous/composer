@@ -8,6 +8,7 @@
 #include <QWhatsThis>
 #include <QUrl>
 #include <QCloseEvent>
+#include <QShortcut>
 #include <QSettings>
 #include <phonon/AudioOutput>
 #include <iostream>
@@ -69,6 +70,7 @@ EditorApp::EditorApp(QWidget *parent)
 	// NoteGraph setup down here so that the objects we setup signals are already created
 	setupNoteGraph();
 	updateNoteInfo(NULL);
+	new QShortcut(QKeySequence("Ctrl+A"), this, SLOT(selectAllNotes()));
 
 	song.reset(new Song);
 
@@ -222,6 +224,10 @@ void EditorApp::analyzeProgress(int value, int maximum)
 	}
 }
 
+void EditorApp::selectAllNotes()
+{
+	if (noteGraph) noteGraph->selectAll();
+}
 
 
 // File menu
