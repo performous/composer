@@ -207,23 +207,57 @@ void NoteLabelManager::move(NoteLabel *note, int value)
 
 void NoteLabelManager::setType(NoteLabel *note, int index)
 {
-	if (note && note->note().getTypeInt() != index) {
+	if (!note) return;
+	// Easy case: only one note
+	if (m_selectedNotes.size() == 1 || !note->isSelected()) {
+		if (note->note().getTypeInt() == index) return;
 		Operation op("TYPE");
 		op << getNoteLabelId(note) << index;
 		doOperation(op);
 	}
+
+	// Multiple notes selected: apply to all
+	int i = 0;
+	for (; i < m_selectedNotes.size(); ++i) {
+		Operation op("TYPE");
+		op << getNoteLabelId(m_selectedNotes[i]) << index;
+		doOperation(op);
+	}
+	doOperation(Operation("COMBINER", i));
 }
 
 void NoteLabelManager::setFloating(NoteLabel *note, bool state)
 {
-	if (note && note->isFloating() != state)
+	if (!note) return;
+	// Easy case: only one note
+	if (m_selectedNotes.size() == 1 || !note->isSelected()) {
+		if (note->isFloating() == state) return;
 		doOperation(Operation("FLOATING", getNoteLabelId(note), state));
+	}
+
+	// Multiple notes selected: apply to all
+	int i = 0;
+	for (; i < m_selectedNotes.size(); ++i) {
+		doOperation(Operation("FLOATING", getNoteLabelId(m_selectedNotes[i]), state));
+	}
+	doOperation(Operation("COMBINER", i));
 }
 
 void NoteLabelManager::setLineBreak(NoteLabel *note, bool state)
 {
-	if (note && note->isLineBreak() != state)
+	if (!note) return;
+	// Easy case: only one note
+	if (m_selectedNotes.size() == 1 || !note->isSelected()) {
+		if (note->isLineBreak() == state) return;
 		doOperation(Operation("LINEBREAK", getNoteLabelId(note), state));
+	}
+
+	// Multiple notes selected: apply to all
+	int i = 0;
+	for (; i < m_selectedNotes.size(); ++i) {
+		doOperation(Operation("LINEBREAK", getNoteLabelId(m_selectedNotes[i]), state));
+	}
+	doOperation(Operation("COMBINER", i));
 }
 
 void NoteLabelManager::editLyric(NoteLabel *note) {

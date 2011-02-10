@@ -181,34 +181,41 @@ void EditorApp::updateTitle()
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
-	// For now we disable all controls when multiple notes are selected
-	if (note && noteGraph && noteGraph->selectedNotes().size() == 1) {
-		MusicalScale ms;
-		ui.valNoteBegin->setText(QString::number(note->note().begin, 'f', 2) + tr(" s"));
-		ui.valNoteEnd->setText(QString::number(note->note().end, 'f', 2) + tr(" s"));
-		ui.valNoteDuration->setText(QString::number(note->note().length(), 'f', 2) + tr(" s"));
-		ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
-			+ " (" + QString::number(note->note().note) + ")");
-		ui.cmdSplit->setEnabled(true);
+	if (!note || !noteGraph || noteGraph->selectedNotes().size() > 1) {
+		ui.valNoteBegin->setText("-");
+		ui.valNoteEnd->setText("-");
+		ui.valNoteDuration->setText("-");
+		ui.valNote->setText("-");
+		ui.cmdSplit->setEnabled(false);
+		ui.lblCurrentSentence->setText(tr("Current phrase:") + " -");
+		ui.lblPrevSentence->setText(tr("Previous phrase:") + " -");
+		// The next ones are available also for multi-note selections, so let's not disable them
+		if (!note || !noteGraph) {
+			ui.cmbNoteType->setEnabled(false);
+			ui.chkFloating->setEnabled(false);
+			ui.chkLineBreak->setEnabled(false);
+		}
+	}
+	if (note && noteGraph) {
+		if (noteGraph->selectedNotes().size() == 1) {
+			// These are only available for single note selections
+			MusicalScale ms;
+			ui.valNoteBegin->setText(QString::number(note->note().begin, 'f', 2) + tr(" s"));
+			ui.valNoteEnd->setText(QString::number(note->note().end, 'f', 2) + tr(" s"));
+			ui.valNoteDuration->setText(QString::number(note->note().length(), 'f', 2) + tr(" s"));
+			ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
+				+ " (" + QString::number(note->note().note) + ")");
+			ui.cmdSplit->setEnabled(true);
+			ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
+			ui.lblPrevSentence->setText(tr("Previous phrase:") + " " + noteGraph->getPrevSentence());
+		}
+		// The next ones are available also for multi-note selections
 		ui.cmbNoteType->setEnabled(true);
 		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
 		ui.chkFloating->setEnabled(true);
 		ui.chkFloating->setChecked(note->isFloating());
 		ui.chkLineBreak->setEnabled(true);
 		ui.chkLineBreak->setChecked(note->note().lineBreak);
-		ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
-		ui.lblPrevSentence->setText(tr("Previous phrase:") + " " + noteGraph->getPrevSentence());
-	} else {
-		ui.valNoteBegin->setText("-");
-		ui.valNoteEnd->setText("-");
-		ui.valNoteDuration->setText("-");
-		ui.valNote->setText("-");
-		ui.cmdSplit->setEnabled(false);
-		ui.cmbNoteType->setEnabled(false);
-		ui.chkFloating->setEnabled(false);
-		ui.chkLineBreak->setEnabled(false);
-		ui.lblCurrentSentence->setText(tr("Current phrase:") + " -");
-		ui.lblPrevSentence->setText(tr("Previous phrase:") + " -");
 	}
 	updateTitle();
 }
@@ -669,26 +676,24 @@ void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtGenre_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
 
-void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
-{
-	if (noteGraph) noteGraph->setType(noteGraph->selectedNote(), index);
-}
-
 void EditorApp::on_cmdSplit_clicked()
 {
 	if (noteGraph) noteGraph->split(noteGraph->selectedNote());
 }
 
-void EditorApp::on_chkFloating_stateChanged(int state)
+void EditorApp::on_cmbNoteType_activated(int index)
 {
-	bool floating = (state != 0);
-	if (noteGraph) noteGraph->setFloating(noteGraph->selectedNote(), floating);
+	if (noteGraph) noteGraph->setType(noteGraph->selectedNote(), index);
 }
 
-void EditorApp::on_chkLineBreak_stateChanged(int state)
+void EditorApp::on_chkFloating_clicked(bool checked)
 {
-	bool linebreak = (state != 0);
-	if (noteGraph) noteGraph->setLineBreak(noteGraph->selectedNote(), linebreak);
+	if (noteGraph) noteGraph->setFloating(noteGraph->selectedNote(), checked);
+}
+
+void EditorApp::on_chkLineBreak_clicked(bool checked)
+{
+	if (noteGraph) noteGraph->setLineBreak(noteGraph->selectedNote(), checked);
 }
 
 void EditorApp::closeEvent(QCloseEvent *event)
