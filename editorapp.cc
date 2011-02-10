@@ -41,6 +41,10 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionExit->setIcon(QIcon::fromTheme("application-exit", QIcon(":/icons/application-exit.png")));
 	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo", QIcon(":/icons/edit-undo.png")));
 	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo", QIcon(":/icons/edit-redo.png")));
+	ui.actionCut->setIcon(QIcon::fromTheme("edit-cut", QIcon(":/icons/edit-cut.png")));
+	ui.actionCopy->setIcon(QIcon::fromTheme("edit-copy", QIcon(":/icons/edit-copy.png")));
+	ui.actionPaste->setIcon(QIcon::fromTheme("edit-paste", QIcon(":/icons/edit-paste.png")));
+	ui.actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
 	ui.actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	ui.menuPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
@@ -148,18 +152,28 @@ void EditorApp::doOpStack()
 
 void EditorApp::updateMenuStates()
 {
-	// Save menu
+	// Save
 	if (hasUnsavedChanges)
 		ui.actionSave->setEnabled(true);
 	else ui.actionSave->setEnabled(false);
-	// Undo menu
+	// Undo
 	if (opStack.isEmpty() || opStack.top().op() == "BLOCK")
 		ui.actionUndo->setEnabled(false);
 	else ui.actionUndo->setEnabled(true);
-	// Redo menu
+	// Redo
 	if (redoStack.isEmpty())
 		ui.actionRedo->setEnabled(false);
 	else ui.actionRedo->setEnabled(true);
+	// Copy-paste stuff
+	if (noteGraph && noteGraph->selectedNote()) {
+		ui.actionCut->setEnabled(true);
+		ui.actionCopy->setEnabled(true);
+		ui.actionDelete->setEnabled(true);
+	} else {
+		ui.actionCut->setEnabled(false);
+		ui.actionCopy->setEnabled(false);
+		ui.actionDelete->setEnabled(false);
+	}
 	// Window title
 	updateTitle();
 }
@@ -216,7 +230,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.chkLineBreak->setEnabled(true);
 		ui.chkLineBreak->setChecked(note->note().lineBreak);
 	}
-	updateTitle();
+	updateMenuStates();
 }
 
 void EditorApp::analyzeProgress(int value, int maximum)
@@ -471,6 +485,26 @@ void EditorApp::on_actionRedo_triggered()
 	opStack.push(redoStack.top());
 	redoStack.pop();
 	doOpStack();
+}
+
+void EditorApp::on_actionCut_triggered()
+{
+	//TODO
+}
+
+void EditorApp::on_actionCopy_triggered()
+{
+	//TODO
+}
+
+void EditorApp::on_actionPaste_triggered()
+{
+	//TODO
+}
+
+void EditorApp::on_actionDelete_triggered()
+{
+	if (noteGraph) noteGraph->del(noteGraph->selectedNote());
 }
 
 void EditorApp::on_actionSelectAll_triggered()

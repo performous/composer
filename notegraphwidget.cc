@@ -484,8 +484,6 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		move(selectedNote(), 1);
 	} else if (k == Qt::Key_Down) { // Move note down
 		move(selectedNote(), -1);
-	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
-		del(selectedNote());
 	} else if (k == Qt::Key_Escape) { // Unselect all note(s)
 		selectNote(NULL);
 	} else if (k == Qt::Key_Plus && (m & Qt::ControlModifier)) {
@@ -530,6 +528,18 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	QAction *actionResetZoom = menuContext.addAction(tr("Reset zoom"));
 	actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
 	menuContext.addSeparator();
+	QAction *actionCut = menuContext.addAction(tr("Cut"));
+	actionCut->setIcon(QIcon::fromTheme("edit-cut", QIcon(":/icons/edit-cut.png")));
+	if (m_selectedNotes.isEmpty()) actionCut->setEnabled(false);
+	QAction *actionCopy = menuContext.addAction(tr("Copy"));
+	actionCopy->setIcon(QIcon::fromTheme("edit-copy", QIcon(":/icons/edit-copy.png")));
+	if (m_selectedNotes.isEmpty()) actionCopy->setEnabled(false);
+	QAction *actionPaste = menuContext.addAction(tr("Paste"));
+	actionPaste->setIcon(QIcon::fromTheme("edit-paste", QIcon(":/icons/edit-paste.png")));
+	QAction *actionDelete = menuContext.addAction(tr("Delete"));
+	actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
+	if (m_selectedNotes.isEmpty()) actionDelete->setEnabled(false);
+	menuContext.addSeparator();
 	QAction *actionSelectAll = menuContext.addAction(tr("Select all"));
 	actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	QAction *actionDeselect = menuContext.addAction(tr("Deselect"));
@@ -539,6 +549,10 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	if (sel) {
 		if (sel == actionNew) createNote(mapFromGlobal(globalPos).x());
 		else if (sel == actionResetZoom) zoom(getNaN());
+		else if (sel == actionCut) ; // TODO
+		else if (sel == actionCopy) ; // TODO
+		else if (sel == actionPaste) ; // TODO
+		else if (sel == actionDelete) del(selectedNote());
 		else if (sel == actionSelectAll) selectAll();
 		else if (sel == actionDeselect) selectNote(NULL);
 	}
