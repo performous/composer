@@ -17,7 +17,7 @@
 namespace {
 	static Operation opFromNote(const Note& note, int id, bool floating) {
 		Operation op("NEW");
-		op << id << note.syllable << note.begin << note.end << note.note << floating << note.lineBreak;
+		op << id << note.syllable << note.begin << note.end << note.note << floating << note.lineBreak << note.getTypeInt();
 		return op;
 	}
 }

@@ -130,7 +130,8 @@ void NoteLabelManager::createNote(int x)
 		<< px2s(x+10) // dummy end
 		<< nlvl // note
 		<< true // floating
-		<< false; // linebreak
+		<< false // linebreak
+		<< 0; // type
 	doOperation(op); // Execute operation
 }
 
@@ -151,8 +152,8 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	// Create operations for adding the new labels and deleting the old one
 	int id = getNoteLabelId(note);
 	Operation new1("NEW"), new2("NEW");
-	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating() << n.lineBreak;
-	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating() << false;
+	new1 << id << firstst << n.begin << n.begin + n.length() * ratio << n.note << note->isFloating() << n.lineBreak << n.getTypeInt();
+	new2 << id+1 << secondst << n.begin + n.length() * ratio << n.end << n.note << note->isFloating() << false << 0;
 	doOperation(new1, Operation::NO_UPDATE);
 	doOperation(new2, Operation::NO_UPDATE);
 	doOperation(Operation("DEL", id+2), Operation::NO_UPDATE);
@@ -254,6 +255,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 		} else if (action == "NEW") {
 			Note newnote(op.s(2)); // lyric
 			newnote.lineBreak = op.b(7); // lineBreak
+			newnote.type = Note::types[op.i(8)]; // note type
 			NoteLabel *newLabel = new NoteLabel(
 				newnote, // Note(lyric)
 				this, // parent
