@@ -17,15 +17,12 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Find all the libs that don't require extra parameters
-foreach(lib AVFormat SWScale)
+foreach(lib AVFormat)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
 	add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
-
-find_package(Boost 1.36 REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(Phonon)
 if(Phonon_FOUND)
