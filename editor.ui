@@ -528,6 +528,8 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
+    <addaction name="actionSelectAll"/>
+    <addaction name="separator"/>
     <addaction name="menuPreferences"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -677,6 +679,14 @@
   <action name="actionGettingStarted">
    <property name="text">
     <string>&amp;Getting started</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select &amp;all</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>

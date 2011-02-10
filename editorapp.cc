@@ -8,7 +8,6 @@
 #include <QWhatsThis>
 #include <QUrl>
 #include <QCloseEvent>
-#include <QShortcut>
 #include <QSettings>
 #include <phonon/AudioOutput>
 #include <iostream>
@@ -42,6 +41,7 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionExit->setIcon(QIcon::fromTheme("application-exit", QIcon(":/icons/application-exit.png")));
 	ui.actionUndo->setIcon(QIcon::fromTheme("edit-undo", QIcon(":/icons/edit-undo.png")));
 	ui.actionRedo->setIcon(QIcon::fromTheme("edit-redo", QIcon(":/icons/edit-redo.png")));
+	ui.actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	ui.menuPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
@@ -70,7 +70,6 @@ EditorApp::EditorApp(QWidget *parent)
 	// NoteGraph setup down here so that the objects we setup signals are already created
 	setupNoteGraph();
 	updateNoteInfo(NULL);
-	new QShortcut(QKeySequence("Ctrl+A"), this, SLOT(selectAllNotes()));
 
 	song.reset(new Song);
 
@@ -233,10 +232,6 @@ void EditorApp::analyzeProgress(int value, int maximum)
 	}
 }
 
-void EditorApp::selectAllNotes()
-{
-	if (noteGraph) noteGraph->selectAll();
-}
 
 
 // File menu
@@ -478,6 +473,10 @@ void EditorApp::on_actionRedo_triggered()
 	doOpStack();
 }
 
+void EditorApp::on_actionSelectAll_triggered()
+{
+	if (noteGraph) noteGraph->selectAll();
+}
 
 void EditorApp::on_actionAntiAliasing_toggled(bool checked)
 {

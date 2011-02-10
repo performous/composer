@@ -53,7 +53,6 @@ private:
 public slots:
 	void operationDone(const Operation &op);
 	void updateNoteInfo(NoteLabel *note);
-	void selectAllNotes();
 	void analyzeProgress(int value, int maximum);
 	void metaDataChanged();
 	void audioTick(qint64 time);
@@ -79,6 +78,7 @@ public slots:
 	// Edit menu
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
+	void on_actionSelectAll_triggered();
 	void on_actionAntiAliasing_toggled(bool checked);
 
 	// Insert menu
