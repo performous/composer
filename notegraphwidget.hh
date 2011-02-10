@@ -135,6 +135,8 @@ protected:
 	void timerEvent(QTimerEvent *event);
 	void paintEvent(QPaintEvent*);
 	void resizeEvent(QResizeEvent *) { updatePitch(); }
+	void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *event);
 
 private:
 	void finalizeNewLyrics();

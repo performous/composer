@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QMenu>
 #include <QToolTip>
+#include <QMessageBox>
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -38,6 +39,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	setFixedHeight(768);
 
 	setFocusPolicy(Qt::StrongFocus);
+	setAcceptDrops(true);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 
 	// Context menu
@@ -495,6 +497,26 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 	} else {
 		QWidget::keyPressEvent(event);
 	}
+}
+
+void NoteGraphWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+	if (event->mimeData()->hasFormat("text/plain"))
+		event->acceptProposedAction();
+}
+
+void NoteGraphWidget::dropEvent(QDropEvent *event)
+{
+	QString lyrics = event->mimeData()->text();
+	if (m_notes.isEmpty()
+		|| QMessageBox::question(this, tr("Replace lyrics"),
+			tr("Do you wish to replace the existing lyrics?"),
+			QMessageBox::Ok | QMessageBox::Cancel)
+		== QMessageBox::Ok)
+	{
+		setLyrics(lyrics);
+	}
+	event->acceptProposedAction();
 }
 
 
