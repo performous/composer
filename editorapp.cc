@@ -22,7 +22,7 @@
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
 	static const quint32 PROJECT_SAVE_FILE_MAGIC = 0x50455350;
-	static const quint32 PROJECT_SAVE_FILE_VERSION = 100; // File format version 1.00
+	static const quint32 PROJECT_SAVE_FILE_VERSION = 101; // File format version 1.01
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
 }
 
@@ -300,7 +300,7 @@ void EditorApp::on_actionOpen_triggered()
 							projectFileName = fileName;
 							updateNoteInfo(NULL); // Title bar
 						} else
-							QMessageBox::critical(this, tr("Error opening file!"), tr("File %1 has unsupported format version.").arg(fileName));
+							QMessageBox::critical(this, tr("Error opening file!"), tr("Unsupported project file version in %1").arg(fileName));
 					} else
 						QMessageBox::critical(this, tr("Error opening file!"), tr("File %1 doesn't look like a project file.").arg(fileName));
 				} else
