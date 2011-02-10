@@ -6,6 +6,11 @@
         <file>icons/document-save.png</file>
         <file>icons/edit-redo.png</file>
         <file>icons/edit-undo.png</file>
+        <file>icons/edit-copy.png</file>
+        <file>icons/edit-cut.png</file>
+        <file>icons/edit-delete.png</file>
+        <file>icons/edit-paste.png</file>
+        <file>icons/edit-select-all.png</file>
         <file>icons/document-open.png</file>
         <file>icons/help-about.png</file>
         <file>icons/help-hint.png</file>
@@ -15,6 +20,7 @@
         <file>icons/media-playback-start.png</file>
         <file>icons/media-playback-stop.png</file>
         <file>icons/preferences-other.png</file>
+        <file>icons/zoom-original.png</file>
         <file>docs/Authors.txt</file>
         <file>docs/License.txt</file>
     </qresource>
