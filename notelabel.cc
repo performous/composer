@@ -212,6 +212,7 @@ void NoteLabel::showContextMenu(const QPoint &pos)
 	menuContext.addSeparator();
 	QAction *actionSplit = menuContext.addAction(tr("Split"));
 	QAction *actionDelete = menuContext.addAction(tr("Delete"));
+	actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
 
 	// Show maenu and wait for action
 	QPoint globalPos = mapToGlobal(pos);

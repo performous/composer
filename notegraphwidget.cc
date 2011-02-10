@@ -525,10 +525,13 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	QMenu menuContext(NULL);
 
 	QAction *actionNew = menuContext.addAction(tr("New note"));
+	actionNew->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	menuContext.addSeparator();
 	QAction *actionResetZoom = menuContext.addAction(tr("Reset zoom"));
+	actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
 	menuContext.addSeparator();
 	QAction *actionSelectAll = menuContext.addAction(tr("Select all"));
+	actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	QAction *actionDeselect = menuContext.addAction(tr("Deselect"));
 
 	QPoint globalPos = mapToGlobal(pos);
