@@ -484,6 +484,8 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		move(selectedNote(), -1);
 	} else if (k == Qt::Key_Delete) { // Delete selected note(s)
 		del(selectedNote());
+	} else if (k == Qt::Key_Escape) { // Unselect all note(s)
+		selectNote(NULL);
 	} else if (k == Qt::Key_Plus && (m & Qt::ControlModifier)) {
 		zoom(1.0);
 	} else if (k == Qt::Key_Minus && (m & Qt::ControlModifier)) {
