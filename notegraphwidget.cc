@@ -308,9 +308,16 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 	if (!child) {
 		SeekHandle *seekh = qobject_cast<SeekHandle*>(childAt(event->pos()));
 		if (!seekh) {
-			// Left click empty area = pan
-			if (event->button() == Qt::LeftButton)
+
+			// Middle click or Alt + Left Click empty area = pan
+			if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)) {
 				m_panHotSpot = event->pos();
+
+			// Left click empty area = dragbox selection
+			} else if (event->button() == Qt::LeftButton) {
+				// TODO
+			}
+
 		} else {
 			// Seeking
 			m_seeking = true;
