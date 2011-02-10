@@ -189,6 +189,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteDuration->setText(QString::number(note->note().length(), 'f', 2) + tr(" s"));
 		ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
 			+ " (" + QString::number(note->note().note) + ")");
+		ui.cmdSplit->setEnabled(true);
 		ui.cmbNoteType->setEnabled(true);
 		ui.cmbNoteType->setCurrentIndex(note->note().getTypeInt());
 		ui.chkFloating->setEnabled(true);
@@ -202,6 +203,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteEnd->setText("-");
 		ui.valNoteDuration->setText("-");
 		ui.valNote->setText("-");
+		ui.cmdSplit->setEnabled(false);
 		ui.cmbNoteType->setEnabled(false);
 		ui.chkFloating->setEnabled(false);
 		ui.chkLineBreak->setEnabled(false);
@@ -670,6 +672,11 @@ void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
 void EditorApp::on_cmbNoteType_currentIndexChanged(int index)
 {
 	if (noteGraph) noteGraph->setType(noteGraph->selectedNote(), index);
+}
+
+void EditorApp::on_cmdSplit_clicked()
+{
+	if (noteGraph) noteGraph->split(noteGraph->selectedNote());
 }
 
 void EditorApp::on_chkFloating_stateChanged(int state)

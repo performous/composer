@@ -96,6 +96,7 @@ public slots:
 	void on_txtArtist_editingFinished();
 	void on_txtGenre_editingFinished();
 	void on_txtYear_editingFinished();
+	void on_cmdSplit_clicked();
 	void on_cmbNoteType_currentIndexChanged(int state);
 	void on_chkFloating_stateChanged(int state);
 	void on_chkLineBreak_stateChanged(int state);
