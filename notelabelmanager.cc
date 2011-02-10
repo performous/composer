@@ -68,6 +68,24 @@ void NoteLabelManager::shiftSelect(NoteLabel* note)
 		selectNote(m_notes[i], false);
 }
 
+void NoteLabelManager::boxSelect(QPoint p1, QPoint p2)
+{
+	// Make sure the points are in right order (p1 = upper left, p2 = lower right)
+	if (p1.x() > p2.x()) std::swap(p1.rx(), p2.rx());
+	if (p1.y() > p2.y()) std::swap(p1.ry(), p2.ry());
+	// Deselect all
+	selectNote(NULL);
+	// Loop through notes, select the ones inside rectangle
+	for (int i = 0; i < m_notes.size(); ++i) {
+		NoteLabel *nl = m_notes[i];
+		if (nl->x() > p2.x()) break;
+		if (nl->x() + nl->width() > p1.x()
+			&& nl->y() + nl->height() > p1.y()
+			&& nl->y() < p2.y())
+				selectNote(nl, false);
+	}
+}
+
 int NoteLabelManager::getNoteLabelId(NoteLabel* note) const
 {
 	for (int i = 0; i < m_notes.size(); ++i)

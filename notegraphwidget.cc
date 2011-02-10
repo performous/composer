@@ -26,7 +26,7 @@ namespace {
 /*static*/ const QString NoteGraphWidget::BGColor = "#222";
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
-	: NoteLabelManager(parent), m_panHotSpot(), m_seeking(), m_actionHappened(),
+	: NoteLabelManager(parent), m_mouseHotSpot(), m_seeking(), m_actionHappened(),
 	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_duration(10.0), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
@@ -311,11 +311,11 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 
 			// Middle click or Alt + Left Click empty area = pan
 			if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)) {
-				m_panHotSpot = event->pos();
+				m_mouseHotSpot = event->pos();
 
 			// Left click empty area = dragbox selection
 			} else if (event->button() == Qt::LeftButton) {
-				// TODO
+				m_mouseHotSpot = event->pos();
 			}
 
 		} else {
@@ -386,7 +386,7 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		m_selectedAction = NONE;
 	}
 	m_actionHappened = false;
-	m_panHotSpot = QPoint();
+	m_mouseHotSpot = QPoint();
 	m_seeking = false;
 	setCursor(QCursor());
 	updateNotes();
@@ -432,22 +432,26 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	// Seeking
-	if (m_seeking)
+	if (m_seeking) {
 		seek(event->x());
 
+	// Box selection
+	} else if (!m_mouseHotSpot.isNull() && (event->buttons() & Qt::LeftButton) && !(event->modifiers() & Qt::AltModifier)) {
+		boxSelect(m_mouseHotSpot, event->pos());
+
 	// Pan
-	else if (!m_panHotSpot.isNull()) {
+	} else if (!m_mouseHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
 		QScrollArea *scrollArea = NULL;
 		if (parentWidget())
 			scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
 		if (scrollArea) {
-			QPoint diff = event->pos() - m_panHotSpot;
+			QPoint diff = event->pos() - m_mouseHotSpot;
 			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();
 			scrollHor->setValue(scrollHor->value() - diff.x());
 			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
 			scrollVer->setValue(scrollVer->value() - diff.y());
-			m_panHotSpot = event->pos() - diff;
+			m_mouseHotSpot = event->pos() - diff;
 		}
 	}
 

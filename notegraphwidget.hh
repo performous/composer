@@ -38,6 +38,7 @@ public:
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	void selectAll();
 	void shiftSelect(NoteLabel *note);
+	void boxSelect(QPoint p1, QPoint p2);
 	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
 	NoteLabels& selectedNotes() { return m_selectedNotes; }
 	NoteLabels const& selectedNotes() const { return m_selectedNotes; }
@@ -139,7 +140,7 @@ private:
 	void timeCurrent();
 	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
-	QPoint m_panHotSpot;
+	QPoint m_mouseHotSpot;
 	bool m_seeking;
 	bool m_actionHappened;
 	QScopedPointer<PitchVis> m_pitch;
