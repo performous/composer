@@ -1,7 +1,10 @@
-namespace mid {
+#pragma once
 
-	typedef unsigned char uint8_t;
-	typedef std::vector<uint8_t> Data;
+#include "types.hh"
+#include <stdexcept>
+#include <string>
+
+namespace mid {
 
 	struct Riff {
 		Riff(uint8_t* begin, uint8_t* end): begin(begin), end(end) {}
@@ -28,10 +31,12 @@ namespace mid {
 		uint32_t readVar() {
 			unsigned value = 0;
 			unsigned len = 0;
+			unsigned c = 0;
 			do {
 				if (++len > 4) throw std::runtime_error("Too long varlen sequence in RIFF chunk " + riff.name());
 				requireBytes(1);
-				value = (value << 7) | (*pos++ & 0x7F);
+				c = *pos++;
+				value = (value << 7) | (c & 0x7F);
 			} while (c & 0x80);
 			return value;
 		}
@@ -41,11 +46,12 @@ namespace mid {
 		uint8_t* pos;
 	};
 
-	struct Command {
+	struct Event {
 		unsigned timecode;
-		int command;
-		int channel;
-		int note;
+		int type;
+		int arg1;
+		int arg2;
+		void print() const;
 	};
-
+	
 }
