@@ -115,6 +115,25 @@ void NoteLabelManager::selectNextSentenceStart()
 
 
 
+void NoteLabelManager::createNote(int x)
+{
+	// Find the correct place for this note
+	int i = 0, nlvl = 24;
+	for (; i < m_notes.size(); ++i) {
+		nlvl = m_notes[i]->note().note;
+		if (m_notes[i]->x() >= x) break;
+	}
+	// Create Operation
+	Operation op("NEW");
+	op << i << QString("")
+		<< px2s(x) // begin
+		<< px2s(x+10) // dummy end
+		<< nlvl // note
+		<< true // floating
+		<< false; // linebreak
+	doOperation(op); // Execute operation
+}
+
 void NoteLabelManager::split(NoteLabel *note, float ratio)
 {
 	if (!note) return;
@@ -242,7 +261,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
 				op.b(6) // floating
 				);
-			if (m_notes.isEmpty()) m_notes.push_back(newLabel);
+			if (m_notes.isEmpty() || op.i(1) > m_notes.size()) m_notes.push_back(newLabel);
 			else m_notes.insert(op.i(1), newLabel);
 		} else {
 			NoteLabel *n = m_notes.at(op.i(1));

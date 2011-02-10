@@ -46,6 +46,7 @@ public:
 	int getNoteLabelId(NoteLabel* note) const;
 	NoteLabels& noteLabels() { return m_notes; }
 
+	void createNote(int x);
 	void split(NoteLabel *note, float ratio = 0.5f);
 	void del(NoteLabel *note);
 	void move(NoteLabel *note, int value);

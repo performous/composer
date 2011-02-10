@@ -512,7 +512,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	QPoint globalPos = mapToGlobal(pos);
 	QAction *sel = menuContext.exec(globalPos);
 	if (sel) {
-		if (sel == actionNew) /*TODO*/;
+		if (sel == actionNew) createNote(mapFromGlobal(globalPos).x());
 		else if (sel == actionResetZoom) zoom(getNaN());
 		else if (sel == actionSelectAll) selectAll();
 		else if (sel == actionDeselect) selectNote(NULL);
