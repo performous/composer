@@ -449,12 +449,16 @@ void EditorApp::on_actionUndo_triggered()
 		return;
 	} else if (opStack.top().op() == "COMBINER") {
 		// Special handling to add the ops in the right order
-		int count = opStack.top().i(1);
-		int start = opStack.size() - count - 1;
-		for (int i = start; i < start + count; ++i) {
-			redoStack.push(opStack.at(i));
+		try {
+			int count = opStack.top().i(1);
+			int start = opStack.size() - count - 1;
+			for (int i = start; i < start + count; ++i) {
+				redoStack.push(opStack.at(i));
+			}
+			opStack.remove(start, count);
+		} catch (std::runtime_error&) {
+			QMessageBox::critical(this, tr("Error!"), tr("Corrupted undo stack."));
 		}
-		opStack.remove(start, count);
 	}
 	redoStack.push(opStack.top());
 	opStack.pop();
@@ -467,12 +471,16 @@ void EditorApp::on_actionRedo_triggered()
 		return;
 	else if (redoStack.top().op() == "COMBINER") {
 		// Special handling to add the ops in the right order
-		int count = redoStack.top().i(1);
-		int start = redoStack.size() - count - 1;
-		for (int i = start; i < start + count; ++i) {
-			opStack.push(redoStack.at(i));
+		try {
+			int count = redoStack.top().i(1);
+			int start = redoStack.size() - count - 1;
+			for (int i = start; i < start + count; ++i) {
+				opStack.push(redoStack.at(i));
+			}
+			redoStack.remove(start, count);
+		} catch (std::runtime_error&) {
+			QMessageBox::critical(this, tr("Error!"), tr("Corrupted redo stack."));
 		}
-		redoStack.remove(start, count);
 	}
 	opStack.push(redoStack.top());
 	redoStack.pop();

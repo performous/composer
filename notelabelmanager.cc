@@ -295,49 +295,54 @@ void NoteLabelManager::editLyric(NoteLabel *note) {
 void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlags flags)
 {
 	if (!(flags & Operation::NO_EXEC)) {
-		QString action = op.op();
-		if (action == "BLOCK" || action == "COMBINER") {
-			; // No op
-		} else if (action == "CLEAR") {
-			clearNotes();
-		} else if (action == "NEW") {
-			Note newnote(op.s(2)); // lyric
-			newnote.lineBreak = op.b(7); // lineBreak
-			newnote.type = Note::types[op.i(8)]; // note type
-			NoteLabel *newLabel = new NoteLabel(
-				newnote, // Note(lyric)
-				this, // parent
-				QPoint(s2px(op.d(3)), n2px(op.i(5)) - m_noteHalfHeight), // x,y
-				QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
-				op.b(6) // floating
-				);
-			int id = op.i(1);
-			if (id < 0) id = findIdForTime(op.d(3)); // -1 = auto-choose
-			if (m_notes.isEmpty() || id > m_notes.size()) m_notes.push_back(newLabel);
-			else m_notes.insert(id, newLabel);
-		} else {
-			NoteLabel *n = m_notes.at(op.i(1));
-			if (n) {
-				if (action == "DEL") {
-					n->close();
-					m_notes.removeAt(op.i(1));
-				} else if (action == "MOVE") {
-					n->setGeometry(s2px(op.d(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.d(3) - op.d(2)), 2 * m_noteHalfHeight);
-					n->setFloating(false);
-				} else if (action == "FLOATING") {
-					n->setFloating(op.b(2));
-				} else if (action == "LINEBREAK") {
-					n->setLineBreak(op.b(2));
-				} else if (action == "LYRIC") {
-					n->setLyric(op.s(2));
-				} else if (action == "TYPE") {
-					n->setType(op.i(2));
-				} else {
-					std::cerr << "Error: Unkown operation type " << action.toStdString() << std::endl;
+		try {
+			QString action = op.op();
+			if (action == "BLOCK" || action == "COMBINER") {
+				; // No op
+			} else if (action == "CLEAR") {
+				clearNotes();
+			} else if (action == "NEW") {
+				Note newnote(op.s(2)); // lyric
+				newnote.lineBreak = op.b(7); // lineBreak
+				newnote.type = Note::types[op.i(8)]; // note type
+				NoteLabel *newLabel = new NoteLabel(
+					newnote, // Note(lyric)
+					this, // parent
+					QPoint(s2px(op.d(3)), n2px(op.i(5)) - m_noteHalfHeight), // x,y
+					QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
+					op.b(6) // floating
+					);
+				int id = op.i(1);
+				if (id < 0) id = findIdForTime(op.d(3)); // -1 = auto-choose
+				if (m_notes.isEmpty() || id > m_notes.size()) m_notes.push_back(newLabel);
+				else m_notes.insert(id, newLabel);
+			} else {
+				NoteLabel *n = m_notes.at(op.i(1));
+				if (n) {
+					if (action == "DEL") {
+						n->close();
+						m_notes.removeAt(op.i(1));
+					} else if (action == "MOVE") {
+						n->setGeometry(s2px(op.d(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.d(3) - op.d(2)), 2 * m_noteHalfHeight);
+						n->setFloating(false);
+					} else if (action == "FLOATING") {
+						n->setFloating(op.b(2));
+					} else if (action == "LINEBREAK") {
+						n->setLineBreak(op.b(2));
+					} else if (action == "LYRIC") {
+						n->setLyric(op.s(2));
+					} else if (action == "TYPE") {
+						n->setType(op.i(2));
+					} else {
+						std::cerr << "Error: Unkown operation type " << action.toStdString() << std::endl;
+					}
+					n->createPixmap(n->size());
 				}
-				n->createPixmap(n->size());
 			}
+		} catch (std::runtime_error&) {
+			std::cerr << "Error! Invalid operation: " << op.dump() << std::endl;
 		}
+
 		if (!(flags & Operation::NO_UPDATE))
 			updateNotes();
 	}

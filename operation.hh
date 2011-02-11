@@ -5,6 +5,7 @@
 #include <QTextStream>
 #include <QDataStream>
 #include <ostream>
+#include <stdexcept>
 
 struct Operation
 {
@@ -32,18 +33,18 @@ struct Operation
 
 	/// Overloaded template getter for param at certain position (1-based)
 	template<typename T>
-	T param(int index) const { m_params[index].value<T>(); }
+	T param(int index) const { validate(index); m_params[index].value<T>(); }
 
 	/// Get Operation parameter at certain index (1-based)
 
-	QString s(int index) const { return m_params[index].toString(); }
-	char c(int index) const { return m_params[index].toChar().toAscii(); }
-	int i(int index) const { return m_params[index].toInt(); }
-	unsigned u(int index) const { return m_params[index].toUInt(); }
-	bool b(int index) const { return m_params[index].toBool(); }
-	float f(int index) const { return m_params[index].toFloat(); }
-	double d(int index) const { return m_params[index].toDouble(); }
-	QVariant q(int index) const { return m_params[index]; }
+	QString s(int index) const { validate(index); return m_params[index].toString(); }
+	char c(int index) const { validate(index); return m_params[index].toChar().toAscii(); }
+	int i(int index) const { validate(index); return m_params[index].toInt(); }
+	unsigned u(int index) const { validate(index); return m_params[index].toUInt(); }
+	bool b(int index) const { validate(index); return m_params[index].toBool(); }
+	float f(int index) const { validate(index); return m_params[index].toFloat(); }
+	double d(int index) const { validate(index); return m_params[index].toDouble(); }
+	QVariant q(int index) const { validate(index); return m_params[index]; }
 
 	std::string dump() const {
 		QString st;
@@ -57,6 +58,11 @@ struct Operation
 	friend QDataStream& operator>>(QDataStream& stream, Operation& op);
 
 private:
+	void validate(int index) const {
+		if (index < 0 || index >= m_params.size())
+			throw std::runtime_error("Invalid access to operation parameters");
+	}
+
 	QList<QVariant> m_params;
 };
 
