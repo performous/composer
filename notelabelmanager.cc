@@ -303,13 +303,14 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				clearNotes();
 			} else if (action == "NEW") {
 				Note newnote(op.s(2)); // lyric
+				newnote.begin = op.d(3); // begin
+				newnote.end = op.d(4); // end
+				newnote.note = op.d(5); // note
 				newnote.lineBreak = op.b(7); // lineBreak
 				newnote.type = Note::types[op.i(8)]; // note type
 				NoteLabel *newLabel = new NoteLabel(
 					newnote, // Note(lyric)
 					this, // parent
-					QPoint(s2px(op.d(3)), n2px(op.i(5)) - m_noteHalfHeight), // x,y
-					QSize(s2px(op.d(4) - op.d(3)), 2 * m_noteHalfHeight), // w,h
 					op.b(6) // floating
 					);
 				int id = op.i(1);

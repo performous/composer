@@ -15,16 +15,21 @@ const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 100; // The preferred size of notes
 
-NoteLabel::NoteLabel(const Note &note, QWidget *parent, const QPoint &position, const QSize &size, bool floating)
+NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
+	QSize size;
+	QPoint position;
+	NoteGraphWidget *ngw = qobject_cast<NoteGraphWidget*>(parent);
+	if (ngw) size.setWidth(ngw->s2px(note.length()));
 	createPixmap(size);
+	show(); // Already here so that height() is calculated
+	if (ngw) position = QPoint(ngw->s2px(note.begin), ngw->n2px(note.note) - height() / 2);
 	if (!position.isNull())
 		move(position);
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
-	show();
 }
 
 void NoteLabel::createPixmap(QSize size)
