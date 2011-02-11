@@ -293,7 +293,7 @@ void EditorApp::on_actionOpen_triggered()
 							while (!in.atEnd()) {
 								Operation op;
 								in >> op;
-								std::cout << "Loaded op: " << op.dump() << std::endl;
+								//std::cout << "Loaded op: " << op.dump() << std::endl;
 								opStack.push(op);
 							}
 							doOpStack();
@@ -378,7 +378,7 @@ void EditorApp::saveProject(QString fileName)
 			<< Operation("META", "ARTIST", song->artist)
 			<< Operation("META", "GENRE", song->genre)
 			<< Operation("META", "DATE", song->year)
-			<< Operation("META", "MUSICFILE", ui.valMusicFile->text());
+			<< Operation("META", "MUSICFILE", song->music["EDITOR"]);
 
 		projectFileName = fileName;
 		hasUnsavedChanges = false;
@@ -511,6 +511,9 @@ void EditorApp::on_actionAntiAliasing_toggled(bool checked)
 void EditorApp::setMusic(QString filepath)
 {
 	ui.valMusicFile->setText(filepath);
+	song->music["EDITOR"] = filepath;
+	hasUnsavedChanges = true;
+	updateMenuStates();
 	// Metadata is updated when it becomes available (signal)
 	player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
 	noteGraph->updateMusicPos(0, false);
