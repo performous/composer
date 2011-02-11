@@ -350,8 +350,9 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			child->startResizing( (hotSpot.x() < NoteLabel::resize_margin) ? -1 : 1 );
 
 		} else {
+			if (child->isSelected()) ; // No op
 			// Ctrl and Shift allow selecting multiple notes for dragging
-			if (event->modifiers() & Qt::ShiftModifier) shiftSelect(child);
+			else if (event->modifiers() & Qt::ShiftModifier) shiftSelect(child);
 			else selectNote(child, !(event->modifiers() & Qt::ControlModifier));
 			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
