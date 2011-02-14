@@ -91,7 +91,6 @@ protected:
 
 	NoteLabels m_notes;
 	NoteLabels m_selectedNotes;
-	NoteLabels m_cutNotes;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	int m_noteHalfHeight;
 };

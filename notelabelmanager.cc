@@ -51,8 +51,6 @@ void NoteLabelManager::selectNote(NoteLabel* note, bool clearPrevious)
 		note->setSelected(true);
 	} else if (!note) m_selectedAction = NONE;
 
-	m_cutNotes.clear(); // Clear cut buffer when selection changes
-
 	// Signal UI about the change
 	emit updateNoteInfo(selectedNote());
 }
@@ -419,12 +417,10 @@ double NoteLabelManager::px2n(int px) const { return (height() - px) / 16.0; }
 void NoteLabelManager::cut()
 {
 	if (m_selectedNotes.isEmpty()) return;
-	m_cutNotes.clear();
-	// Save selected notes for future deletion
-	for (int i = 0; i < m_selectedNotes.size(); ++i)
-		m_cutNotes.push_back(m_selectedNotes[i]);
 	// Copy
 	copy();
+	// Delete
+	del(selectedNote());
 }
 
 void NoteLabelManager::copy()
@@ -458,17 +454,6 @@ void NoteLabelManager::paste()
 
 		// FIXME
 		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs - pasting is so far only partially implemented. :-("));
-
-		// Delete all notes that were cut
-		// TODO: We need to clear cut buffer is clipboard contents has changed (by other instance/application)
-		if (!m_cutNotes.isEmpty()) {
-			int i = 0;
-			for (; i < m_cutNotes.size(); ++i)
-				doOperation(Operation("DEL", getNoteLabelId(m_cutNotes[i])));
-			doOperation(Operation("COMBINER", i)); // Combine into one undo-op
-			m_cutNotes.clear();
-			selectNote(NULL); // Clear selection as we might just have deleted some of it
-		}
 
 		// Read and execute all NoteLabel Operations from the clipboard
 		while (!stream.atEnd()) {
