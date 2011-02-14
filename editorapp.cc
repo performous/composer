@@ -192,6 +192,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.valNoteDuration->setText("-");
 		ui.valNote->setText("-");
 		ui.cmdSplit->setEnabled(false);
+		ui.cmdInsert->setEnabled(false);
 		ui.lblCurrentSentence->setText(tr("Current phrase:") + " -");
 		ui.lblPrevSentence->setText(tr("Previous phrase:") + " -");
 		// The next ones are available also for multi-note selections, so let's not disable them
@@ -211,6 +212,7 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 			ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
 				+ " (" + QString::number(note->note().note) + ")");
 			ui.cmdSplit->setEnabled(true);
+			ui.cmdInsert->setEnabled(true);
 			ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
 			ui.lblPrevSentence->setText(tr("Previous phrase:") + " " + noteGraph->getPrevSentence());
 		}
@@ -700,6 +702,11 @@ void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
 void EditorApp::on_cmdSplit_clicked()
 {
 	if (noteGraph) noteGraph->split(noteGraph->selectedNote());
+}
+
+void EditorApp::on_cmdInsert_clicked()
+{
+	if (noteGraph) noteGraph->createNote(noteGraph->selectedNote()->note().end);
 }
 
 void EditorApp::on_cmbNoteType_activated(int index)

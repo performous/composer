@@ -98,6 +98,7 @@ public slots:
 	void on_txtGenre_editingFinished();
 	void on_txtYear_editingFinished();
 	void on_cmdSplit_clicked();
+	void on_cmdInsert_clicked();
 	void on_cmbNoteType_activated(int state);
 	void on_chkFloating_clicked(bool checked);
 	void on_chkLineBreak_clicked(bool checked);
