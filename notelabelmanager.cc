@@ -134,19 +134,27 @@ void NoteLabelManager::selectNextSentenceStart()
 
 void NoteLabelManager::createNote(double time)
 {
-	// Find the correct place for this note
-	int id = findIdForTime(time);
-	int nlvl = (id > 0) ? m_notes[id-1]->note().note : 24;
-	// Create Operation
-	Operation op("NEW");
-	op << id << QString("")
-		<< time // begin
-		<< time+1 // dummy end
-		<< nlvl // note
-		<< true // floating
-		<< false // linebreak
-		<< 0; // type
-	doOperation(op); // Execute operation
+	// Spawn an input dialog
+	bool ok;
+	QString text = QInputDialog::getText(this, tr("New note"),
+										tr("Enter one or more lyrics:"), QLineEdit::Normal,
+										"", &ok);
+	if (ok) {
+		// TODO: Should create more than one note if there is more words
+		// Find the correct place for this note
+		int id = findIdForTime(time);
+		int nlvl = (id > 0) ? m_notes[id-1]->note().note : 24;
+		// Create Operation
+		Operation op("NEW");
+		op << id << text
+			<< time // begin
+			<< time+1 // dummy end
+			<< nlvl // note
+			<< true // floating
+			<< false // linebreak
+			<< 0; // type
+		doOperation(op); // Execute operation
+	}
 }
 
 void NoteLabelManager::split(NoteLabel *note, float ratio)
