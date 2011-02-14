@@ -360,14 +360,17 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 	}
 }
 
-void NoteLabelManager::zoom(float steps) {
-	// Get scrollArea position
+void NoteLabelManager::zoom(float steps, double focalSecs) {
 	QScrollArea *scrollArea = NULL;
-	double scrollSecs = -1;
-	if (parentWidget()) {
+	if (parentWidget())
 		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
-		if (scrollArea) scrollSecs = px2s(scrollArea->horizontalScrollBar()->value() + scrollArea->width()/2);
-	}
+	if (!scrollArea) return;
+
+	// Default focal point is viewport center
+	if (focalSecs < 0)
+		focalSecs = px2s(scrollArea->horizontalScrollBar()->value() + scrollArea->width()/2);
+
+	double focalFactor = (focalSecs - px2s(scrollArea->horizontalScrollBar()->value())) / px2s(scrollArea->width());
 
 	// Update m_pixelsPerSecond
 	{
@@ -385,12 +388,7 @@ void NoteLabelManager::zoom(float steps) {
 	}
 	
 	// Update scroll bar position
-	if (scrollArea && scrollSecs >= 0) {
-		QScrollBar *scrollVer = scrollArea->verticalScrollBar();
-		int y = 0;
-		if (scrollVer) y = scrollVer->value();
-		scrollArea->ensureVisible(s2px(scrollSecs), y, scrollArea->width()/2, 0);
-	}
+	scrollArea->horizontalScrollBar()->setValue(s2px(focalSecs) - focalFactor * scrollArea->width());
 
 	// Update notes
 	for (int i = 0; i < m_notes.size(); ++i) {

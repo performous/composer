@@ -410,7 +410,7 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 	if (event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical) {
 		float numDegrees = event->delta() / 8; // Qt resolution is 8th of a degree
 		float numSteps = numDegrees / 15; // Usually mice have 15 degree steps
-		zoom(numSteps);
+		zoom(numSteps, px2s(event->pos().x()));
 		QToolTip::showText(event->globalPos(), "Zoom: " + getZoomLevel(), this);
 		event->accept();
 		return;
