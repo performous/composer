@@ -9,7 +9,7 @@
 
 struct Operation
 {
-	enum OperationFlags { NORMAL = 0, NO_EXEC = 1, NO_EMIT = 2, NO_UPDATE = 4 };
+	enum OperationFlags { NORMAL = 0, NO_EXEC = 1, NO_EMIT = 2, NO_UPDATE = 4, SELECT_NEW = 8 };
 
 	Operation() { }
 	Operation(const QString &opString) { *this << opString; }

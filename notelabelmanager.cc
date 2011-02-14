@@ -323,6 +323,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				if (id < 0) id = findIdForTime(op.d(3)); // -1 = auto-choose
 				if (m_notes.isEmpty() || id > m_notes.size()) m_notes.push_back(newLabel);
 				else m_notes.insert(id, newLabel);
+				if (flags & Operation::SELECT_NEW) selectNote(newLabel, false);
 			} else {
 				NoteLabel *n = m_notes.at(op.i(1));
 				if (n) {
@@ -455,14 +456,17 @@ void NoteLabelManager::paste()
 		// FIXME
 		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs - pasting is so far only partially implemented. :-("));
 
+		// Deselect previous
+		selectNote(NULL);
+
 		// Read and execute all NoteLabel Operations from the clipboard
 		while (!stream.atEnd()) {
 			Operation op;
 			stream >> op;
 			std::cout << "Pasted op: " << op.dump() << std::endl;
 			// TODO: Adjust position according to mouse
-			// TODO: Could we select the new notes?
-			doOperation(op);
+			doOperation(op, Operation::SELECT_NEW);
 		}
 	}
+	emit updateNoteInfo(selectedNote());
 }
