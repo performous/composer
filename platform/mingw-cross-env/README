@@ -1,0 +1,20 @@
+How to cross-compile from Linux for Windows
+===========================================
+
+1. Download and extract mingw-cross-env from http://mingw-cross-env.nongnu.org/ to your desired location.
+
+2. Read through http://mingw-cross-env.nongnu.org/#usage to learn how to utilize all your processor cores for speedier compilation.
+
+3. Compile GCC and its dependencies: make gcc
+
+4. Replace ffmpeg.mk and qt.mk files in the src-subfolder of your cross-env installation with those provided in the mk-directory here. This enables Phonon and uses shared libraries instead of static ones (static libs cause trouble in linking and apparantly Phonon cannot be even built that way).
+
+5. Compile ffmpeg and qt: make ffmpeg qt
+
+6. Add the cross-compiler's bin directory (e.g. $HOME/mingw/usr/bin) to your PATH environment variable.
+
+7. Run makebuilddir.sh
+
+8. Compile editor as usual: cd build && make
+
+9. Run makezip.sh if you want to create a simple zip package.
