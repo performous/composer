@@ -20,7 +20,9 @@
         <file>icons/media-playback-start.png</file>
         <file>icons/media-playback-stop.png</file>
         <file>icons/preferences-other.png</file>
+        <file>icons/zoom-in.png</file>
         <file>icons/zoom-original.png</file>
+        <file>icons/zoom-out.png</file>
         <file>docs/Authors.txt</file>
         <file>docs/License.txt</file>
     </qresource>

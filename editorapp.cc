@@ -50,6 +50,9 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
+	ui.actionZoomIn->setIcon(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")));
+	ui.actionZoomOut->setIcon(QIcon::fromTheme("zoom-out", QIcon(":/icons/zoom-out.png")));
+	ui.actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
 	ui.actionWhatsThis->setIcon(QIcon::fromTheme("help-hint", QIcon(":/icons/help-hint.png")));
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about", QIcon(":/icons/help-about.png")));
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
@@ -166,6 +169,8 @@ void EditorApp::updateMenuStates()
 	ui.actionDelete->setEnabled(hasSelectedNotes);
 	bool hasNotes = (noteGraph && !noteGraph->noteLabels().isEmpty());
 	ui.actionSelectAll->setEnabled(hasNotes);
+	bool zoom = (noteGraph && noteGraph->getZoomLevel() != 100);
+	ui.actionResetZoom->setEnabled(zoom);
 	// Window title
 	updateTitle();
 }
@@ -178,8 +183,8 @@ void EditorApp::updateTitle()
 	if (hasUnsavedChanges) proName += "*";
 	// Zoom level
 	QString zoom = "";
-	if (noteGraph && noteGraph->getZoomLevel() != "100 %")
-		zoom = " - " + noteGraph->getZoomLevel();
+	if (noteGraph && noteGraph->getZoomLevel() != 100)
+		zoom = " - " + QString::number(noteGraph->getZoomLevel()) + " %";
 	// Set the title
 	setWindowTitle(QString(PACKAGE) + " - " + proName + zoom);
 }
@@ -574,7 +579,28 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 
 
 
+// View menu
+
+
+void EditorApp::on_actionZoomIn_triggered()
+{
+	if (noteGraph) noteGraph->zoom(1.0);
+}
+
+void EditorApp::on_actionZoomOut_triggered()
+{
+	if (noteGraph) noteGraph->zoom(-1.0);
+}
+
+void EditorApp::on_actionResetZoom_triggered()
+{
+	if (noteGraph) noteGraph->zoom(getNaN());
+}
+
+
+
 // Help menu
+
 
 void EditorApp::on_actionGettingStarted_triggered()
 {

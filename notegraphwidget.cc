@@ -411,7 +411,7 @@ void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 		float numDegrees = event->delta() / 8; // Qt resolution is 8th of a degree
 		float numSteps = numDegrees / 15; // Usually mice have 15 degree steps
 		zoom(numSteps, px2s(event->pos().x()));
-		QToolTip::showText(event->globalPos(), "Zoom: " + getZoomLevel(), this);
+		QToolTip::showText(event->globalPos(), "Zoom: " + QString::number(getZoomLevel()) + " %", this);
 		event->accept();
 		return;
 	}
@@ -475,6 +475,9 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 {
 	int k = event->key(), m = event->modifiers();
 
+	// NOTE: Putting shortcuts here makes them local to the NoteGraphWidget,
+	// i.e. it must have focus for them to work. Concider using EditorApp.
+
 	if (k == Qt::Key_Return) { // Edit lyric
 		editLyric(selectedNote());
 	} else if (k == Qt::Key_Left) { // Select note on the left
@@ -487,12 +490,6 @@ void NoteGraphWidget::keyPressEvent(QKeyEvent *event)
 		move(selectedNote(), -1);
 	} else if (k == Qt::Key_Escape) { // Unselect all note(s)
 		selectNote(NULL);
-	} else if (k == Qt::Key_Plus && (m & Qt::ControlModifier)) {
-		zoom(1.0);
-	} else if (k == Qt::Key_Minus && (m & Qt::ControlModifier)) {
-		zoom(-1.0);
-	} else if (k == Qt::Key_0 && (m & Qt::ControlModifier)) {
-		zoom(getNaN());
 	} else {
 		QWidget::keyPressEvent(event);
 	}
@@ -563,7 +560,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 
 	QAction *actionResetZoom = menuContext.addAction(tr("Reset zoom"));
 	actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
-	actionResetZoom->setEnabled(getZoomLevel() != "100 %");
+	actionResetZoom->setEnabled(getZoomLevel() != 100);
 	menuContext.addSeparator();
 
 	QAction *actionCut = menuContext.addAction(tr("Cut"));

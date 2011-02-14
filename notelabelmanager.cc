@@ -401,7 +401,7 @@ void NoteLabelManager::zoom(float steps, double focalSecs) {
 	emit updateNoteInfo(selectedNote());
 }
 
-QString NoteLabelManager::getZoomLevel() { return QString::number(int(m_pixelsPerSecond / ppsNormal * 100)) + " %"; }
+int NoteLabelManager::getZoomLevel() const { return int(m_pixelsPerSecond / ppsNormal * 100); }
 
 int NoteLabelManager::s2px(double sec) const { return sec * m_pixelsPerSecond; }
 double NoteLabelManager::px2s(int px) const { return px / m_pixelsPerSecond; }

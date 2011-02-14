@@ -87,6 +87,11 @@ public slots:
 	void on_actionLyricsFromFile_triggered();
 	void on_actionLyricsFromClipboard_triggered();
 
+	// View menu
+	void on_actionZoomIn_triggered();
+	void on_actionZoomOut_triggered();
+	void on_actionResetZoom_triggered();
+
 	// Help menu
 	void on_actionGettingStarted_triggered();
 	void on_actionWhatsThis_triggered();

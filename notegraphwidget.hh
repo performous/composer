@@ -61,7 +61,7 @@ public:
 	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
 
 	void zoom(float steps, double focalSecs = -1);
-	QString getZoomLevel();
+	int getZoomLevel() const;
 
 	int s2px(double sec) const;
 	double px2s(int px) const;
