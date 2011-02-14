@@ -458,18 +458,18 @@ void NoteLabelManager::paste()
 		QByteArray buf = mimeData->data(MimeType);
 		QDataStream stream(&buf, QIODevice::ReadOnly);
 
-		// FIXME
-		QMessageBox::critical(this, tr("Oh noes!"), tr("Here be bugs - pasting is so far only partially implemented. :-("));
-
 		// Deselect previous
 		selectNote(NULL);
 
 		// Read and execute all NoteLabel Operations from the clipboard
+		double pastePos = -1;
 		while (!stream.atEnd()) {
 			Operation op;
 			stream >> op;
-			std::cout << "Pasted op: " << op.dump() << std::endl;
-			// TODO: Adjust position according to mouse
+			if (pastePos < 0) pastePos = px2s(mapFromGlobal(QCursor::pos()).x()) - op.d(3);
+			// Put position to mouse cursor
+			op[3] = QVariant(op.d(3) + pastePos);
+			op[4] = QVariant(op.d(4) + pastePos);
 			doOperation(op, Operation::SELECT_NEW);
 		}
 	}

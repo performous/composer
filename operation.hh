@@ -46,6 +46,9 @@ struct Operation
 	double d(int index) const { validate(index); return m_params[index].toDouble(); }
 	QVariant q(int index) const { validate(index); return m_params[index]; }
 
+	// Array access for modifying param
+	QVariant& operator[](int index) { validate(index); return m_params[index]; }
+
 	std::string dump() const {
 		QString st;
 		QTextStream ts(&st);
