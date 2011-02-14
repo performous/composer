@@ -391,10 +391,8 @@ void NoteLabelManager::zoom(float steps, double focalSecs) {
 	scrollArea->horizontalScrollBar()->setValue(s2px(focalSecs) - focalFactor * scrollArea->width());
 
 	// Update notes
-	for (int i = 0; i < m_notes.size(); ++i) {
-		const Note &n = m_notes[i]->note();
-		m_notes[i]->setGeometry(s2px(n.begin), m_notes[i]->y(), s2px(n.length()), m_notes[i]->height());
-	}
+	for (int i = 0; i < m_notes.size(); ++i)
+		m_notes[i]->updateLabel();
 
 	// Update pitch visualization
 	update();

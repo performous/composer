@@ -24,7 +24,8 @@ public:
 
 	Note& note() { return m_note; }
 	Note note() const { return m_note; }
-	void updateNote();
+	void updateNote(); // Deprecated
+	void updateLabel();
 
 	bool isFloating() const { return m_floating; }
 	void setFloating(bool state) { m_floating = state; createPixmap(size()); }

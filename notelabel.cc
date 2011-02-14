@@ -19,17 +19,12 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
 	QSize size;
-	QPoint position;
 	NoteGraphWidget *ngw = qobject_cast<NoteGraphWidget*>(parent);
 	if (ngw) size.setWidth(ngw->s2px(note.length()));
 	createPixmap(size);
 	show(); // Already here so that height() is calculated
-	if (ngw) position = QPoint(ngw->s2px(note.begin), ngw->n2px(note.note) - height() / 2);
-	if (!position.isNull())
-		move(position);
-	updateNote();
+	updateLabel();
 	setMouseTracking(true);
-	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
 }
 
@@ -88,7 +83,6 @@ void NoteLabel::createPixmap(QSize size)
 	setPixmap(QPixmap::fromImage(image));
 
 	setStatusTip(tr("Lyric: ") + lyric());
-	updateNote();
 }
 
 void NoteLabel::setSelected(bool state) {
@@ -104,7 +98,6 @@ void NoteLabel::setSelected(bool state) {
 void NoteLabel::resizeEvent(QResizeEvent *event)
 {
 	createPixmap(event->size());
-	updateNote();
 }
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
@@ -163,6 +156,7 @@ void NoteLabel::startDragging(const QPoint& point)
 	else setCursor(QCursor());
 }
 
+// FIXME: This should be removed and updateLabel used everywhere instead
 void NoteLabel::updateNote()
 {
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
@@ -172,6 +166,24 @@ void NoteLabel::updateNote()
 		m_note.begin = ngw->px2s(x());
 		// Update note length
 		m_note.end = m_note.begin + ngw->px2s(width());
+	}
+	MusicalScale ms;
+	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
+		.arg(lyric())
+		.arg(m_note.typeString())
+		.arg(ms.getNoteStr(ms.getNoteFreq(m_note.note)))
+		.arg(QString::number(m_note.begin, 'f', 3))
+		.arg(QString::number(m_note.end, 'f', 3))
+		);
+}
+
+void NoteLabel::updateLabel()
+{
+	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
+	if (ngw) {
+		// Update label geometry
+		resize(ngw->s2px(m_note.length()), height());
+		move(ngw->s2px(m_note.begin), ngw->n2px(m_note.note) - height() / 2);
 	}
 	MusicalScale ms;
 	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
