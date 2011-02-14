@@ -27,6 +27,7 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	if (ngw) position = QPoint(ngw->s2px(note.begin), ngw->n2px(note.note) - height() / 2);
 	if (!position.isNull())
 		move(position);
+	updateNote();
 	setMouseTracking(true);
 	setMinimumSize(min_width, 10);
 	setAttribute(Qt::WA_DeleteOnClose);
