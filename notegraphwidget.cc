@@ -532,6 +532,8 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	actionNew->setEnabled(!child); // Only available when no notes under cursor
 	QAction *actionSplit = menuContext.addAction(tr("Split"));
 	actionSplit->setEnabled(m_selectedNotes.size() == 1); // Only available when exactly one note selected
+	QAction *actionLyric = menuContext.addAction(tr("Edit lyric"));
+	actionLyric->setEnabled(m_selectedNotes.size() == 1); // Only available when exactly one note selected
 	menuContext.addSeparator();
 
 	QAction *actionFloating = menuContext.addAction(tr("Floating"));
@@ -587,6 +589,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	if (sel) {
 		if (sel == actionNew) createNote(px2s(mapFromGlobal(globalPos).x()));
 		else if (sel == actionSplit) split(nl);
+		else if (sel == actionLyric) editLyric(nl);
 		else if (sel == actionFloating) setFloating(nl, !nl->isFloating());
 		else if (sel == actionLineBreak) setLineBreak(nl, !nl->isLineBreak());
 		else if (sel == actionNormal) setType(nl, 0);
