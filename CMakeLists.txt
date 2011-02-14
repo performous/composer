@@ -1,7 +1,14 @@
-project(Editor CXX C)
+project("Editor" CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 set(PROJECT_VERSION "alpha")
+
+set(EXENAME ${CMAKE_PROJECT_NAME})
+if(UNIX)
+	# On UNIX, binary name is lowercase with no spaces
+	string(TOLOWER ${EXENAME} EXENAME)
+	string(REPLACE " " "-" EXENAME ${EXENAME})
+endif()
 
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -58,6 +65,13 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 
-add_executable(editor ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
-target_link_libraries(editor ${LIBS})
+add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
+target_link_libraries(${EXENAME} ${LIBS})
+
+# We don't currently have any assets, so on Windows, we just install to the root installation folder
+if(UNIX)
+	install(TARGETS ${EXENAME} DESTINATION bin)
+else()
+	install(TARGETS ${EXENAME} DESTINATION .)
+endif()
 
