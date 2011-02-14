@@ -136,22 +136,31 @@ void NoteLabelManager::createNote(double time)
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("New note"),
 										tr("Enter one or more lyrics:"), QLineEdit::Normal,
-										"", &ok);
-	if (ok) {
-		// TODO: Should create more than one note if there is more words
+										"-", &ok);
+	if (ok && !text.isEmpty()) {
 		// Find the correct place for this note
 		int id = findIdForTime(time);
 		int nlvl = (id > 0) ? m_notes[id-1]->note().note : 24;
-		// Create Operation
-		Operation op("NEW");
-		op << id << text
-			<< time // begin
-			<< time+1 // dummy end
-			<< nlvl // note
-			<< true // floating
-			<< false // linebreak
-			<< 0; // type
-		doOperation(op); // Execute operation
+
+		QTextStream ts(&text, QIODevice::ReadOnly);
+		// Loop throguh all words
+		while (!ts.atEnd()) {
+			QString word;
+			ts >> word;
+			if (!word.isEmpty()) {
+				// Create Operation for each word
+				Operation op("NEW");
+				op << id << word
+					<< time // begin
+					<< time+1 // dummy end
+					<< nlvl // note
+					<< true // floating
+					<< false // linebreak
+					<< 0; // type
+				doOperation(op); // Execute operation
+				++id;
+			}
+		}
 	}
 }
 
