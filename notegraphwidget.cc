@@ -104,14 +104,25 @@ void NoteGraphWidget::finalizeNewLyrics()
 		  << px2s(width() - m_notes.back()->width()) << px2s(width() - m_notes.back()->width() + m_notes.back()->x())
 		  << px2n(m_notes.back()->y() + m_noteHalfHeight);
 		doOperation(moveop);
-		// Make sure there is enough room
-		setFixedWidth(std::max<int>(width(), m_notes.size() * NoteLabel::min_width + m_notes.front()->width() * 2));
 		ops += 2; // Amount of extra Operations added here
 	}
 	// Combine the import into one undo action
 	doOperation(Operation("COMBINER", ops));
+	// Make sure there is enough room
+	if (!m_notes.isEmpty())
+		setFixedWidth(std::max<int>(width(), s2px(m_notes.back()->note().end + 1)));
 	// Calculate floating note positions
 	updateNotes();
+
+	// Scroll to show the first note
+	QScrollArea *scrollArea = NULL;
+	if (parentWidget())
+		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	if (scrollArea && !m_notes.isEmpty()) {
+		const Note& n = m_notes.front()->note();
+		int w = scrollArea->width();
+		scrollArea->ensureVisible(s2px(n.begin) + w/3, n2px(n.note), w/2, scrollArea->height()/2);
+	}
 }
 
 void NoteGraphWidget::calcViewport(int &x1, int &y1, int &x2, int &y2) const
