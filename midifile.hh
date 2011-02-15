@@ -5,11 +5,11 @@
 #include <string>
 
 namespace mid {
+	typedef uint8_t const* iterator;
 
 #if 0
 	class Reader {
 	public:
-		typedef uint8_t const* iterator;
 		Reader(iterator begin, iterator end): m_beginFile(begin), m_endFile(end) {
 		parseFile() {
 			parseRiff();
@@ -55,10 +55,13 @@ namespace mid {
 #endif
 	struct Event {
 		unsigned timecode;
-		int type;
+		unsigned type;
+		unsigned channel;
 		int arg1;
 		int arg2;
+		iterator begin, end;  // Data belonging to the event (including any terminating 0x7F)
 		void print() const;
+		Event(unsigned timecode, uint8_t event): timecode(timecode), type(event & 0xF0), channel(event & 0xF), arg1(), arg2(), begin(), end() {}
 	};
 	
 }

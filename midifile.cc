@@ -17,23 +17,29 @@ if (event & 0x80) {
 	event = runningstatus;
 }
 
-if (event < 0xF0) {
+{
 	// Midi event
-	uint8_t arg1 = riff.read_uint8();
-	uint8_t arg2 = 0;
-	uint8_t ev = event >> 4;
-	switch (ev) {
-	case 0x8: case 0x9: case 0xA: case 0xB: case 0xE: arg2 = riff.read_uint8(); break;
-	case 0xC: case 0xD: break;  // These only take one argument
-	default: throw std::runtime_error("Unknown MIDI event");  // Quite possibly this is impossible, but I am too tired to prove it.
+	Event ev(timecode, event);
+	unsigned tmp;
+	if (ev.type != 0xF0 || ev.channel == 0xF) ev.arg1 = read<uint8_t>();  // Everything except sysex events takes one argument
+	switch (ev.type) {
+	case 0x80: case 0x90: case 0xA0: // Note on/off/aftertouch
+	case 0xB0: case 0xE0:  // Controller, pitch bend
+		ev.arg2 = read<uint8_t>();
+		break;
+	case 0xC0: case 0xD0:  // Program change, channel aftertouch
+		break;
+	case 0xF0:  // Special category (F0, F7 are system exclusive, FF is meta event)
+		tmp = read_varlen();  // data size
+		ev.begin = pos;
+		ev.end = pos + tmp;
+		break;
 	}
-	process_midi_event(track, ev, arg1, arg2, miditime);
+	return ev;
 }
-if (event == 0xFF) {
-	// Meta event
-	uint8_t type = riff.read_uint8();
-	std::string data = riff.read_bytes(riff.read_varlen());
-	switch (type) {
+
+{
+	switch (ev.arg1) {
 	  // 0x00: Sequence Number
 	  case 0x01: { // Text Event
 		const std::string sect_pfx = "[section ";
@@ -79,12 +85,7 @@ if (event == 0xFF) {
 	  // 0x7f: Sequencer Specific Event
 	  default: break;  // Unknown meta event (skipped)
 	}
-} else if (event==0xF0 || event==0xF7) {
-	// System exclusive event
-	uint32_t size = riff.read_varlen();
-	riff.ignore(size);
 }
-
 #endif
 
 void Event::print() const {
