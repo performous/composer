@@ -33,6 +33,7 @@ class EditorApp: public QMainWindow
 public:
 	EditorApp(QWidget *parent = 0);
 
+	void openFile(QString fileName);
 	void updateSongMeta(bool readFromSongToUI = false);
 	void updateMenuStates();
 	void updateTitle();

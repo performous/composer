@@ -281,6 +281,11 @@ void EditorApp::on_actionOpen_triggered()
 			tr("UltraStar TXT") + " (*.txt);;" +
 			tr("All files") + " (*)");
 
+	if (!fileName.isNull()) openFile(fileName);
+}
+
+void EditorApp::openFile(QString fileName)
+{
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName);
 		latestPath = finfo.path();
