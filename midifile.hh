@@ -6,18 +6,24 @@
 
 namespace mid {
 
-	struct Riff {
-		Riff(uint8_t* begin, uint8_t* end): begin(begin), end(end) {}
-		uint8_t* begin;
-		uint8_t* end;
-		std::string name() const { return std::string(begin, begin + 4); }
-	};
-
+#if 0
 	class Reader {
 	public:
-		Reader(uint8_t*& ptr): riff(ptr, ptr + 8), pos(ptr + 4) {
-			ptr = riff.end += read<uint32_t>();  // Read content size
+		typedef uint8_t const* iterator;
+		Reader(iterator begin, iterator end): m_beginFile(begin), m_endFile(end) {
+		parseFile() {
+			parseRiff();
+			riff.end = begin + 8 + read<uint32_t>();  // Read content size
 		}
+
+			Riff(iterator begin, iterator end): begin(begin), end(end) {
+				riff.end = begin + 8 + read<uint32_t>();
+			}
+			uint8_t* begin;
+			uint8_t* end;
+			std::string name() const { return std::string(begin, begin + 4); }
+
+
 		int bytesLeft() const { return riff.end - pos; }
 		void requireBytes(unsigned num) const {
 			if (bytesLeft() < num) throw std::runtime_error("Read past the end of RIFF chunk " + riff.name());
@@ -46,6 +52,7 @@ namespace mid {
 		uint8_t* pos;
 	};
 
+#endif
 	struct Event {
 		unsigned timecode;
 		int type;
@@ -55,3 +62,4 @@ namespace mid {
 	};
 	
 }
+
