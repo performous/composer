@@ -669,14 +669,20 @@ void EditorApp::playButton()
 	if (player && player->state() == Phonon::PlayingState) {
 		ui.cmdPlay->setText(tr("Pause"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause", QIcon(":/icons/media-playback-pause.png")));
-		if (ui.chkSynth->isChecked()) {
-			synth.reset(new Synth(noteGraph->noteLabels()));
-			synth->start(player->currentTime());
-		}
+		if (ui.chkSynth->isChecked()) on_chkSynth_clicked(true);
 	} else {
 		ui.cmdPlay->setText(tr("Play"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
-		if (synth) synth->stop();
+		synth.reset();
+	}
+}
+
+void EditorApp::on_chkSynth_clicked(bool checked)
+{
+	if (checked && player && player->state() == Phonon::PlayingState) {
+		synth.reset(new Synth(noteGraph->noteLabels()));
+		synth->tick(player->currentTime());
+	} else if (!checked) {
 		synth.reset();
 	}
 }
@@ -704,6 +710,8 @@ void EditorApp::audioTick(qint64 time)
 {
 	if (noteGraph && player)
 		noteGraph->updateMusicPos(time, (player->state() == Phonon::PlayingState ? true : false));
+	if (synth)
+		synth->tick(time);
 }
 
 void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)
