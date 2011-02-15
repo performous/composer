@@ -125,22 +125,6 @@ void NoteGraphWidget::finalizeNewLyrics()
 	}
 }
 
-void NoteGraphWidget::calcViewport(int &x1, int &y1, int &x2, int &y2) const
-{
-	QScrollArea *scrollArea = NULL;
-	x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-	if (parentWidget())
-		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
-	if (scrollArea) {
-		if (scrollArea->horizontalScrollBar())
-			x1 = scrollArea->horizontalScrollBar()->value();
-		x2 = x1 + scrollArea->width();
-		if (scrollArea->verticalScrollBar())
-			y1 = scrollArea->verticalScrollBar()->value();
-		y2 = y1 + scrollArea->height();
-	}
-}
-
 void NoteGraphWidget::analyzeMusic(QString filepath)
 {
 	m_pitch.reset(new PitchVis(filepath, this));

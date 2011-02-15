@@ -81,6 +81,7 @@ public slots:
 	void paste();
 
 protected:
+	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
 	// Zoom settings
 	static const double zoomStep = 0.5;  ///< Mouse wheel steps * zoomStep => double/half zoom factor
@@ -148,7 +149,6 @@ protected:
 private:
 	void finalizeNewLyrics();
 	void timeCurrent();
-	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
 	QPoint m_mouseHotSpot;
 	bool m_seeking;

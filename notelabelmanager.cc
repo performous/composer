@@ -128,6 +128,21 @@ void NoteLabelManager::selectNextSentenceStart()
 	}
 }
 
+void NoteLabelManager::calcViewport(int &x1, int &y1, int &x2, int &y2) const
+{
+	QScrollArea *scrollArea = NULL;
+	x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+	if (parentWidget())
+		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	if (scrollArea) {
+		if (scrollArea->horizontalScrollBar())
+			x1 = scrollArea->horizontalScrollBar()->value();
+		x2 = x1 + scrollArea->width();
+		if (scrollArea->verticalScrollBar())
+			y1 = scrollArea->verticalScrollBar()->value();
+		y2 = y1 + scrollArea->height();
+	}
+}
 
 
 void NoteLabelManager::createNote(double time)
@@ -465,18 +480,25 @@ void NoteLabelManager::paste()
 		// Deselect previous
 		selectNote(NULL);
 
-		// Read and execute all NoteLabel Operations from the clipboard
 		double mouseTime = 0;
 		int mouseNote = 0;
 		bool first = true;
+		int x1, y1, x2, y2;
+		calcViewport(x1, y1, x2, y2);
+		int mx = mapFromGlobal(QCursor::pos()).x();
+		int my = mapFromGlobal(QCursor::pos()).y();
+		// If mouse is outside, pick values inside viewport
+		if (mx < x1 || mx > x2) mx = x1 + (x2 - x1) / 4.0;
+		if (my < y1 || my > y2) my = (y1 + y2) / 2.0;
+
+		// Read and execute all NoteLabel Operations from the clipboard
 		while (!stream.atEnd()) {
 			Operation op;
 			stream >> op;
 			if (first) {
 				// Calculate mouse position compensators
-				// TODO: Handle case where mouse is outside of screen
-				mouseTime = px2s(mapFromGlobal(QCursor::pos()).x()) - op.d(3);
-				mouseNote = px2n(mapFromGlobal(QCursor::pos()).y()) - op.i(5);
+				mouseTime = px2s(mx) - op.d(3);
+				mouseNote = px2n(my) - op.i(5);
 				first = false;
 			}
 			// Put position to mouse cursor
