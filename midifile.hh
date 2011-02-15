@@ -3,65 +3,85 @@
 #include "types.hh"
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace mid {
-	typedef uint8_t const* iterator;
+	typedef uint8_t value_type;
+	typedef uint8_t* iterator;
+	typedef uint8_t const* const_iterator;
 
-#if 0
+	struct Event {
+		enum Type {
+			NOTE_ON = 0x80,
+			NOTE_OFF = 0x90,
+			NOTE_AFTERTOUCH = 0xA0,
+			CONTROLLER = 0xB0,
+			PROGRAM_CHANGE = 0xC0,
+			CHANNEL_AFTERTOUCH = 0xD0,
+			PITCH_BEND = 0xE0,
+			SPECIAL = 0xF0
+		};
+		enum Meta {
+			META_SEQNUMBER = 0,
+			META_TEXT,
+			META_COPYRIGHT,
+			META_SEQNAME,
+			META_INSTRNAME,
+			META_LYRIC,
+			META_MARKERTEXT,
+			META_CUEPOINT,
+			META_CHPREFIX = 0x20,
+			META_ENDOFTRACK = 0x2F,
+			META_TEMPO = 0x51,
+			META_SMTPEOFFSET = 0x54,
+			META_TIMESIGNATURE = 0x58,
+			META_KEYSIGNATURE = 0x59,
+			META_SEQUENCERSPECIFIC = 0x7F
+		};
+		unsigned timecode;  // Relative to previous event
+		Type type;
+		unsigned channel;
+		unsigned arg1;
+		unsigned arg2;
+		const_iterator begin, end;  // Data belonging to the event (including any terminating 0x7F)
+		void print() const;  ///< Prints to std::cout (for debugging only)
+		Event(): timecode(), type(), channel(), arg1(), arg2(), begin(), end() {}
+	};
+
 	class Reader {
 	public:
-		Reader(iterator begin, iterator end): m_beginFile(begin), m_endFile(end) {
-		parseFile() {
-			parseRiff();
-			riff.end = begin + 8 + read<uint32_t>();  // Read content size
-		}
-
-			Riff(iterator begin, iterator end): begin(begin), end(end) {
-				riff.end = begin + 8 + read<uint32_t>();
-			}
-			uint8_t* begin;
-			uint8_t* end;
-			std::string name() const { return std::string(begin, begin + 4); }
-
-
-		int bytesLeft() const { return riff.end - pos; }
-		void requireBytes(unsigned num) const {
-			if (bytesLeft() < num) throw std::runtime_error("Read past the end of RIFF chunk " + riff.name());
-		}
+		static const unsigned margin = 20;  ///< The minimum number of extra bytes required after the end of the buffer for more efficient processing
+		Reader(char const* filename);
+		
+	private:
+		void parseMHdr();
+		void parseMTrk();
+		Event parseEvent();
+		void parseRiff(char const* name);
 		template <typename T> T read() {
-			requireBytes(sizeof(T));
 			T value = 0;
-			for (int i = sizeof(T) - 1; i >= 0; --i) value |= *pos++ << (8 * i);
+			for (int i = sizeof(T) - 1; i >= 0; --i) value |= *m_pos++ << (8 * i);
 			return value;
 		}
-		uint32_t readVar() {
+
+		unsigned read_varlen() {
 			unsigned value = 0;
 			unsigned len = 0;
 			unsigned c = 0;
 			do {
-				if (++len > 4) throw std::runtime_error("Too long varlen sequence in RIFF chunk " + riff.name());
-				requireBytes(1);
-				c = *pos++;
+				if (++len > 4) throw std::runtime_error("MIDI parse error (too long varlen)");
+				c = *m_pos++;
 				value = (value << 7) | (c & 0x7F);
 			} while (c & 0x80);
 			return value;
 		}
-		
-	private:
-		Riff riff;
-		uint8_t* pos;
-	};
-
-#endif
-	struct Event {
-		unsigned timecode;
-		unsigned type;
-		unsigned channel;
-		int arg1;
-		int arg2;
-		iterator begin, end;  // Data belonging to the event (including any terminating 0x7F)
-		void print() const;
-		Event(unsigned timecode, uint8_t event): timecode(timecode), type(event & 0xF0), channel(event & 0xF), arg1(), arg2(), begin(), end() {}
+		std::vector<value_type> m_data;  ///< Only used when reading a file, not used if the user provides a buffer
+		const_iterator m_pos;
+		const_iterator m_riffEnd;
+		const_iterator m_fileEnd;
+		unsigned m_tracks;
+		unsigned m_division;
+		unsigned m_runningStatus;
 	};
 	
 }
