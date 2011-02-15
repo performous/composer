@@ -195,7 +195,7 @@ void NoteLabel::updateLabel()
 		);
 }
 
-NoteLabel::operator Operation()
+NoteLabel::operator Operation() const
 {
 	Operation op("NEW", -1); // -1 for id means auto-calculate based on position
 	op << m_note.syllable << m_note.begin << m_note.end << m_note.note << m_floating << m_note.lineBreak << m_note.getTypeInt();

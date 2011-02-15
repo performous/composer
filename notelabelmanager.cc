@@ -433,11 +433,15 @@ void NoteLabelManager::copy()
 {
 	if (m_selectedNotes.isEmpty()) return;
 
+	// Sort notes (so that they get created in the right order in the other end)
+	std::list<NoteLabel*> sortedNotes = m_selectedNotes.toStdList();
+	sortedNotes.sort(cmpNoteLabelPtr);
+
 	// Create operations of the notes and serialize to byte array
 	QByteArray buf;
 	QDataStream stream(&buf, QIODevice::WriteOnly);
-	for (int i = 0; i < m_selectedNotes.size(); ++i)
-		stream << (Operation)(*m_selectedNotes[i]);
+	for (std::list<NoteLabel*>::const_iterator it = sortedNotes.begin(); it != sortedNotes.end(); ++it)
+		stream << (Operation)(*(*it));
 
 	QClipboard *clipboard = QApplication::clipboard();
 	if (!clipboard) return;
@@ -462,14 +466,23 @@ void NoteLabelManager::paste()
 		selectNote(NULL);
 
 		// Read and execute all NoteLabel Operations from the clipboard
-		double pastePos = -1;
+		double mouseTime = 0;
+		int mouseNote = 0;
+		bool first = true;
 		while (!stream.atEnd()) {
 			Operation op;
 			stream >> op;
-			if (pastePos < 0) pastePos = px2s(mapFromGlobal(QCursor::pos()).x()) - op.d(3);
+			if (first) {
+				// Calculate mouse position compensators
+				// TODO: Handle case where mouse is outside of screen
+				mouseTime = px2s(mapFromGlobal(QCursor::pos()).x()) - op.d(3);
+				mouseNote = px2n(mapFromGlobal(QCursor::pos()).y()) - op.i(5);
+				first = false;
+			}
 			// Put position to mouse cursor
-			op[3] = QVariant(op.d(3) + pastePos);
-			op[4] = QVariant(op.d(4) + pastePos);
+			op[3] = QVariant(op.d(3) + mouseTime);
+			op[4] = QVariant(op.d(4) + mouseTime);
+			op[5] = QVariant(op.i(5) + mouseNote);
 			doOperation(op, Operation::SELECT_NEW);
 		}
 	}

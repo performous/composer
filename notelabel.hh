@@ -37,9 +37,9 @@ public:
 	void startDragging(const QPoint& point);
 
 	/// Create Operation from NoteLabel
-	operator Operation();
+	operator Operation() const;
 
-	bool operator<(const NoteLabel &rhs) const { return x() < rhs.x(); }
+	bool operator<(const NoteLabel &rhs) const { return m_note.begin < rhs.note().begin; }
 
 protected:
 	void resizeEvent(QResizeEvent *event);
@@ -55,5 +55,5 @@ private:
 
 bool inline cmpNoteLabelPtr(const NoteLabel *lhs, const NoteLabel *rhs)
 {
-	return *lhs < *rhs;
+	return (*lhs) < (*rhs);
 }
