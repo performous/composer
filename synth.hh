@@ -50,11 +50,13 @@ public:
 protected:
 	/// Thread runs here
 	void run() {
-		// Initialize players (must be done here so that they are in the right thread).
+		// Initialize players & buffers (must be done here so that they are in the right thread).
 		// There is two so that one can play sound while other loads the next one.
+		QObject playerParent; // Dummy object that will handle deleting the players
 		for (int i = 0; i < 2; ++i) {
-			m_player[i] = Phonon::createPlayer(Phonon::MusicCategory); // FIXME: Here be resource leaks
-			m_soundData[i].reset(new QBuffer);
+			m_player[i] = Phonon::createPlayer(Phonon::MusicCategory);
+			m_player[i]->setParent(&playerParent);
+			m_soundData[i] = new QBuffer(&playerParent);
 		}
 
 		calcNext();
@@ -64,13 +66,13 @@ protected:
 			if (m_condition.wait(&m_mutex, m_delay * 1000)) {
 				// We were woken up, so let's see if an update is in order
 				m_mutex.unlock();
-				if (m_quit) return;
+				if (m_quit) break;
 				calcNext();
 
 			} else {
 				// Time-out: time to play the music
 				m_mutex.unlock();
-				if (m_quit) return;
+				if (m_quit) break;
 				m_player[m_curBuffer]->play();
 				m_curBuffer = (m_curBuffer+1) % 2;
 				m_player[m_curBuffer]->clear();
@@ -95,8 +97,8 @@ private:
 		QElapsedTimer timer; timer.start();
 		NoteLabels::const_iterator it = m_notes.begin();
 		while (it != m_notes.end() && (*it)->note().begin < m_pos) ++it;
-		Note n = (*it)->note();
 		if (it == m_notes.end()) { m_delay = ULONG_MAX / 1000.0; return; }
+		Note n = (*it)->note();
 		m_delay = n.begin - m_pos;
 
 		if (n.begin != m_noteBegin) {
@@ -104,7 +106,7 @@ private:
 			m_noteBegin = n.begin;
 			m_player[m_curBuffer]->clear();
 			createBuffer(n.note, n.length());
-			m_player[m_curBuffer]->setCurrentSource(m_soundData[m_curBuffer].data());
+			m_player[m_curBuffer]->setCurrentSource(m_soundData[m_curBuffer]);
 		}
 		// Compensate for the time spent in this function
 		m_delay -= timer.elapsed() / 1000.0;
@@ -137,6 +139,7 @@ private:
 		//of.write(buf.data(), buf.size());
 	}
 
+	/// WAV header writer
 	std::string writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsigned samples) {
 		std::ostringstream out;
 		unsigned bps = ch * bits / 8; // Bytes per sample
@@ -164,7 +167,7 @@ private:
 	double m_pos; ///< Position where we are now
 	double m_noteBegin; ///< Position of the next note
 	Phonon::MediaObject *m_player[2];
-	QScopedPointer<QBuffer> m_soundData[2];
+	QBuffer *m_soundData[2];
 	int m_curBuffer;
 	bool m_quit;
 	QMutex m_mutex;
