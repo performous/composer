@@ -319,6 +319,7 @@ void EditorApp::openFile(QString fileName)
 							}
 							doOpStack();
 							projectFileName = fileName;
+							hasUnsavedChanges = false;
 							updateNoteInfo(NULL); // Title bar
 						} else
 							QMessageBox::critical(this, tr("Error opening file!"), tr("Unsupported project file version in %1").arg(fileName));
