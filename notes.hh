@@ -68,6 +68,8 @@ struct Note {
 	int notePrev; ///< MIDI pitch of the previous note (should be same as note for everything but SLIDE)
 	QString syllable; ///< lyrics syllable for that note
 	bool lineBreak; ///< is this note ending a syllable?
+	/// move beginning without changing length
+	void move(double newBegin) { double l = length(); begin = newBegin; end = newBegin + l; }
 	/// note length
 	double length() const { return end - begin; }
 	/// difference of n from note

@@ -216,13 +216,14 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 {
 	// Here happens the magic that adjusts the floating
 	// notes according to the fixed ones.
-	FloatingGap gap(leftToRight ? 0 : width());
+	FloatingGap gap(leftToRight ? 0 : m_duration);
 
 	// Determine gaps between non-floating notes
 	// Variable leftToRight controls the iteration direction.
 	for (int i = (leftToRight ? 0 : m_notes.size()-1); i >= 0 && i < m_notes.size(); i += (leftToRight ? 1 : -1)) {
 		NoteLabel *child = m_notes[i];
 		if (!child) continue;
+		Note &n = m_notes[i]->note();
 
 		if (child->isFloating() && i != (leftToRight ? m_notes.size()-1 : 0)) {
 			// Add floating note to gap
@@ -230,37 +231,43 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 
 		} else {
 			// Fixed note encountered, handle the gap (divide notes evenly into it)
-			gap.end = child->x() + (leftToRight ? 0 : child->width());
+			gap.end = leftToRight ? n.begin : n.end;
 
-			int d = (gap.end - gap.begin) * (leftToRight ? 1 : -1);
-			if (d <= gap.minWidth()) {
-				// We are at minimum width, enforce it
-				int x = gap.begin - (leftToRight ? 0 : NoteLabel::min_width);
-				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
-					(*it2)->move(x, (*it2)->y());
-					(*it2)->resize(NoteLabel::min_width, (*it2)->height());
-					x += NoteLabel::min_width * (leftToRight ? 1 : -1);
+			if (!gap.notes.isEmpty()) {
+
+				// Calculate note length and space between notes
+				double len = NoteLabel::min_length, step = 0; // Minimum values
+				if (gap.length() > gap.minLength()) { // Is there space?
+					len = gap.length() / double(gap.notes.size()) * 0.9;
+					step = (gap.length() - len * gap.notes.size()) / double(gap.notes.size() + 1);
 				}
-				// Also move the fixed one (probably the one being moved by user)
-				child->move(gap.begin + (leftToRight ? gap.minWidth() : (-gap.minWidth() - child->width())), child->y());
 
-			} else {
-				// Calculate position and size
-				double w = gap.width() / double(gap.notes.size()) * 0.9;
-				double step = (gap.width() - w * gap.notes.size()) / double(gap.notes.size() + 1);
-				double x = gap.begin + (leftToRight ? step : (-step - w));
+				// Calculate starting time of the first note in gap
+				double pos = gap.begin + (leftToRight ? step : (-step - len));
+
+				// Loop through all notes
 				for (NoteLabels::iterator it2 = gap.notes.begin(); it2 != gap.notes.end(); ++it2) {
-					double y = (*it2)->y();
+					Note &n2 = (*it2)->note();
+					// Set new note begin/end
+					n2.begin = pos;
+					n2.end = pos + len;
 					// Try to find optimal pitch
-					if (m_pitch) y = n2px(m_pitch->guessNote(px2s(x), px2s(x + w + step), 24)) - m_noteHalfHeight;
-					(*it2)->move(x, y);
-					(*it2)->resize(w, (*it2)->height());
-					x += (w + step) * (leftToRight ? 1 : -1);
+					if (m_pitch) n2.note = m_pitch->guessNote(pos, pos + len + step, 24);
+					// Calculate starting time for the next note
+					pos += (len + step) * (leftToRight ? 1 : -1);
+					// Update NoteLabel geometry
+					(*it2)->updateLabel();
 				}
 			}
 
+			// Also move the fixed one (probably the one being moved by user) if there is no space
+			double gapl = leftToRight ? (gap.end - gap.begin) : (gap.begin - gap.end);
+			if (gapl < gap.minLength())
+				n.move(gap.begin + (leftToRight ? gap.minLength() : (-gap.minLength() - n.length())));
+
+			child->updateLabel();
 			// Start a new gap
-			gap = FloatingGap(child->x() + (leftToRight ? child->width() : 0));
+			gap = FloatingGap(leftToRight ? n.end : n.begin);
 		}
 	}
 }
@@ -722,11 +729,11 @@ void SeekHandle::moveEvent(QMoveEvent*)
 void FloatingGap::addNote(NoteLabel* n)
 {
 	notes.push_back(n);
-	end = n->x();
-	m_notesWidth += n->width();
+	end = n->note().end;
+	m_notesLength += n->note().length();
 }
 
-int FloatingGap::minWidth() const
+double FloatingGap::minLength() const
 {
-	return notes.size() * NoteLabel::min_width;
+	return notes.size() * NoteLabel::min_length;
 }

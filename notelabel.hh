@@ -10,8 +10,8 @@ class NoteLabel: public QLabel
 
 public:
 	static const int resize_margin;
-	static const int min_width;
 	static const int default_size;
+	static const double min_length;
 
 	NoteLabel(const Note &note, QWidget *parent, bool floating = true);
 

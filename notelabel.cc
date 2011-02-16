@@ -12,8 +12,8 @@ namespace {
 }
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
-const int NoteLabel::min_width = 10; // How many pixels is the resize area
 const int NoteLabel::default_size = 100; // The preferred size of notes
+const double NoteLabel::min_length = 0.01; // How many seconds minimum
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
@@ -105,9 +105,9 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0 && ngw) {
 		// Resizing
-		if (m_resizing < 0 && width() - event->pos().x() > min_width)
+		if (m_resizing < 0 && width() - event->pos().x() > ngw->s2px(min_length))
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
-		else if (m_resizing > 0 && event->pos().x() > min_width)
+		else if (m_resizing > 0 && event->pos().x() > ngw->s2px(min_length))
 			resize(event->pos().x(), height());
 		updateNote();
 		ngw->updateNotes(m_resizing > 0);

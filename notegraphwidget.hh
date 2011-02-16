@@ -171,19 +171,19 @@ private:
 
 struct FloatingGap
 {
-	FloatingGap(int x): begin(x), end(x), m_notesWidth() {}
+	FloatingGap(double startTime): begin(startTime), end(startTime), m_notesLength() {}
 
 	void addNote(NoteLabel* n);
 	bool isEmpty() const { return notes.empty(); }
-	int width() const { return abs(end - begin); }
-	int minWidth() const;
-	int notesWidth() const { return m_notesWidth; }
+	double length() const { return std::abs(end - begin); }
+	double minLength() const;
+	double notesLength() const { return m_notesLength; }
 
-	int begin;
-	int end;
+	double begin;
+	double end;
 
 	NoteLabels notes;
 
 private:
-	int m_notesWidth;
+	double m_notesLength;
 };
