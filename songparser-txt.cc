@@ -94,7 +94,7 @@ bool SongParser::txtParseNote(QString line, VocalTrack &vocal) {
 			if (iss.status() != QTextStream::Ok) throw std::runtime_error("Invalid note line format");
 			n.notePrev = n.note; // No slide notes in TXT yet.
 			if (m_relative) ts += m_relativeShift;
-			if (iss.read(1)[0].toAscii() == ' ') n.syllable = iss.readLine().trimmed();
+			if (iss.read(1)[0].toAscii() == ' ') n.syllable = iss.readLine();
 			n.end = tsTime(ts + length);
 		}
 		break;
