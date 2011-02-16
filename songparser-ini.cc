@@ -55,7 +55,7 @@ void SongParser::iniParseField(QString const& line) {
 }
 
 void SongParser::midParse() {
-	QByteArray name = (m_song.path + "song.mid").toLocal8Bit();
+	QByteArray name = (m_song.path + "notes.mid").toLocal8Bit();
 	using namespace mid;
 	Reader reader(std::string(name.data(), name.size()).c_str());
 	unsigned track = 0;
@@ -64,6 +64,7 @@ void SongParser::midParse() {
 		unsigned timecode = 0;
 		double division = 0.25 * reader.getDivision();
 		std::string trackName, lyric;
+		addBPM(0, 120.0);
 		for (Event ev; reader.parseEvent(ev); ) {
 			timecode += ev.timecode;
 			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
