@@ -6,7 +6,7 @@ This document describes to what extent various file formats are supported by the
 
 Own project files
 -----------------
-Native save/load format. Preserves operation history (undo buffer). Currently only saves notes, not metadata.
+Native save/load format. Preserves operation history (undo buffer).
 
 
 SingStar XML
@@ -16,7 +16,7 @@ Import and export. Round-trip is not perfect: All XML elements except MELODY, TR
 
 UltraStar TXT
 -------------
-Import only, export planned.
+Import and export. All tags are not preserved.
 
 
 Frets on Fire MIDI/INI
