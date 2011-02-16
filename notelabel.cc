@@ -103,26 +103,26 @@ void NoteLabel::resizeEvent(QResizeEvent *event)
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
-	if (m_resizing != 0) {
+	if (m_resizing != 0 && ngw) {
 		// Resizing
 		if (m_resizing < 0 && width() - event->pos().x() > min_width)
 			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
 		else if (m_resizing > 0 && event->pos().x() > min_width)
 			resize(event->pos().x(), height());
-		if (ngw) ngw->updateNotes(m_resizing > 0);
+		updateNote();
+		ngw->updateNotes(m_resizing > 0);
 
-	} else if (!m_hotspot.isNull()) {
+	} else if (!m_hotspot.isNull() && ngw) {
 		// Moving
 		QPoint newpos = pos() + event->pos() - m_hotspot;
 		int dx = newpos.x() - pos().x(), dy = newpos.y() - pos().y();
-		if (ngw) {
-			NoteLabels& labels = ngw->selectedNotes();
-			for (int i = 0; i < labels.size(); ++i) {
-				NoteLabel *n = labels[i];
-				n->move(n->x() + dx, ngw->n2px(int(round(ngw->px2n(n->y() + dy + height() / 2)))) - height() / 2);
-			}
-			ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
+		NoteLabels& labels = ngw->selectedNotes();
+		for (int i = 0; i < labels.size(); ++i) {
+			NoteLabel *n = labels[i];
+			n->move(n->x() + dx, ngw->n2px(int(round(ngw->px2n(n->y() + dy + height() / 2)))) - height() / 2);
+			n->updateNote();
 		}
+		ngw->updateNotes((event->pos() - m_hotspot).x() < 0);
 		// Check if we need a new hotspot, because the note was constrained
 		if (pos().x() != newpos.x()) m_hotspot.rx() = event->x();
 
