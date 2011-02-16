@@ -12,7 +12,7 @@
 #include <QSettings>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), condition()
+	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(), cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), condition()
 {
 	start(); // Launch the thread
 }
@@ -20,8 +20,14 @@ PitchVis::PitchVis(QString const& filename, QWidget *parent)
 void PitchVis::stop()
 {
 	QMutexLocker locker(&mutex);
-	cancelled = true;
+	quit = true;
 	condition.wakeOne();
+}
+
+void PitchVis::cancel()
+{
+	QMutexLocker locker(&mutex);
+	cancelled = true;
 }
 
 void PitchVis::run()
@@ -55,7 +61,8 @@ void PitchVis::run()
 				x += analyzers[0].processStep();
 				// Update progress and check for quit flag
 				QMutexLocker locker(&mutex);
-				if (cancelled) return;
+				if (quit) return;
+				else if (cancelled) break;
 				double t = analyzers[0].getTime();
 				position = t;
 				duration = std::max(duration, t + 0.01);
@@ -125,7 +132,7 @@ void PitchVis::renderer() {
 		int x1, x2, y1, y2;
 		{
 			QMutexLocker locker(&mutex);
-			if (cancelled) return;
+			if (quit) return;
 			x1 = m_x1, x2 = m_x2, y1 = m_y1, y2 = m_y2;
 		}
 

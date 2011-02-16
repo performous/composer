@@ -1,4 +1,5 @@
 #include <QProgressBar>
+#include <QPushButton>
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -57,6 +58,11 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about", QIcon(":/icons/help-about.png")));
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
 
+	// Statusbar stuff
+	statusbarButton = new QPushButton(NULL);
+	ui.statusbar->addPermanentWidget(statusbarButton);
+	statusbarButton->setText(tr("&Abort"));
+	statusbarButton->hide();
 	statusbarProgress = new QProgressBar(NULL);
 	ui.statusbar->addPermanentWidget(statusbarProgress);
 	statusbarProgress->hide();
@@ -97,6 +103,7 @@ void EditorApp::setupNoteGraph()
 	// Signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	connect(statusbarButton, SIGNAL(clicked()), noteGraph, SLOT(abortPitch()));
 	connect(ui.noteGraphScroller->horizontalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.actionCut, SIGNAL(triggered()), noteGraph, SLOT(cut()));
@@ -237,10 +244,12 @@ void EditorApp::analyzeProgress(int value, int maximum)
 	if (statusbarProgress) {
 		if (value == maximum) {
 			statusbarProgress->hide();
+			statusbarButton->hide();
 		} else {
 			statusbarProgress->setMaximum(maximum);
 			statusbarProgress->setValue(value);
 			statusbarProgress->show();
+			statusbarButton->show();
 		}
 	}
 }

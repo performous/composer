@@ -8,6 +8,7 @@
 #include "synth.hh"
 
 class QProgressBar;
+class QPushButton;
 class QCloseEvent;
 class NoteLabel;
 class NoteGraphWidget;
@@ -124,6 +125,7 @@ private:
 	Phonon::AudioOutput *audioOutput;
 	QScopedPointer<Synth> synth;
 	QProgressBar *statusbarProgress;
+	QPushButton *statusbarButton;
 	QString projectFileName;
 	bool hasUnsavedChanges;
 	QString latestPath;

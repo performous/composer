@@ -36,6 +36,7 @@ public:
 	~PitchVis() { stop(); wait(); }
 
 	void stop();
+	void cancel();
 	void paint(int x1, int y1, int x2, int y2);
 	bool newDataAvailable() const { return moreAvailable; }
 	double getProgress() const { return position / duration; }
@@ -58,8 +59,9 @@ private:
 	double position;  ///< Position while analyzing
 	double duration;  ///< Song duration (or estimation while analyzing)
 	bool moreAvailable;
-	bool cancelled;
-	bool restart;
+	bool quit;  ///< Quit at the frst chance
+	bool cancelled;  ///< Cancel analyzing, but use what was done so far
+	bool restart;  ///< Should we start the rendering again?
 	QWaitCondition condition;
 	int m_x1, m_y1, m_x2, m_y2;
 };

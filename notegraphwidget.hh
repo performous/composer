@@ -130,6 +130,7 @@ public slots:
 	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }
 	void updatePixmap(const QImage &image, const QPoint &position);
 	void updatePitch();
+	void abortPitch() { if (m_pitch) m_pitch->cancel(); }
 
 signals:
 	void analyzeProgress(int, int);
