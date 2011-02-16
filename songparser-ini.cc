@@ -60,16 +60,31 @@ void SongParser::midParse() {
 	Reader reader(std::string(name.data(), name.size()).c_str());
 	unsigned track = 0;
 	do {
-		std::cout << "Track " << track << " begins" << std::endl;
+		VocalTrack vt("");
 		unsigned timecode = 0;
+		double division = 0.25 * reader.getDivision();
 		std::string trackName, lyric;
 		for (Event ev; reader.parseEvent(ev); ) {
 			timecode += ev.timecode;
 			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
 			// Process any interesting events
 			if (ev.type == Event::NOTE_ON) {
+				if (ev.arg1 >= 100) continue;  // Skip control signals
+				vt.notes.push_back(Note(lyric.c_str()));
+				Note& n = vt.notes.back();
+				n.begin = n.end = tsTime(timecode / division);
+				n.note = ev.arg1;
+				vt.noteMin = std::min(vt.noteMin, n.note);
+				vt.noteMax = std::max(vt.noteMax, n.note);
+				continue;
 			}
 			if (ev.type == Event::NOTE_OFF) {
+				if (ev.arg1 >= 100) continue;  // Skip control signals
+				if (vt.notes.empty()) throw std::runtime_error("NOTE OFF before NOTE ON.");
+				Note& n = vt.notes.back();
+				n.end = tsTime(timecode / division);
+				std::cout << n.note << " note " << n.begin << "->" << n.end << std::endl;
+				continue;
 			}
 			if (ev.type == Event::SPECIAL) {
 				Event::Meta meta = ev.getMeta();
@@ -92,9 +107,9 @@ void SongParser::midParse() {
 					if (ev.end - ev.begin != 4) throw std::runtime_error("Invalid time signature event");
 					break;
 				}
-				ev.print();
 			}
 		}
+		if (trackName == "PART VOCALS") m_song.insertVocalTrack("vocals", vt);
 	} while (++track, reader.nextTrack());
 }
 

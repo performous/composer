@@ -61,6 +61,7 @@ namespace mid {
 		bool nextTrack();
 		/// Parse the next event of the current track, returns false if at the end of track
 		bool parseEvent(Event& ev);
+		unsigned getDivision() const { return m_division; }
 	private:
 		void parseMThd();
 		void parseMTrk();
