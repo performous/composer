@@ -7,28 +7,38 @@
 using namespace mid;
 
 Reader::Reader(char const* filename) {
-	std::ifstream file(filename, std::ios::binary);
-	file.exceptions(std::ios::failbit);
-	file.seekg(std::ios::end);
-	unsigned size = file.tellg();
-	m_data.resize(size + margin);
-	file.seekg(0);
-	file.read(reinterpret_cast<char*>(&m_data[0]), size);
-	m_pos = &m_data[0];
-	m_fileEnd = m_pos + size;
-	parseMHdr();
+	{
+		std::ifstream file(filename, std::ios::binary);
+		file.exceptions(std::ios::failbit);
+		file.seekg(0, std::ios::end);
+		unsigned size = file.tellg();
+		m_data.resize(size + margin);
+		file.seekg(0);
+		file.read(reinterpret_cast<char*>(&m_data[0]), size);
+		m_pos = &m_data[0];
+		m_fileEnd = m_pos + size;
+	}
+	parseMThd();
+	parseMTrk();
+}
+
+bool Reader::nextTrack() {
+	m_pos = m_riffEnd;
+	if (m_pos == m_fileEnd) return false;
+	parseMTrk();
+	return true;
 }
 
 void Reader::parseRiff(char const* name) {
-	if (!std::equal(name, name + 4, m_pos)) throw std::runtime_error("MIDI header " + std::string(name) + " not found.");
+	if (!std::equal(name, name + 4, m_pos)) throw std::runtime_error("MIDI header " + std::string(name) + " not found, instead found " + std::string(m_pos, m_pos + 4));
 	m_pos += 4;
 	unsigned size = read<uint32_t>();
 	if (m_fileEnd - m_pos < size) throw std::runtime_error("Unexpected end of file within MIDI header " + std::string(name));
 	m_riffEnd = m_pos + size;
 }
 
-void Reader::parseMHdr() {
-	parseRiff("MHdr");
+void Reader::parseMThd() {
+	parseRiff("MThd");
 	unsigned fmt = read<uint16_t>();
 	m_tracks = read<uint16_t>();
 	m_division = read<uint16_t>();
@@ -43,8 +53,9 @@ void Reader::parseMTrk() {
 	parseRiff("MTrk");
 }
 
-Event Reader::parseEvent() {
-	Event ev;
+bool Reader::parseEvent(Event& ev) {
+	if (m_pos == m_riffEnd) return false;
+	ev = Event();
 	// Event header
 	{
 		ev.timecode = read_varlen();
@@ -61,8 +72,7 @@ Event Reader::parseEvent() {
 		ev.type = static_cast<Event::Type>(event & 0xF0);
 		ev.channel = event & 0x0F;
 	}
-
-	if (!m_runningStatus) ev.arg1 = read<uint8_t>();  // Everything except System Common take one argument
+	if (m_runningStatus) ev.arg1 = read<uint8_t>();  // Everything except System Common take one argument
 	unsigned tmp;
 	switch (ev.type) {
 	case Event::NOTE_ON:
@@ -82,7 +92,8 @@ Event Reader::parseEvent() {
 		ev.end = m_pos;
 		break;
 	}
-	return ev;
+	if (m_pos > m_riffEnd) throw std::runtime_error("MIDI event went past the end of Mtrk");
+	return true;
 }
 
 #if 0
@@ -130,14 +141,18 @@ void Event::print() const {
 	std::ostringstream oss;
 	oss << "Midi event:" << std::setw(12) << timecode << "  ";
 	switch (type) {
-	  case 0x8: oss << "note off   note=" << arg1 << " velocity=" << arg2; break;
-	  case 0x9: oss << "note on   note=" << arg1 << " velocity=" << arg2; break;
-	  case 0xA: oss << "aftertouch pitch=" << arg1 << " value=" << arg2; break;
-	  case 0xB: oss << "controller num=" << arg1 << " value=" << arg2; break;
-	  case 0xC: oss << "program change num=" << arg1; break;
-	  case 0xD: oss << "channel value =" << arg1; break;
-	  case 0xE: oss << "pitch bend value=" << (arg2 << 8 | arg1); break;
-	  default: oss << "UNKNOWN EVENT=0x" << std::hex << type << std::dec << ")"; break;
+	  case NOTE_OFF: oss << "note off   note=" << arg1 << " velocity=" << arg2; break;
+	  case NOTE_ON: oss << "note on   note=" << arg1 << " velocity=" << arg2; break;
+	  case NOTE_AFTERTOUCH: oss << "aftertouch pitch=" << arg1 << " value=" << arg2; break;
+	  case CONTROLLER: oss << "controller num=" << arg1 << " value=" << arg2; break;
+	  case PROGRAM_CHANGE: oss << "program change num=" << arg1; break;
+	  case CHANNEL_AFTERTOUCH: oss << "channel aftertouch value =" << arg1; break;
+	  case PITCH_BEND: oss << "pitch bend value=" << (arg2 << 8 | arg1); break;
+	  case SPECIAL:
+		if (channel == 0x0F) oss << "meta event type=" << arg1;
+		else if (channel >= 0x08) oss << "unknown realtime category message, arg1=" << arg1;
+		else oss << "system common message";
+		break;
 	}
 	if (begin != end) oss << " data='" << std::string(begin, end) << "'";  // TODO: filter non-printable
 	oss << '\n';

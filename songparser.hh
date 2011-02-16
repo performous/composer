@@ -33,10 +33,12 @@ class SongParser {
 	bool xmlCheck(QString const& data);
 	void xmlParse();
 
+	bool iniCheck(QString const& data);
+	void iniParse();
+	void iniParseField(QString const& line);
+	void midParse();
+
 	// FIXME: Dummy funcs
-	bool iniCheck(QString const& data) { (void)data; return false; }
-	void iniParseHeader() { }
-	void iniParse() { }
 	bool smCheck(QString const& data) { (void)data; return false; }
 	void smParse() { }
 	bool smParseField(std::string line) { (void)line; return false; }

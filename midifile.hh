@@ -12,8 +12,8 @@ namespace mid {
 
 	struct Event {
 		enum Type {
-			NOTE_ON = 0x80,
-			NOTE_OFF = 0x90,
+			NOTE_OFF = 0x80,
+			NOTE_ON = 0x90,
 			NOTE_AFTERTOUCH = 0xA0,
 			CONTROLLER = 0xB0,
 			PROGRAM_CHANGE = 0xC0,
@@ -52,11 +52,15 @@ namespace mid {
 	public:
 		static const unsigned margin = 20;  ///< The minimum number of extra bytes required after the end of the buffer for more efficient processing
 		Reader(char const* filename);
-		
+		unsigned numTracks() const { return m_tracks; }
+		unsigned Tracks() const { return m_tracks; }
+		/// Switch to the next track, returns false if end of file reached (all track processed)
+		bool nextTrack();
+		/// Parse the next event of the current track, returns false if at the end of track
+		bool parseEvent(Event& ev);
 	private:
-		void parseMHdr();
+		void parseMThd();
 		void parseMTrk();
-		Event parseEvent();
 		void parseRiff(char const* name);
 		template <typename T> T read() {
 			T value = 0;
