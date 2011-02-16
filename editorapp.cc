@@ -321,6 +321,7 @@ void EditorApp::openFile(QString fileName)
 							projectFileName = fileName;
 							hasUnsavedChanges = false;
 							updateNoteInfo(NULL); // Title bar
+							if (noteGraph) noteGraph->scrollToFirstNote();
 						} else
 							QMessageBox::critical(this, tr("Error opening file!"), tr("Unsupported project file version in %1").arg(fileName));
 					} else

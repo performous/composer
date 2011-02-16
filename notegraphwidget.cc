@@ -115,6 +115,11 @@ void NoteGraphWidget::finalizeNewLyrics()
 	updateNotes();
 
 	// Scroll to show the first note
+	scrollToFirstNote();
+}
+
+void NoteGraphWidget::scrollToFirstNote()
+{
 	QScrollArea* scrollArea = getScrollArea();
 	if (scrollArea && !m_notes.isEmpty()) {
 		const Note& n = m_notes.front()->note();

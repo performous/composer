@@ -131,6 +131,7 @@ public slots:
 	void updatePixmap(const QImage &image, const QPoint &position);
 	void updatePitch();
 	void abortPitch() { if (m_pitch) m_pitch->cancel(); }
+	void scrollToFirstNote();
 
 signals:
 	void analyzeProgress(int, int);
