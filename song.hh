@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QMap>
 #include "notes.hh"
 
 #include <stdexcept>
@@ -121,7 +122,7 @@ class Song {
 	QString creator; ///< creator
 	QString language; ///< language
 	QString year; ///< year
-	std::map<QString,QString> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
+	QMap<QString,QString> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
 	QString cover; ///< cd cover
 	QString background; ///< background image
 	QString video; ///< video

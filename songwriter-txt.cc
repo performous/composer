@@ -9,27 +9,39 @@ void UltraStarTXTWriter::writeTXT() {
 	if (!f.open(QFile::WriteOnly | QFile::Truncate))
 		throw std::runtime_error("Couldn't open target file");
 
+	// Figure out song filename
+	QString mp3 = "NO_SONG";
+	if (!s.music["EDITOR"].isEmpty()) {
+		QFileInfo finfo(s.music["EDITOR"]);
+		mp3 = finfo.fileName();
+	}
+
 	QTextStream out(&f);
 	out.setCodec("UTF-8");
+
+	// Required fields
 	out << "#TITLE:" << (s.title.isEmpty() ? "Unknown" : s.title) << '\n';
 	out << "#ARTIST:" << (s.artist.isEmpty() ? "Unknown" : s.artist) << '\n';
+	out << "#MP3:" << mp3 << '\n';
+	out << "#BPM:" << tempo << '\n';
+	out << "#GAP:" << "0" << '\n'; // Time to first lyric in milliseconds
 
-	if (!s.edition.isEmpty()) out << "#EDITION:" << s.edition << '\n';
-	if (!s.genre.isEmpty()) out << "#GENRE:" << s.genre << '\n';
+	// Additional fields
 	out << "#CREATOR:" << (s.creator.isEmpty() ? PACKAGE : s.creator) << '\n';
-	if (!s.cover.isEmpty()) out << "#COVER:" << s.cover << '\n';
-//	if (!s.music["background"].second.isEmpty()) out << "#MP3:" << s.music["background"].second << '\n'; // FIXME: remove full path
-//	if (!s.music["vocals"].isEmpty()) out << "#VOCALS:" << s.music["vocals"] << '\n'; // FIXME: remove full path
-	if (!s.video.isEmpty()) out << "#VIDEO:" << s.video << '\n';
-	if (!s.background.isEmpty()) out << "#BACKGROUND:" << s.background << '\n';
-	out << "#START:" << s.start << '\n';
-	out << "#VIDEOGAP:" << s.videoGap << '\n';
-	out << "#PREVIEWSTART:" << s.preview_start << '\n';
-	out << "#RELATIVE:" << "0" << '\n'; // TODO: Check that this outputs in a good format
-	//if (!s.gap.isEmpty()) out << "#GAP:" << s.gap << '\n';
-	if (s.bpm != 0) out << "#BPM:" << s.bpm << '\n';
-	if (!s.language.isEmpty()) out << "#LANGUAGE:" << s.language << '\n';
+	if (!s.genre.isEmpty()) out << "#GENRE:" << s.genre << '\n';
 	if (!s.year.isEmpty()) out << "#YEAR:" << s.year << '\n';
+	if (!s.language.isEmpty()) out << "#LANGUAGE:" << s.language << '\n';
+	if (!s.edition.isEmpty()) out << "#EDITION:" << s.edition << '\n';
+	if (!s.cover.isEmpty()) out << "#COVER:" << s.cover << '\n';
+	if (!s.background.isEmpty()) out << "#BACKGROUND:" << s.background << '\n';
+	if (!s.video.isEmpty()) out << "#VIDEO:" << s.video << '\n';
+
+	// The following are not useful, at least for now
+	//if (s.videoGap != 0) out << "#VIDEOGAP:" << s.videoGap << '\n';
+	//if (start != 0) out << "#START:" << s.start << '\n';
+	//out << "#RELATIVE:" << "no" << '\n';
+	//out << "#PREVIEWSTART:" << s.preview_start << '\n';
+	//if (!s.music["vocals"].isEmpty()) out << "#VOCALS:" << s.music["vocals"] << '\n'; // FIXME: remove full path
 
 	// Loop through the notes
 	const Notes& notes = s.getVocalTrack().notes;

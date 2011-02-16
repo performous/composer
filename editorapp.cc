@@ -331,7 +331,9 @@ void EditorApp::openFile(QString fileName)
 			} else {
 
 				// Song import
+				QString musicfile = song->music["EDITOR"]; // Preserve the music file
 				song.reset(new Song(QString(finfo.path()+"/"), finfo.fileName()));
+				song->music["EDITOR"] = musicfile;
 				noteGraph->setLyrics(song->getVocalTrack());
 				updateSongMeta(true);
 			}
