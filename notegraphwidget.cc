@@ -115,9 +115,7 @@ void NoteGraphWidget::finalizeNewLyrics()
 	updateNotes();
 
 	// Scroll to show the first note
-	QScrollArea *scrollArea = NULL;
-	if (parentWidget())
-		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	QScrollArea* scrollArea = getScrollArea();
 	if (scrollArea && !m_notes.isEmpty()) {
 		const Note& n = m_notes.front()->note();
 		int w = scrollArea->width();
@@ -450,10 +448,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 	// Pan
 	} else if (!m_mouseHotSpot.isNull()) {
 		setCursor(QCursor(Qt::ClosedHandCursor));
-		QScrollArea *scrollArea = NULL;
-		if (parentWidget())
-			scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
-		if (scrollArea) {
+		if (QScrollArea *scrollArea = getScrollArea()) {
 			QPoint diff = event->pos() - m_mouseHotSpot;
 			QScrollBar *scrollHor = scrollArea->horizontalScrollBar();
 			scrollHor->setValue(scrollHor->value() - diff.x());

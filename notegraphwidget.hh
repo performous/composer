@@ -8,6 +8,7 @@
 #include <QScopedPointer>
 #include <QElapsedTimer>
 
+class QScrollArea;
 class NoteLabel;
 typedef QList<NoteLabel*> NoteLabels;
 
@@ -81,6 +82,7 @@ public slots:
 	void paste();
 
 protected:
+	QScrollArea* getScrollArea() const;
 	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
 	// Zoom settings

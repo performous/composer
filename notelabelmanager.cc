@@ -128,12 +128,16 @@ void NoteLabelManager::selectNextSentenceStart()
 	}
 }
 
+QScrollArea* NoteLabelManager::getScrollArea() const
+{
+	if (!parentWidget()) return NULL;
+	return qobject_cast<QScrollArea*>(parentWidget()->parent());
+}
+
 void NoteLabelManager::calcViewport(int &x1, int &y1, int &x2, int &y2) const
 {
-	QScrollArea *scrollArea = NULL;
+	QScrollArea *scrollArea = getScrollArea();
 	x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-	if (parentWidget())
-		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
 	if (scrollArea) {
 		if (scrollArea->horizontalScrollBar())
 			x1 = scrollArea->horizontalScrollBar()->value();
@@ -385,9 +389,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 }
 
 void NoteLabelManager::zoom(float steps, double focalSecs) {
-	QScrollArea *scrollArea = NULL;
-	if (parentWidget())
-		scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parent());
+	QScrollArea *scrollArea = getScrollArea();
 	if (!scrollArea) return;
 
 	// Default focal point is viewport center
