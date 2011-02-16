@@ -18,3 +18,5 @@ How to cross-compile from Linux for Windows
 8. Compile editor as usual: cd build && make
 
 9. Run makezip.sh if you want to create a simple zip package.
+
+10. To create an executable installer, run makeinstaller.py from the build dir (requires makezip.sh to be run first)
