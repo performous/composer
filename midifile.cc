@@ -96,46 +96,22 @@ bool Reader::parseEvent(Event& ev) {
 	return true;
 }
 
-#if 0
-{
-	switch (ev.arg1) {
-	  case META_TEXT: { // Text Event
-		const std::string sect_pfx = "[section ";
-		// Lyrics are hidden here, only [text] are orders
-		if (data[0] != '[') m_lyric = data;
-		else if (!data.compare(0, sect_pfx.length(), sect_pfx)) {// [section verse_1]
-			std::string sect_name = data.substr(sect_pfx.length(), data.length()-sect_pfx.length()-1);
-			if (sect_name != "big_rock_ending") {
-				bool space = true;
-				for (std::string::const_iterator it = sect_name.begin(); it != sect_name.end(); ++it) {
-					if (space) *it = toupper(*it);        // start in uppercase
-					if (*it == '_') {*it = ' '; space = true;} // underscores to spaces
-					else space = false;
-				}
-				// replace gtr => guitar
-				midisections.push_back(MidiSection(sect_name, get_seconds(miditime)));
-			} else cmdevents.push_back(std::string(data)); // see songparser-ini.cc: we need to keep the BRE in cmdevents
+// Debugging facilities follow
+
+namespace {
+	std::string escapeString(const_iterator begin, const_iterator end) {
+		std::string ret;
+		while (begin != end) {
+			value_type ch = *begin++;
+			if (ch >= 0x20 && ch < 0x7F) { ret += ch; continue; }
+			// Print escaped character
+			std::ostringstream oss;
+			oss << '<' << std::hex << std::setfill('0') << std::setw(2) << int(ch) << '>';
+			ret += oss.str();
 		}
-		else cmdevents.push_back(std::string(data));
-	  } break;
-	  case META_SEQNAME: // Sequence or Track Name
-		track.name = data;
-		break;
-	  case META_LYRIC: // Lyric Text
-		m_lyric = data;
-		break;
-	  case META_ENDOFTRACK: // End of Track
-		end = true;
-		break;
-	  case META_TEMPO: // Tempo Setting
-		if (data.size() != 3) throw std::runtime_error("Invalid tempo change event");
-		add_tempo_change(miditime, static_cast<unsigned char>(data[0]) << 16 | static_cast<unsigned char>(data[1]) << 8 | static_cast<unsigned char>(data[2])); break;
-	  case META_TIMESIGNATURE: // Time Signature
-		if (data.size() != 4) throw std::runtime_error("Invalid time signature event");
-		break;
+		return ret;
 	}
 }
-#endif
 
 void Event::print() const {
 	std::ostringstream oss;
@@ -149,13 +125,34 @@ void Event::print() const {
 	  case CHANNEL_AFTERTOUCH: oss << "channel aftertouch value =" << arg1; break;
 	  case PITCH_BEND: oss << "pitch bend value=" << (arg2 << 8 | arg1); break;
 	  case SPECIAL:
-		if (channel == 0x0F) oss << "meta event type=" << arg1;
+		if (channel == 0x0F) oss << "meta <" << metaName(static_cast<Event::Meta>(arg1)) << ">";
 		else if (channel >= 0x08) oss << "unknown realtime category message, arg1=" << arg1;
 		else oss << "system common message";
 		break;
 	}
-	if (begin != end) oss << " data='" << std::string(begin, end) << "'";  // TODO: filter non-printable
+	if (begin != end) oss << " data='" << escapeString(begin, end) << "'";  // TODO: filter non-printable
 	oss << '\n';
 	std::cerr << oss.str();
+}
+
+char const* Event::metaName(Meta meta) {
+	switch (meta) {
+	case META_SEQNUMBER: return "sequence number";
+	case META_TEXT: return "text";
+	case META_COPYRIGHT: return "copyright";
+	case META_SEQNAME: return "sequence or track name";
+	case META_INSTRNAME: return "instrument name";
+	case META_LYRIC: return "lyric";
+	case META_MARKERTEXT: return "marker text";
+	case META_CUEPOINT: return "cue point";
+	case META_CHPREFIX: return "channel prefix";
+	case META_ENDOFTRACK: return "end of track";
+	case META_TEMPO: return "tempo change";
+	case META_SMTPEOFFSET: return "SMTPE offset";
+	case META_TIMESIGNATURE: return "time signature";
+	case META_KEYSIGNATURE: return "key signature";
+	case META_SEQUENCERSPECIFIC: return "sequencer specific";
+	}
+	return "unknown";
 }
 

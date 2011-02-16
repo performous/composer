@@ -56,12 +56,65 @@ void SongParser::iniParseField(QString const& line) {
 
 void SongParser::midParse() {
 	QByteArray name = (m_song.path + "song.mid").toLocal8Bit();
-	mid::Reader reader(std::string(name.data(), name.size()).c_str());
+	using namespace mid;
+	Reader reader(std::string(name.data(), name.size()).c_str());
+	unsigned track = 0;
 	do {
-		std::cout << "Track begins" << std::endl;
-		for (mid::Event ev; reader.parseEvent(ev); ) {
-			ev.print();
+		std::cout << "Track " << track << " begins" << std::endl;
+		unsigned timecode = 0;
+		std::string trackName, lyric;
+		for (Event ev; reader.parseEvent(ev); ) {
+			timecode += ev.timecode;
+			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
+			// Process any interesting events
+			if (ev.type == Event::NOTE_ON) {
+			}
+			if (ev.type == Event::NOTE_OFF) {
+			}
+			if (ev.type == Event::SPECIAL) {
+				Event::Meta meta = ev.getMeta();
+				if (meta == Event::META_LYRIC || (meta == Event::META_TEXT && *ev.begin != '[')) {
+					lyric = ev.getDataStr();
+					continue;
+				}
+				if (meta == Event::META_TEXT) {  // Non-lyric text event such as "[section Verse-1a]"
+					continue;
+				}
+				if (meta == Event::META_SEQNAME) { trackName = ev.getDataStr(); continue; }
+				if (meta == Event::META_ENDOFTRACK) break;  // Not really necessary as the track would normally end after this anyway
+				if (meta == Event::META_TEMPO) {
+					if (ev.end - ev.begin != 3) throw std::runtime_error("Invalid tempo change event");
+					unsigned microSecPerBeat = ev.begin[0] << 16 | ev.begin[1] << 8 | ev.begin[2];
+					addBPM(timecode, 6e+7 / microSecPerBeat);
+					break;
+				}
+				if (meta == Event::META_TIMESIGNATURE) {
+					if (ev.end - ev.begin != 4) throw std::runtime_error("Invalid time signature event");
+					break;
+				}
+				ev.print();
+			}
 		}
-	} while (reader.nextTrack());
+	} while (++track, reader.nextTrack());
 }
+
+#if 0
+// Text event handling
+const std::string sect_pfx = "[section ";
+if (!data.compare(0, sect_pfx.length(), sect_pfx)) {// [section verse_1]
+	std::string sect_name = data.substr(sect_pfx.length(), data.length()-sect_pfx.length()-1);
+	if (sect_name != "big_rock_ending") {
+		bool space = true;
+		for (std::string::const_iterator it = sect_name.begin(); it != sect_name.end(); ++it) {
+			if (space) *it = toupper(*it);        // start in uppercase
+			if (*it == '_') {*it = ' '; space = true;} // underscores to spaces
+			else space = false;
+		}
+		// replace gtr => guitar
+		midisections.push_back(MidiSection(sect_name, get_seconds(miditime)));
+	} else cmdevents.push_back(std::string(data)); // see songparser-ini.cc: we need to keep the BRE in cmdevents
+}
+else cmdevents.push_back(std::string(data));
+#endif
+
 

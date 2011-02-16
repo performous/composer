@@ -38,12 +38,15 @@ namespace mid {
 			META_KEYSIGNATURE = 0x59,
 			META_SEQUENCERSPECIFIC = 0x7F
 		};
+		static char const* metaName(Meta meta);
 		unsigned timecode;  // Relative to previous event
 		Type type;
 		unsigned channel;
 		unsigned arg1;
 		unsigned arg2;
 		const_iterator begin, end;  // Data belonging to the event (including any terminating 0x7F)
+		Meta getMeta() const { return static_cast<Meta>(arg1); }
+		std::string getDataStr() const { return std::string(begin, end); }
 		void print() const;  ///< Prints to std::cout (for debugging only)
 		Event(): timecode(), type(), channel(), arg1(), arg2(), begin(), end() {}
 	};
