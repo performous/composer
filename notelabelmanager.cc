@@ -339,7 +339,7 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 				Note newnote(op.s(2)); // lyric
 				newnote.begin = op.d(3); // begin
 				newnote.end = op.d(4); // end
-				newnote.note = op.d(5); // note
+				newnote.note = op.i(5); // note
 				newnote.lineBreak = op.b(7); // lineBreak
 				newnote.type = Note::types[op.i(8)]; // note type
 				NoteLabel *newLabel = new NoteLabel(
@@ -359,7 +359,10 @@ void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlag
 						n->close();
 						m_notes.removeAt(op.i(1));
 					} else if (action == "MOVE") {
-						n->setGeometry(s2px(op.d(2)), n2px(op.i(4)) - m_noteHalfHeight, s2px(op.d(3) - op.d(2)), 2 * m_noteHalfHeight);
+						n->note().begin = op.d(2);
+						n->note().end = op.d(3);
+						n->note().note = op.i(4);
+						n->updateLabel();
 						n->setFloating(false);
 					} else if (action == "FLOATING") {
 						n->setFloating(op.b(2));

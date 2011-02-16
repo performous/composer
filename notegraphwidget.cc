@@ -293,7 +293,7 @@ void NoteGraphWidget::timeCurrent()
 		Operation op("MOVE");
 		op << getNoteLabelId(selectedNote())
 			<< px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + selectedNote()->width())
-			<< int(round(px2n(selectedNote()->y() + m_noteHalfHeight)));
+			<< selectedNote()->note().note;
 		doOperation(op);
 	}
 }
