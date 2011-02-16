@@ -25,9 +25,11 @@ private:
 struct UltraStarTXTWriter: public SongWriter
 {
 	UltraStarTXTWriter(const Song& s_, const QString& path_)
-		: SongWriter(s_, path_) { writeTXT(); }
+		: SongWriter(s_, path_), tempo(s_.bpm > 0 ? s_.bpm : 180) { writeTXT(); }
 private:
 	void writeTXT();
+	int sec2dur(double sec);
+	int tempo;
 };
 
 struct FoFMIDIWriter: public SongWriter
