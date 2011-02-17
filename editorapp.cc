@@ -560,18 +560,25 @@ void EditorApp::on_actionMusicFile_triggered()
 
 void EditorApp::on_actionLyricsFromFile_triggered()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-			latestPath,
-			tr("Text files (*.txt)"));
+	if ((noteGraph && noteGraph->noteLabels().empty())
+		|| QMessageBox::question(this, tr("Replace lyrics"),
+			tr("Loading lyrics from a file will replace the existing ones. Continue?"),
+			QMessageBox::Ok | QMessageBox::Cancel)
+		== QMessageBox::Ok)
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+				latestPath,
+				tr("Text files (*.txt)"));
 
-	if (!fileName.isNull()) {
-		QFile file(fileName);
-		QFileInfo finfo(file); latestPath = finfo.path();
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-			return;
+		if (!fileName.isNull()) {
+			QFile file(fileName);
+			QFileInfo finfo(file); latestPath = finfo.path();
+			if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+				return;
 
-		QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
-		if (text != "") noteGraph->setLyrics(text);
+			QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
+			if (text != "") noteGraph->setLyrics(text);
+		}
 	}
 }
 
