@@ -194,13 +194,12 @@ void EditorApp::updateTitle()
 	// Project name
 	QFileInfo finfo(projectFileName);
 	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
-	if (isWindowModified()) proName += "[*]";
 	// Zoom level
 	QString zoom = "";
 	if (noteGraph && noteGraph->getZoomLevel() != 100)
 		zoom = " - " + QString::number(noteGraph->getZoomLevel()) + " %";
 	// Set the title
-	setWindowTitle(QString(PACKAGE) + " - " + proName + zoom);
+	setWindowTitle(QString(PACKAGE) + " - " + proName + "[*]" + zoom);
 }
 
 void EditorApp::updateNoteInfo(NoteLabel *note)
