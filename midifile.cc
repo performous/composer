@@ -9,6 +9,7 @@ using namespace mid;
 Reader::Reader(char const* filename) {
 	{
 		std::ifstream file(filename, std::ios::binary);
+		if (!file.is_open()) throw std::runtime_error("Unable to open " + std::string(filename));
 		file.exceptions(std::ios::failbit);
 		file.seekg(0, std::ios::end);
 		unsigned size = file.tellg();
