@@ -416,8 +416,8 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void NoteGraphWidget::wheelEvent(QWheelEvent *event)
 {
-	// Ctrl + Wheel = Zoom
-	if (event->modifiers() & Qt::ControlModifier && event->orientation() == Qt::Vertical) {
+	// Wheel = Zoom
+	if (event->orientation() == Qt::Vertical) {
 		float numDegrees = event->delta() / 8; // Qt resolution is 8th of a degree
 		float numSteps = numDegrees / 15; // Usually mice have 15 degree steps
 		zoom(numSteps, px2s(event->pos().x()));
