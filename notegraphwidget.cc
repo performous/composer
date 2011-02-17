@@ -398,6 +398,11 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 			if (movecount > 1) {
 				Operation op("COMBINER"); op << movecount; doOperation(op);
 			}
+
+			// If we didn't move, select the note under cursor
+			NoteLabel *child = qobject_cast<NoteLabel*>(childAt(event->pos()));
+			if (child && !m_actionHappened && !event->modifiers() && event->button() == Qt::LeftButton)
+				selectNote(child);
 		}
 		m_selectedAction = NONE;
 	}
