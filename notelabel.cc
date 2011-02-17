@@ -162,27 +162,6 @@ void NoteLabel::startDragging(const QPoint& point)
 	else setCursor(QCursor());
 }
 
-// FIXME: This should be removed and updateLabel used everywhere instead
-void NoteLabel::updateNote()
-{
-	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
-	if (ngw) {
-		// Update note pos
-		m_note.note = round(ngw->px2n(y() + height() / 2));
-		m_note.begin = ngw->px2s(x());
-		// Update note length
-		m_note.end = m_note.begin + ngw->px2s(width());
-	}
-	MusicalScale ms;
-	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
-		.arg(lyric())
-		.arg(m_note.typeString())
-		.arg(ms.getNoteStr(ms.getNoteFreq(m_note.note)))
-		.arg(QString::number(m_note.begin, 'f', 3))
-		.arg(QString::number(m_note.end, 'f', 3))
-		);
-}
-
 void NoteLabel::updateLabel()
 {
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
