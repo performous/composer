@@ -4,7 +4,7 @@
 #include <QTextStream>
 
 
-void LRCWriter::writeLRC() {
+void LRCWriter::writeLRC() const {
 	QFile f(path + "/song.lrc");
 	if (!f.open(QFile::WriteOnly | QFile::Truncate))
 		throw std::runtime_error("Couldn't open target file");

@@ -2,7 +2,7 @@
 #include <QTextStream>
 
 
-void FoFMIDIWriter::writeMIDI() {
+void FoFMIDIWriter::writeMIDI() const {
 	throw std::runtime_error("MIDI export is not implemented.");
 	/*std::ofstream f((path + "notes.mid").c_str(), std::ios::binary);
 	// FIXME: The following is just an example and doesn't actually output MID format
@@ -18,7 +18,7 @@ void FoFMIDIWriter::writeMIDI() {
 	}*/
 }
 
-void FoFMIDIWriter::writeINI() {
+void FoFMIDIWriter::writeINI() const {
 	QFile f(path + "/song.ini");
 	if (!f.open(QFile::WriteOnly | QFile::Truncate))
 		throw std::runtime_error("Couldn't open target file");

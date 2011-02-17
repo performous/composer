@@ -4,7 +4,7 @@
 #include <QTextStream>
 
 
-void UltraStarTXTWriter::writeTXT() {
+void UltraStarTXTWriter::writeTXT() const {
 	QFile f(path + "/notes.txt");
 	if (!f.open(QFile::WriteOnly | QFile::Truncate))
 		throw std::runtime_error("Couldn't open target file");
@@ -61,6 +61,6 @@ void UltraStarTXTWriter::writeTXT() {
 }
 
 
-int UltraStarTXTWriter::sec2dur(double sec) {
+int UltraStarTXTWriter::sec2dur(double sec) const {
 	return round(tempo / 60.0 * sec * 4);
 }

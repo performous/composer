@@ -109,10 +109,10 @@ void SingStarXMLWriter::writeXML() {
 	} else throw std::runtime_error("Couldn't open target file notes.xml");
 }
 
-int SingStarXMLWriter::sec2dur(double sec) {
+int SingStarXMLWriter::sec2dur(double sec) const {
 	return round(tempo / 60.0 * sec * (res == "Demisemiquaver" ? 8 : 4));
 }
 
-double SingStarXMLWriter::dur2sec(int ts) {
+double SingStarXMLWriter::dur2sec(int ts) const {
 	return ts * 60.0 / (tempo * (res == "Demisemiquaver" ? 8 : 4));
 }
