@@ -41,3 +41,12 @@ private:
 	void writeINI();
 	void writeMIDI();
 };
+
+struct LRCWriter: public SongWriter
+{
+	LRCWriter(const Song& s_, const QString& path_)
+		: SongWriter(s_, path_) { writeLRC(); }
+private:
+	void writeLRC();
+	QString sec2timestamp(double sec) const;
+};

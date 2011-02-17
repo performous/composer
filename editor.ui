@@ -509,6 +509,8 @@
      <addaction name="actionUltraStarTXT"/>
      <addaction name="actionFoFMIDI"/>
      <addaction name="separator"/>
+     <addaction name="actionLRC"/>
+     <addaction name="separator"/>
      <addaction name="actionLyricsToFile"/>
      <addaction name="actionLyricsToClipboard"/>
     </widget>
@@ -764,6 +766,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionLRC">
+   <property name="text">
+    <string>&amp;LRC...</string>
    </property>
   </action>
  </widget>

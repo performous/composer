@@ -424,6 +424,7 @@ void EditorApp::exportSong(QString format, QString dialogTitle)
 			if (format == "XML") SingStarXMLWriter(*song.data(), path);
 			else if (format == "TXT") UltraStarTXTWriter(*song.data(), path);
 			else if (format == "INI") FoFMIDIWriter(*song.data(), path);
+			else if (format == "LRC") LRCWriter(*song.data(), path);
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
 		}
@@ -435,6 +436,8 @@ void EditorApp::on_actionSingStarXML_triggered() { exportSong("XML", tr("Export 
 void EditorApp::on_actionUltraStarTXT_triggered() { exportSong("TXT", tr("Export UltraStar TXT")); }
 
 void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Frets on Fire MIDI")); }
+
+void EditorApp::on_actionLRC_triggered() { exportSong("LRC", tr("Export LRC")); }
 
 void EditorApp::on_actionLyricsToFile_triggered()
 {
