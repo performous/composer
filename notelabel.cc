@@ -13,7 +13,7 @@ namespace {
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const int NoteLabel::default_size = 100; // The preferred size of notes
-const double NoteLabel::min_length = 0.01; // How many seconds minimum
+const double NoteLabel::min_length = 0.05; // How many seconds minimum
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
@@ -105,11 +105,15 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 	NoteGraphWidget* ngw = qobject_cast<NoteGraphWidget*>(parent());
 	if (m_resizing != 0 && ngw) {
 		// Resizing
-		if (m_resizing < 0 && width() - event->pos().x() > ngw->s2px(min_length))
-			setGeometry(x() + event->pos().x(), y(), width() - event->pos().x(), height());
-		else if (m_resizing > 0 && event->pos().x() > ngw->s2px(min_length))
-			resize(event->pos().x(), height());
-		updateNote();
+		double diffsecs = ngw->px2s(event->pos().x());
+		if (m_resizing < 0) m_note.begin += diffsecs;  // Left side
+		else m_note.end += diffsecs - m_note.length(); // Right side
+		// Enforce minimum size
+		if (m_note.length() < min_length) {
+			if (m_resizing < 0) m_note.begin = m_note.end - min_length; // Left side
+			else m_note.end = m_note.begin + min_length; // Right side
+		}
+		updateLabel();
 		ngw->updateNotes(m_resizing > 0);
 
 	} else if (!m_hotspot.isNull() && ngw) {
@@ -134,7 +138,6 @@ void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 			setCursor(QCursor(Qt::OpenHandCursor));
 		}
 	}
-	updateNote();
 	QToolTip::showText(event->globalPos(), toolTip(), this);
 	event->ignore(); // Propagate event to parent
 }
