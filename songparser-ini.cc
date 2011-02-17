@@ -47,6 +47,7 @@ void SongParser::iniParseField(QString const& line) {
 	else if (key == "VIDEO") m_song.video = value;
 	else if (key == "BACKGROUND") m_song.background = value;
 	else if (key == "START") m_song.start = value.toDouble(&ok);
+	else if (key == "DELAY") m_gap = 1e-3 * value.toDouble(&ok);
 	else if (key == "VIDEO_START_TIME") m_song.videoGap = 1e-3 * value.toDouble(&ok);
 	else if (key == "PREVIEW_START_TIME") m_song.preview_start = 1e-3 * value.toDouble(&ok);
 
@@ -54,26 +55,31 @@ void SongParser::iniParseField(QString const& line) {
 	return;
 }
 
+namespace {
+	QString strConv(std::string const& str) { /* TODO: charset autodetection */ return QString::fromUtf8(str.data(), str.size()); }
+}
+
 void SongParser::midParse() {
 	QByteArray name = (m_song.path + "notes.mid").toLocal8Bit();
 	using namespace mid;
 	Reader reader(std::string(name.data(), name.size()).c_str());
+	double tempo = 120.0;
+	double division = reader.getDivision();
+	addBPM(0, tempo, division);
 	unsigned track = 0;
 	do {
 		VocalTrack vt("");
 		unsigned timecode = 0;
-		double division = 0.25 * reader.getDivision();
 		std::string trackName, lyric;
-		addBPM(0, 120.0);
 		for (Event ev; reader.parseEvent(ev); ) {
 			timecode += ev.timecode;
 			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
 			// Process any interesting events
 			if (ev.type == Event::NOTE_ON) {
 				if (ev.arg1 >= 100) continue;  // Skip control signals
-				vt.notes.push_back(Note(lyric.c_str()));
+				vt.notes.push_back(Note(strConv(lyric)));
 				Note& n = vt.notes.back();
-				n.begin = n.end = tsTime(timecode / division);
+				n.begin = n.end = tsTime(timecode);
 				n.note = ev.arg1;
 				vt.noteMin = std::min(vt.noteMin, n.note);
 				vt.noteMax = std::max(vt.noteMax, n.note);
@@ -83,8 +89,7 @@ void SongParser::midParse() {
 				if (ev.arg1 >= 100) continue;  // Skip control signals
 				if (vt.notes.empty()) throw std::runtime_error("NOTE OFF before NOTE ON.");
 				Note& n = vt.notes.back();
-				n.end = tsTime(timecode / division);
-				std::cout << n.note << " note " << n.begin << "->" << n.end << std::endl;
+				n.end = tsTime(timecode);
 				continue;
 			}
 			if (ev.type == Event::SPECIAL) {
@@ -97,17 +102,30 @@ void SongParser::midParse() {
 					continue;
 				}
 				if (meta == Event::META_SEQNAME) { trackName = ev.getDataStr(); continue; }
-				if (meta == Event::META_ENDOFTRACK) break;  // Not really necessary as the track would normally end after this anyway
 				if (meta == Event::META_TEMPO) {
 					if (ev.end - ev.begin != 3) throw std::runtime_error("Invalid tempo change event");
 					unsigned microSecPerBeat = ev.begin[0] << 16 | ev.begin[1] << 8 | ev.begin[2];
-					addBPM(timecode, 6e+7 / microSecPerBeat);
-					break;
+					tempo = 6e+7 / microSecPerBeat;
+					addBPM(timecode, tempo, division);
+					continue;
 				}
 				if (meta == Event::META_TIMESIGNATURE) {
 					if (ev.end - ev.begin != 4) throw std::runtime_error("Invalid time signature event");
-					break;
+					// TODO: Add processing if you find a file that contains these
 				}
+				if (meta == Event::META_KEYSIGNATURE) {
+					if (ev.end - ev.begin != 2) throw std::runtime_error("Invalid key signature event");
+					// TODO: Add processing if you find a file that contains these
+				}
+				if (meta == Event::META_SEQUENCERSPECIFIC) {
+					std::string data = ev.getDataStr();
+					// These are written by FoFLyricConverter
+					if (m_song.title.isEmpty() && data.substr(0,6) == "Title=") m_song.title = strConv(data.substr(6));
+					else if (m_song.artist.isEmpty() && data.substr(0,7) == "Artist=") m_song.artist = strConv(data.substr(7));
+					continue;
+				}
+				if (meta == Event::META_ENDOFTRACK) break;  // Not really necessary as the track would normally end after this anyway
+				ev.print();  // Print any events that reach this far as we probably should add support for them...
 			}
 		}
 		if (trackName == "PART VOCALS") m_song.insertVocalTrack("vocals", vt);

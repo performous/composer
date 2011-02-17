@@ -49,7 +49,7 @@ class SongParser {
 	unsigned int m_relativeShift;
 	double m_maxScore;
 	struct BPM {
-		BPM(double _begin, double _ts, double _bpm): begin(_begin), step(0.25 * 60.0 / _bpm), ts(_ts) {}
+		BPM(double _begin, double _ts, double _bpm, double division): begin(_begin), step(60.0 / _bpm / division), ts(_ts) {}
 		double begin; // Time in seconds
 		double step; // Seconds per quarter note
 		double ts;
@@ -58,13 +58,14 @@ class SongParser {
 	bpms_t m_bpms;
 	unsigned m_tsPerBeat;  ///< The ts increment per beat
 	unsigned m_tsEnd;  ///< The ending ts of the song
-	void addBPM(double ts, double bpm) {
+	void addBPM(double ts, double bpm, double division = 4.0) {
 		if (!(bpm >= 1.0 && bpm < 1e12)) throw std::runtime_error("Invalid BPM value");
-		if (!m_bpms.empty() && m_bpms.back().ts >= ts) {
-			if (m_bpms.back().ts < ts) throw std::runtime_error("Invalid BPM timestamp");
-			m_bpms.pop_back(); // Some ITG songs contain repeated BPM definitions...
+		if (!m_bpms.empty()) {
+			double diff = ts - m_bpms.back().ts;
+			if (diff == 0.0) m_bpms.pop_back();  // Avoid zero-length BPM definitions
+			else if (!(diff > 0.0)) throw std::runtime_error("Invalid BPM timestamp");
 		}
-		m_bpms.push_back(BPM(tsTime(ts), ts, bpm));
+		m_bpms.push_back(BPM(tsTime(ts), ts, bpm, division));
 	}
 	/// Convert a timestamp (beats) into time (seconds)
 	double tsTime(double ts) const {

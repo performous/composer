@@ -47,6 +47,7 @@ void Reader::parseMThd() {
 	if (fmt == 0 && m_tracks == 1) return;  // Old single track format
 	if (fmt == 1 && m_tracks > 1) return;  // New format (timing info on first track)
 	throw std::runtime_error("MIDI format and track number combination is invalid.");
+	m_runningStatus = 0;
 }
 
 void Reader::parseMTrk() {
@@ -73,7 +74,7 @@ bool Reader::parseEvent(Event& ev) {
 		ev.type = static_cast<Event::Type>(event & 0xF0);
 		ev.channel = event & 0x0F;
 	}
-	if (m_runningStatus) ev.arg1 = read<uint8_t>();  // Everything except System Common take one argument
+	if (ev.type != Event::SPECIAL || ev.channel >= 8) ev.arg1 = read<uint8_t>();  // Everything except System Common takes one argument
 	unsigned tmp;
 	switch (ev.type) {
 	case Event::NOTE_ON:
