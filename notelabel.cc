@@ -18,30 +18,23 @@ const double NoteLabel::min_length = 0.05; // How many seconds minimum
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
-	QSize size;
-	NoteGraphWidget *ngw = qobject_cast<NoteGraphWidget*>(parent);
-	if (ngw) size.setWidth(ngw->s2px(note.length()));
-	createPixmap(size);
-	show(); // Already here so that height() is calculated
+	createPixmap();
 	updateLabel();
 	setMouseTracking(true);
 	setAttribute(Qt::WA_DeleteOnClose);
+	show();
 }
 
-void NoteLabel::createPixmap(QSize size)
+void NoteLabel::createPixmap()
 {
 	QFont font;
 	font.setStyleStrategy(QFont::ForceOutline);
 	QFontMetrics metric(font);
-	if (size.width() <= 0) {
-		size.rwidth() = default_size;
-	}
-	if (size.height() <= 0) {
-		size.rheight() = metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin;
-	}
+	NoteGraphWidget *ngw = qobject_cast<NoteGraphWidget*>(parent());
+	QSize size(default_size, metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin);
+	if (ngw) size.setWidth(ngw->s2px(m_note.length()));
 
-	QImage image(size.width(), size.height(),
-				 QImage::Format_ARGB32_Premultiplied);
+	QImage image(size.width(), size.height(), QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 
 	QLinearGradient gradient(0, 0, 0, image.height()-1);
@@ -87,7 +80,7 @@ void NoteLabel::createPixmap(QSize size)
 
 void NoteLabel::setSelected(bool state) {
 	if (m_selected != state) {
-		m_selected = state; createPixmap(size());
+		m_selected = state; createPixmap();
 		if (!m_selected) {
 			startResizing(0); // Reset
 			startDragging(QPoint()); // Reset
@@ -95,9 +88,9 @@ void NoteLabel::setSelected(bool state) {
 	}
 }
 
-void NoteLabel::resizeEvent(QResizeEvent *event)
+void NoteLabel::resizeEvent(QResizeEvent *)
 {
-	createPixmap(event->size());
+	createPixmap();
 }
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)

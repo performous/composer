@@ -15,9 +15,9 @@ public:
 
 	NoteLabel(const Note &note, QWidget *parent, bool floating = true);
 
-	void createPixmap(QSize size = QSize());
+	void createPixmap();
 	QString lyric() const { return m_note.syllable; }
-	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(size()); }
+	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(); }
 
 	bool isSelected() const { return m_selected; }
 	void setSelected(bool state = true);
@@ -27,10 +27,10 @@ public:
 	void updateLabel();
 
 	bool isFloating() const { return m_floating; }
-	void setFloating(bool state) { m_floating = state; createPixmap(size()); }
+	void setFloating(bool state) { m_floating = state; createPixmap(); }
 	bool isLineBreak() const { return m_note.lineBreak; }
-	void setLineBreak(bool state) { m_note.lineBreak = state; createPixmap(size()); }
-	void setType(int newtype) { m_note.type = Note::types[newtype]; createPixmap(size()); }
+	void setLineBreak(bool state) { m_note.lineBreak = state; createPixmap(); }
+	void setType(int newtype) { m_note.type = Note::types[newtype]; createPixmap(); }
 
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);
