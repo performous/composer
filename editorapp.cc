@@ -30,7 +30,7 @@ namespace {
 
 EditorApp::EditorApp(QWidget *parent)
 	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), video(), synth(), statusbarProgress(),
-	projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
+	projectFileName(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
 	readSettings();
@@ -69,7 +69,7 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.statusbar->addPermanentWidget(statusbarProgress);
 	statusbarProgress->hide();
 
-	hasUnsavedChanges = false;
+	setWindowModified(false);
 	updateMenuStates();
 
 	// Audio stuff
@@ -128,7 +128,7 @@ void EditorApp::setupNoteGraph()
 void EditorApp::operationDone(const Operation &op)
 {
 	//std::cout << "Push op: " << op.dump() << std::endl;
-	hasUnsavedChanges = true;
+	setWindowModified(true);
 	opStack.push(op);
 	updateMenuStates();
 	redoStack.clear();
@@ -173,7 +173,7 @@ void EditorApp::doOpStack()
 void EditorApp::updateMenuStates()
 {
 	// File menu
-	ui.actionSave->setEnabled(hasUnsavedChanges);
+	ui.actionSave->setEnabled(isWindowModified());
 	// Edit menu
 	ui.actionUndo->setEnabled(!opStack.isEmpty() && opStack.top().op() != "BLOCK");
 	ui.actionRedo->setEnabled(!redoStack.isEmpty());
@@ -194,7 +194,7 @@ void EditorApp::updateTitle()
 	// Project name
 	QFileInfo finfo(projectFileName);
 	QString proName = finfo.fileName().isEmpty() ? tr("Untitled") : finfo.fileName();
-	if (hasUnsavedChanges) proName += "*";
+	if (isWindowModified()) proName += "[*]";
 	// Zoom level
 	QString zoom = "";
 	if (noteGraph && noteGraph->getZoomLevel() != 100)
@@ -279,7 +279,7 @@ void EditorApp::on_actionNew_triggered()
 		statusbarProgress->hide();
 		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
 		ui.valMusicFile->clear();
-		hasUnsavedChanges = false;
+		setWindowModified(false);
 	}
 	updateMenuStates();
 }
@@ -326,7 +326,7 @@ void EditorApp::openFile(QString fileName)
 							}
 							doOpStack();
 							projectFileName = fileName;
-							hasUnsavedChanges = false;
+							setWindowModified(false);
 							updateNoteInfo(NULL); // Title bar
 							if (noteGraph) noteGraph->scrollToFirstNote();
 						} else
@@ -377,7 +377,7 @@ void EditorApp::on_actionSaveAs_triggered()
 bool EditorApp::promptSaving()
 {
 	updateSongMeta(); // Make sure the stuff in textboxes is updated
-	if (hasUnsavedChanges) {
+	if (isWindowModified()) {
 		QMessageBox::StandardButton b = QMessageBox::question(this, tr("Unsaved changes"),
 			tr("There are unsaved changes, which would be lost. Save now?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -413,7 +413,7 @@ void EditorApp::saveProject(QString fileName)
 			<< Operation("META", "MUSICFILE", song->music["EDITOR"]);
 
 		projectFileName = fileName;
-		hasUnsavedChanges = false;
+		setWindowModified(false);
 	} else
 		QMessageBox::critical(this, tr("Error saving file!"), tr("Couldn't open file %1 for saving.").arg(fileName));
 	updateMenuStates();
@@ -547,7 +547,7 @@ void EditorApp::setMusic(QString filepath)
 {
 	ui.valMusicFile->setText(filepath);
 	song->music["EDITOR"] = filepath;
-	hasUnsavedChanges = true;
+	setWindowModified(true);
 	updateMenuStates();
 	// Metadata is updated when it becomes available (signal)
 	player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
