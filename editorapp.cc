@@ -11,6 +11,7 @@
 #include <QCloseEvent>
 #include <QSettings>
 #include <phonon/AudioOutput>
+#include <phonon/VideoPlayer>
 #include <iostream>
 #include "config.hh"
 #include "editorapp.hh"
@@ -28,7 +29,7 @@ namespace {
 }
 
 EditorApp::EditorApp(QWidget *parent)
-	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), synth(), statusbarProgress(),
+	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), video(), synth(), statusbarProgress(),
 	projectFileName(), hasUnsavedChanges(), latestPath(QDir::homePath())
 {
 	ui.setupUi(this);
@@ -116,6 +117,11 @@ void EditorApp::setupNoteGraph()
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
+
+	//video = new Phonon::VideoPlayer(Phonon::VideoCategory, noteGraph);
+	//video->play(Phonon::MediaSource("/tmp/video.avi"));
+	//video->setVolume(0.0f);
+	//video->setFixedSize(800, 600);
 }
 
 void EditorApp::operationDone(const Operation &op)

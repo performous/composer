@@ -16,6 +16,7 @@ class GettingStartedDialog;
 namespace Phonon {
 	class MediaObject;
 	class AudioOutput;
+	class VideoPlayer;
 }
 
 
@@ -124,6 +125,7 @@ private:
 	QScopedPointer<Song> song;
 	Phonon::MediaObject *player;
 	Phonon::AudioOutput *audioOutput;
+	Phonon::VideoPlayer *video;
 	QScopedPointer<Synth> synth;
 	QProgressBar *statusbarProgress;
 	QPushButton *statusbarButton;
