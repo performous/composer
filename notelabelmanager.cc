@@ -16,7 +16,7 @@
 /*static*/ const QString NoteLabelManager::MimeType = "application/x-notelabels";
 
 NoteLabelManager::NoteLabelManager(QWidget *parent)
-	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal)
+	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal), m_duration(10.0)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
@@ -415,7 +415,9 @@ void NoteLabelManager::zoom(float steps, double focalSecs) {
 		if (pps == m_pixelsPerSecond) return;  // Nothing changed
 		m_pixelsPerSecond = pps;
 	}
-	
+
+	setFixedSize(s2px(m_duration), height());
+
 	// Update scroll bar position
 	scrollArea->horizontalScrollBar()->setValue(s2px(focalSecs) - focalFactor * scrollArea->width());
 

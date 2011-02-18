@@ -96,6 +96,7 @@ protected:
 	NoteLabels m_selectedNotes;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	int m_noteHalfHeight;
+	double m_duration;
 };
 
 
@@ -163,7 +164,6 @@ private:
 	int m_playbackTimer;
 	QElapsedTimer m_playbackInterval;
 	qint64 m_playbackPos;
-	double m_duration;
 	QPixmap m_pixmap;
 	QPoint m_pixmapPos;
 };

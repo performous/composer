@@ -30,7 +30,7 @@ namespace {
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_mouseHotSpot(), m_seeking(), m_actionHappened(),
-	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_duration(10.0), m_pixmap(), m_pixmapPos()
+	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: " + BGColor + "; }");
