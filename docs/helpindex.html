@@ -1,19 +1,41 @@
 <h1>Help Browser</h1>
 <ol>
 <li><a href="#intro">Introduction</a></li>
-<li><a href="#workflow">Basic workflow</a></li>
+<li>
+	<a href="#workflow">Basic workflow</a>
+	<ol>
+	<li><a href="#initialimport">Importing song and lyrics</a></li>
+	<li><a href="#timing">Note timing</a></li>
+	<li><a href="#tuning">Fine tuning</a></li>
+	<li><a href="#metadata">Song metadata</a></li>
+	</ol>
+</li>
 <li><a href="#tips">Tips and tricks</a></li>
 <li><a href="#formats">File formats</a></li>
 </ol>
 
-<p><strong>TODO: Expand this</strong></p>
+<p><strong>TODO: Improve this</strong></p>
 
 <h2><a name="intro">Introduction</a></h2>
 <p>This editor is designed to create notes for use in pitch analyzing karaoke games. We attempt to make the process as easy as possible by automating as much as we can. For example, the editor analyzes the song and attempts to automatically place the notes at the correct pitch.</p>
 
 
 <h2><a name="workflow">Basic Workflow</a></h2>
-<p>The intended workflow is documented as a handy dialog with clickable items - follow it step-by-step and in the end you have a finished notes for the song. Access it through the main menubar: Help --> Getting started.</p>
+<p>In addition to the sections here, the intended workflow is documented as a handy dialog with clickable items - follow it step-by-step and in the end you have a finished notes for the song. Access it through the main menubar: Help --> Getting started.</p>
+
+<h3><a name="initialimport">Importing song lyrics</h3>
+<p>The first step is to import a music file for analyzation and lyrics text for generating notes. This can be done e.g. through the import menu. Supported song file formats vary depending on the platform, but at least mp3 and ogg should be ok. Lyrics assume that each phrase is on a line of its own - when the text is imported, a note is generated for each word and a sentence marker is placed at the beginning of each line.</p>
+
+<h3><a name="timing">Note timing</a></h3>
+<p>The easiest way to get the notes roughly timed is to switch to the <em>Tools</em> tab and start listening to the music. Each time you hear the phrase that is displayed in the tab, hit the <em>Time phrase</em> button (or its hotkey) and the start of the current phrase is placed to that position.</p>
+<p>This way you'll be timing only the beginnings of the phrases - the rest of the notes are divided evenly to the extra space. Obviosly this is not perfect, but it gives a very good starting point for <a href="#tuning">fine tuning</a> and timing each note by itself using this method would require very good reflexes and concentration.</p>
+
+<h3><a name="tuning">Fine tuning</a></h3>
+<p>Once the notes are roughly timed, it is time to start manually tuning and fixing everything. Each time you correct a note, the neighbouring uncorrected ones adjust themselves accordingly, making your task easier.</p>
+<p>At this phase, you can also break words into syllables in order to create more accurate notes. It is also possible to add or remove notes or batches of them.</p>
+
+<h3><a name="metadata">Song metadata</a></h3>
+<p>The song title, artist and other metadata is automatically read from the music file if it happens to contain that information. If it is wrong or missing, you can fix it through the <em>Song properties</em> tab.</p>
 
 
 <h2><a name="tips">Tips and tricks</a></h2>
