@@ -10,7 +10,9 @@ void SingStarXMLWriter::writeXML() {
 		tempo /= 2;
 		res = "Demisemiquaver"; // Demisemiquaver = 2x tempo of Semiquaver
 	}
-	QDomDocument doc("");
+	QDomDocument doc;
+	QDomProcessingInstruction xmlheader = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+	doc.appendChild(xmlheader);
 	QDomElement root = doc.createElement("MELODY");
 	root.setAttribute("xmlns", "http://www.singstargame.com");
 	root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -105,6 +107,7 @@ void SingStarXMLWriter::writeXML() {
 	QFile f(path + "/notes.xml");
 	if (f.open(QFile::WriteOnly)) {
 		QTextStream out(&f);
+		out.setCodec("UTF-8");
 		out << xml;
 	} else throw std::runtime_error("Couldn't open target file notes.xml");
 }
