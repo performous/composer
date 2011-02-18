@@ -35,6 +35,8 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.setupUi(this);
 	readSettings();
 
+	ui.helpDock->setVisible(false);
+
 	// Some icons to make menus etc prettier
 	setWindowIcon(QIcon::fromTheme("composer", QIcon(":/icons/composer.png")));
 	ui.actionNew->setIcon(QIcon::fromTheme("document-new", QIcon(":/icons/document-new.png")));

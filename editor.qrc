@@ -24,6 +24,7 @@
         <file>icons/zoom-in.png</file>
         <file>icons/zoom-original.png</file>
         <file>icons/zoom-out.png</file>
+        <file>docs/helpindex.html</file>
         <file>docs/Authors.txt</file>
         <file>docs/License.txt</file>
     </qresource>
