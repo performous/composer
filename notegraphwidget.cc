@@ -21,6 +21,8 @@ namespace {
 		op << id << note.syllable << note.begin << note.end << note.note << floating << note.lineBreak << note.getTypeInt();
 		return op;
 	}
+
+	static const double endMarginSeconds = 5.0;
 }
 
 
@@ -67,7 +69,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			QString word;
 			ts2 >> word;
 			if (!word.isEmpty()) {
-				Note note(word); note.note = 24;
+				Note note(word); note.end = NoteLabel::default_length; note.note = 24;
 				if (sentenceStart) note.lineBreak = true;
 				doOperation(opFromNote(note, m_notes.size(), !firstNote));
 				firstNote = false;
@@ -75,6 +77,8 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			}
 		}
 	}
+	// Set duration
+	m_duration = std::max(m_duration, NoteLabel::default_length * m_notes.size() * 1.1 + endMarginSeconds);
 
 	finalizeNewLyrics();
 }
@@ -82,7 +86,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	doOperation(Operation("CLEAR"));
-	m_duration = std::max(m_duration, track.endTime);
+	m_duration = std::max(m_duration, track.endTime + endMarginSeconds);
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
@@ -95,22 +99,25 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 void NoteGraphWidget::finalizeNewLyrics()
 {
 	int ops = m_notes.size();
-	// Set first and last to non-floating and put the last one to the end of the song
+	// Set the last note to non-floating and to the end of the song
 	if (ops > 1 && m_notes[ops-1]->isFloating()) {
-		Operation floatop("FLOATING"); floatop << (int)m_notes.size()-1 << false;
-		doOperation(floatop);
+		doOperation(Operation("FLOATING", (int)m_notes.size()-1, false));
 		Operation moveop("MOVE");
 		moveop << (int)m_notes.size()-1
-		  << px2s(width() - m_notes.back()->width()) << px2s(width() - m_notes.back()->width() + m_notes.back()->x())
-		  << px2n(m_notes.back()->y() + m_noteHalfHeight);
+			<< m_duration - NoteLabel::default_length - endMarginSeconds
+			<< m_duration - endMarginSeconds
+			<< m_notes.back()->note().note;
 		doOperation(moveop);
 		ops += 2; // Amount of extra Operations added here
 	}
+
 	// Combine the import into one undo action
 	doOperation(Operation("COMBINER", ops));
+
 	// Make sure there is enough room
 	if (!m_notes.isEmpty())
-		setFixedWidth(std::max<int>(width(), s2px(m_notes.back()->note().end + 1)));
+		setFixedWidth(std::max<int>(width(), s2px(m_duration)));
+
 	// Calculate floating note positions
 	updateNotes();
 

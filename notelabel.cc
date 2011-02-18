@@ -12,7 +12,7 @@ namespace {
 }
 
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
-const int NoteLabel::default_size = 100; // The preferred size of notes
+const double NoteLabel::default_length = 0.5; // The preferred size of notes
 const double NoteLabel::min_length = 0.05; // How many seconds minimum
 
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
@@ -31,7 +31,7 @@ void NoteLabel::createPixmap()
 	font.setStyleStrategy(QFont::ForceOutline);
 	QFontMetrics metric(font);
 	NoteGraphWidget *ngw = qobject_cast<NoteGraphWidget*>(parent());
-	QSize size(default_size, metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin);
+	QSize size(100, metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin);
 	if (ngw) size.setWidth(ngw->s2px(m_note.length()));
 
 	QImage image(size.width(), size.height(), QImage::Format_ARGB32_Premultiplied);
