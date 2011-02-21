@@ -145,6 +145,9 @@
             </item>
             <item row="1" column="10">
              <widget class="QCheckBox" name="chkFloating">
+              <property name="toolTip">
+               <string>Floating notes automatically adjust with regards to neighbours</string>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -175,6 +178,9 @@
             </item>
             <item row="2" column="10">
              <widget class="QCheckBox" name="chkLineBreak">
+              <property name="toolTip">
+               <string>Check to start a new phrase with selected note</string>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -242,6 +248,9 @@
             </item>
             <item row="0" column="7">
              <widget class="QPushButton" name="cmdSplit">
+              <property name="toolTip">
+               <string>Split selected note into two new ones</string>
+              </property>
               <property name="text">
                <string>&amp;Split note</string>
               </property>
@@ -249,6 +258,9 @@
             </item>
             <item row="1" column="7">
              <widget class="QPushButton" name="cmdInsert">
+              <property name="toolTip">
+               <string>Insert new notes after the selected one</string>
+              </property>
               <property name="text">
                <string>I&amp;nsert after</string>
               </property>
@@ -264,7 +276,7 @@
             <string>Song properties</string>
            </attribute>
            <attribute name="whatsThis">
-            <string>This tab lets you to configure the song metadata.</string>
+            <string>This tab lets you to configure the song metadata</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5" columnstretch="10,70,10,20">
             <item row="0" column="0">
@@ -322,6 +334,9 @@
             </item>
             <item row="2" column="1">
              <widget class="QLabel" name="valMusicFile">
+              <property name="toolTip">
+               <string>Path to the music file</string>
+              </property>
               <property name="text">
                <string>No music</string>
               </property>
@@ -374,7 +389,7 @@
             <item row="1" column="0">
              <widget class="QPushButton" name="cmdPlay">
               <property name="toolTip">
-               <string>Play/pause the music file.</string>
+               <string>Play/pause the music file</string>
               </property>
               <property name="text">
                <string>Play</string>
@@ -396,6 +411,9 @@
             </item>
             <item row="2" column="0">
              <widget class="QCheckBox" name="chkGrabSeekHandle">
+              <property name="toolTip">
+               <string>Make sure the playback cursor is always visible</string>
+              </property>
               <property name="text">
                <string>Keep playback position in view</string>
               </property>
@@ -407,7 +425,7 @@
             <item row="1" column="1">
              <widget class="QPushButton" name="cmdTimeSentence">
               <property name="toolTip">
-               <string>Set selected note start to cursor position and move to next sentence start.</string>
+               <string>Set selected note start to cursor position and move to next phrase start</string>
               </property>
               <property name="text">
                <string>Time phrase (N)</string>
@@ -419,6 +437,9 @@
             </item>
             <item row="1" column="2">
              <widget class="QPushButton" name="cmdSkipSentence">
+              <property name="toolTip">
+               <string>Skip to next phrase start without timing</string>
+              </property>
               <property name="text">
                <string>Skip phrase (M)</string>
               </property>
@@ -443,6 +464,9 @@
             </item>
             <item row="3" column="0">
              <widget class="QCheckBox" name="chkSynth">
+              <property name="toolTip">
+               <string>Synthesize and play notes during playback</string>
+              </property>
               <property name="text">
                <string>Play synthesized notes</string>
               </property>
