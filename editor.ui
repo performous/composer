@@ -47,7 +47,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>534</width>
+          <width>505</width>
           <height>227</height>
          </rect>
         </property>
@@ -179,7 +179,7 @@
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>Sentence beginning</string>
+               <string>Phrase beginning</string>
               </property>
              </widget>
             </item>
