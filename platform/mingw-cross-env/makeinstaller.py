@@ -29,7 +29,7 @@ if not os.path.isdir('dist'):
     os.mkdir('dist')
 os.chdir('stage')
 
-app = 'Performous Composer'
+app = 'Composer'
 version = 'alpha'
 
 
