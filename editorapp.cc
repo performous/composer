@@ -26,6 +26,18 @@ namespace {
 	static const quint32 PROJECT_SAVE_FILE_MAGIC = 0x50455350;
 	static const quint32 PROJECT_SAVE_FILE_VERSION = 101; // File format version 1.01
 	static const QDataStream::Version PROJECT_SAVE_FILE_STREAM_VERSION = QDataStream::Qt_4_7;
+
+	// Helper function scans widget's children and sets their status tips to their tooltips
+	void handleTips(QWidget *widget) {
+		QObjectList objs = widget->children();
+		objs.push_back(widget); // Handle the parent too
+		for (int i = 0; i < objs.size(); ++i) {
+			QWidget *child = qobject_cast<QWidget*>(objs[i]);
+			if (!child) continue;
+			if (!child->toolTip().isEmpty() && child->statusTip().isEmpty())
+				child->setStatusTip(child->toolTip());
+		}
+	}
 }
 
 EditorApp::EditorApp(QWidget *parent)
@@ -90,6 +102,11 @@ EditorApp::EditorApp(QWidget *parent)
 	updateNoteInfo(NULL);
 
 	song.reset(new Song);
+
+	// Set status tips to tool tips
+	handleTips(ui.tabNote);
+	handleTips(ui.tabSong);
+	handleTips(ui.tabTools);
 
 	// FIXME: Remove these after rc release
 	ui.actionFoFMIDI->setEnabled(false);
