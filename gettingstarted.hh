@@ -13,7 +13,7 @@ public:
 		if (!m_editorApp) throw std::runtime_error("Couldn't open help dialog.");
 		setupUi(this);
 		QSettings settings;
-		chkShowOnStartup->setChecked(settings.value("showhelp", false).toBool());
+		chkShowOnStartup->setChecked(settings.value("showhelp", true).toBool());
 	}
 
 public slots:
