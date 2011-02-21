@@ -741,8 +741,7 @@ void EditorApp::playButton()
 void EditorApp::on_chkSynth_clicked(bool checked)
 {
 	if (checked && player && player->state() == Phonon::PlayingState) {
-		synth.reset(new Synth(noteGraph->noteLabels()));
-		synth->tick(player->currentTime());
+		synth.reset(new Synth);
 	} else if (!checked) {
 		synth.reset();
 	}
@@ -765,8 +764,22 @@ void EditorApp::audioTick(qint64 time)
 {
 	if (noteGraph && player)
 		noteGraph->updateMusicPos(time, (player->state() == Phonon::PlayingState ? true : false));
-	if (synth)
-		synth->tick(time);
+
+	if (noteGraph && synth) {
+		// Here we create some notes for the synthesizer to use.
+		// We don't simply pass the whole list because then there
+		// would be two threads working on the same list.
+		SynthNotes notes;
+		const NoteLabels &nls = noteGraph->noteLabels();
+		int numberOfNotesToPass = 12;
+		for (NoteLabels::const_iterator it = nls.begin(); it != nls.end() && numberOfNotesToPass > 0; ++it) {
+			if ((*it)->note().begin >= time / 1000.0) {
+				notes.push_back(SynthNote((*it)->note()));
+				--numberOfNotesToPass;
+			}
+		}
+		synth->tick(time, notes);
+	}
 }
 
 void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)

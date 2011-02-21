@@ -19,12 +19,23 @@
 	#define M_PI 3.141592653589793
 #endif
 
+struct SynthNote {
+	SynthNote(): note(24), begin(), length() {}
+	SynthNote(const Note& n): note(n.note), begin(n.begin), length(n.length()) {}
+	bool operator<(const SynthNote& rhs) { return begin < rhs.begin; }
+	int note;
+	double begin;
+	double length;
+};
+
+typedef QList<SynthNote> SynthNotes;
+
+
 class Synth: public QThread
 {
 	Q_OBJECT
 public:
-	//FIXME: Giving notes this way and not guarding access will fail miserably some day
-	Synth(NoteLabels& notes, QObject *parent = NULL) : QThread(parent), m_notes(notes), m_delay(), m_pos(), m_noteBegin(), m_curBuffer(), m_quit()
+	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_noteBegin(), m_curBuffer(), m_quit()
 	{
 		// Apparantly we need to register some types
 		qRegisterMetaType<Phonon::MediaSource>("MediaSource");
@@ -34,9 +45,11 @@ public:
 	~Synth() { stop(); wait(); }
 
 	/// Updates the synth
-	void tick(qint64 pos) {
+	void tick(qint64 pos, const SynthNotes& notes) {
 		QMutexLocker locker(&m_mutex);
 		m_pos = pos / 1000.0;
+		m_notes = notes;
+
 		if (isRunning()) m_condition.wakeOne();
 		else start();
 	}
@@ -95,17 +108,21 @@ private:
 	/// Calculates the next values
 	void calcNext() {
 		QElapsedTimer timer; timer.start();
-		NoteLabels::const_iterator it = m_notes.begin();
-		while (it != m_notes.end() && (*it)->note().begin < m_pos) ++it;
-		if (it == m_notes.end()) { m_delay = ULONG_MAX / 1000.0; return; }
-		Note n = (*it)->note();
-		m_delay = n.begin - m_pos;
+		SynthNote n;
+		{
+			QMutexLocker locker(&m_mutex);
+			SynthNotes::const_iterator it = m_notes.begin();
+			while (it != m_notes.end() && it->begin < m_pos) ++it;
+			if (it == m_notes.end()) { m_delay = ULONG_MAX / 1000.0; return; }
+			n = *it;
+		}
 
+		m_delay = n.begin - m_pos;
 		if (n.begin != m_noteBegin) {
 			// Need to create a new buffer
 			m_noteBegin = n.begin;
 			m_player[m_curBuffer]->clear();
-			createBuffer(n.note, n.length());
+			createBuffer(n.note, n.length);
 			m_player[m_curBuffer]->setCurrentSource(m_soundData[m_curBuffer]);
 		}
 		// Compensate for the time spent in this function
@@ -162,7 +179,7 @@ private:
 
 	static const int sampleRate = 8000; ///< Sample rate
 
-	NoteLabels m_notes; ///< Notes
+	SynthNotes m_notes; ///< Notes to synthesize
 	double m_delay; ///< How many seconds until the next sound must be played
 	double m_pos; ///< Position where we are now
 	double m_noteBegin; ///< Position of the next note
