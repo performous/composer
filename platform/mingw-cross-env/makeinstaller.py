@@ -71,7 +71,7 @@ for root, dirs, files in os.walk('.'):
     for file in files:
         makensis.stdin.write('  File "%s"\n' % os.path.join('stage', root, file).replace('/', '\\'))
 
-makensis.stdin.write(r'''  WriteRegStr HKLM "Software\Performous" "" "$INSTDIR"
+makensis.stdin.write(r'''  WriteRegStr HKLM "Software\${APP}" "" "$INSTDIR"
   WriteUninstaller "$INSTDIR\uninst.exe"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\${APP}"
