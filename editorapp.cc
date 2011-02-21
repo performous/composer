@@ -748,12 +748,6 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 	}
 }
 
-void EditorApp::on_cmdRefreshLyrics_clicked()
-{
-	QString text = noteGraph->dumpLyrics();
-	ui.textEditLyrics->setText(text);
-}
-
 void EditorApp::on_cmdPlay_clicked()
 {
 	if (player) {

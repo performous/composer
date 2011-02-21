@@ -47,7 +47,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>505</width>
+          <width>534</width>
           <height>227</height>
          </rect>
         </property>
@@ -469,36 +469,6 @@
               </property>
               <property name="text">
                <string>Play synthesized notes</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tabLyrics">
-           <attribute name="title">
-            <string>&amp;Lyrics</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_7">
-            <item row="1" column="0">
-             <widget class="QPushButton" name="cmdRefreshLyrics">
-              <property name="text">
-               <string>Refresh</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QTextEdit" name="textEditLyrics">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="autoFillBackground">
-               <bool>false</bool>
               </property>
              </widget>
             </item>

@@ -65,7 +65,6 @@ public slots:
 
 	void on_cmdPlay_clicked();
 	void on_chkSynth_clicked(bool checked);
-	void on_cmdRefreshLyrics_clicked();
 
 	// File menu
 	void on_actionNew_triggered();
