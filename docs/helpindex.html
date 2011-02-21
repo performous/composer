@@ -14,21 +14,20 @@
 <li><a href="#formats">File formats</a></li>
 </ol>
 
-<p><strong>TODO: Improve this</strong></p>
 
 <h2><a name="intro">Introduction</a></h2>
 <p>This editor is designed to create notes for use in pitch analyzing karaoke games. We attempt to make the process as easy as possible by automating as much as we can. For example, the editor analyzes the song and attempts to automatically place the notes at the correct pitch.</p>
 
 
 <h2><a name="workflow">Basic Workflow</a></h2>
-<p>In addition to the sections here, the intended workflow is documented as a handy dialog with clickable items - follow it step-by-step and in the end you have a finished notes for the song. Access it through the main menubar: Help --> Getting started.</p>
+<p>In addition to the sections here, the intended workflow is documented as a handy dialog with clickable items - follow it step-by-step and in the end you'll have finished notes for the song. Access it through the main menubar: Help --> Getting started.</p>
 
 <h3><a name="initialimport">Importing song lyrics</h3>
 <p>The first step is to import a music file for analyzation and lyrics text for generating notes. This can be done e.g. through the import menu. Supported song file formats vary depending on the platform, but at least mp3 and ogg should be ok. Lyrics assume that each phrase is on a line of its own - when the text is imported, a note is generated for each word and a sentence marker is placed at the beginning of each line.</p>
 
 <h3><a name="timing">Note timing</a></h3>
 <p>The easiest way to get the notes roughly timed is to switch to the <em>Tools</em> tab and start listening to the music. Each time you hear the phrase that is displayed in the tab, hit the <em>Time phrase</em> button (or its hotkey) and the start of the current phrase is placed to that position.</p>
-<p>This way you'll be timing only the beginnings of the phrases - the rest of the notes are divided evenly to the extra space. Obviosly this is not perfect, but it gives a very good starting point for <a href="#tuning">fine tuning</a> and timing each note by itself using this method would require very good reflexes and concentration.</p>
+<p>This way you'll be timing only the beginnings of the phrases - the rest of the notes are divided evenly to the extra space. Obviously this is not perfect, but it gives a very good starting point for <a href="#tuning">fine tuning</a> and timing each note by itself using this method would require very good reflexes and concentration.</p>
 
 <h3><a name="tuning">Fine tuning</a></h3>
 <p>Once the notes are roughly timed, it is time to start manually tuning and fixing everything. Each time you correct a note, the neighbouring uncorrected ones adjust themselves accordingly, making your task easier.</p>
@@ -42,6 +41,8 @@
 <ul>
 <li>If possible, use vocals-only music tracks for best pitch analyzation (and thus auto-pitch) results.</li>
 <li>In addition to copy-pasting lyrics from clipboard or loading them from a text file, you can also drag and drop text directly from other applications (like a web browser) to the editor.</li>
+<li>Zoom (mouse wheel or ctrl+ -/+) in to get most precise timing or zoom out to get an overview and quickly change to other part of the song.</li>
+<li>The actions available through the menu bar and the tabs are also accessible through a context menu that opens up if you right click the note area.</li>
 </ul>
 
 
@@ -53,5 +54,5 @@
 <li>UltraStar TXT, import/export</li>
 <li>Frets on Fire INI+MIDI, import</li>
 <li>LRC karaoke lyrics, export</li>
-<li>Plain text, import/export</li>
+<li>Plain text lyrics, import/export</li>
 </ul>
