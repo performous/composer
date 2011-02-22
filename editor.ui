@@ -47,7 +47,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>534</width>
+          <width>674</width>
           <height>227</height>
          </rect>
         </property>
@@ -548,6 +548,7 @@
     <addaction name="actionGettingStarted"/>
     <addaction name="actionWhatsThis"/>
     <addaction name="separator"/>
+    <addaction name="actionAboutQt"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuInsert">
@@ -804,6 +805,11 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About Qt...</string>
    </property>
   </action>
  </widget>

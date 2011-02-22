@@ -683,6 +683,11 @@ void EditorApp::on_actionWhatsThis_triggered()
 	QWhatsThis::enterWhatsThisMode();
 }
 
+void EditorApp::on_actionAboutQt_triggered()
+{
+	QApplication::aboutQt();
+}
+
 void EditorApp::on_actionAbout_triggered()
 {
 	AboutDialog aboutDialog(this);

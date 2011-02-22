@@ -101,6 +101,7 @@ public slots:
 	void on_actionGettingStarted_triggered();
 	void on_actionWhatsThis_triggered();
 	void on_actionAbout_triggered();
+	void on_actionAboutQt_triggered();
 
 	// Note properties tab
 	void on_txtTitle_editingFinished();
