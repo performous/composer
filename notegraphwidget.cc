@@ -88,12 +88,14 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 
 void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
+	BusyDialog busy(this, 10);
 	doOperation(Operation("CLEAR"));
 	m_duration = std::max(m_duration, track.endTime + endMarginSeconds);
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
 		doOperation(opFromNote(*it, m_notes.size(), false));
+		busy();
 	}
 
 	finalizeNewLyrics();

@@ -22,10 +22,7 @@ public:
 			QApplication::processEvents();
 		count = (count + 1) % interval;
 		// Only show the dialog after certainamount of time
-		if (timer.isValid() && timer.elapsed() > 1500) {
-			open();
-			timer.invalidate();
-		}
+		if (isHidden() && timer.elapsed() > 1500) open();
 	}
 protected:
 	void closeEvent(QCloseEvent* event) { event->ignore(); }
