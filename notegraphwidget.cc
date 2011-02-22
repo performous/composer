@@ -13,6 +13,7 @@
 #include "notegraphwidget.hh"
 #include "song.hh"
 #include "util.hh"
+#include "busydialog.hh"
 
 
 namespace {
@@ -56,11 +57,13 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
+	BusyDialog busy(this, 5);
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 
 	doOperation(Operation("CLEAR"));
 	bool firstNote = true;
 	while (!ts.atEnd()) {
+		busy();
 		// We want to loop one line at the time to insert line breaks
 		bool sentenceStart = true;
 		QString sentence = ts.readLine();

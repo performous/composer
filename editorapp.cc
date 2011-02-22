@@ -20,6 +20,7 @@
 #include "songwriter.hh"
 #include "textcodecselector.hh"
 #include "gettingstarted.hh"
+#include "busydialog.hh"
 
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here
@@ -163,11 +164,13 @@ void EditorApp::operationDone(const Operation &op)
 
 void EditorApp::doOpStack()
 {
+	BusyDialog busy(this);
 	noteGraph->clearNotes();
 	QString newMusic = "";
 	// Re-apply all operations in the stack
 	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
 		//std::cout << "Doing op: " << opit->dump() << std::endl;
+		busy();
 		try {
 			if (opit->op() == "META") {
 				// META ops are handled differently:
