@@ -697,22 +697,7 @@ SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
 	QImage image(16, 768, QImage::Format_ARGB32_Premultiplied);
-	image.fill(qRgba(0, 0, 0, 0));
-	QLinearGradient gradient(0, 0, image.width()-1, 0);
-	gradient.setColorAt(0.00, QColor(255,255,0,0));
-	gradient.setColorAt(0.25, QColor(255,255,0,0));
-	gradient.setColorAt(0.50, QColor(255,255,0,200));
-	gradient.setColorAt(0.75, QColor(255,255,0,0));
-	gradient.setColorAt(1.00, QColor(255,255,0,0));
-
-	{
-		QPainter painter(&image);
-		painter.setRenderHint(QPainter::Antialiasing);
-		painter.setBrush(gradient);
-		painter.setPen(Qt::NoPen);
-		painter.drawRect(QRect(0, 0, image.width(), image.height()));
-	}
-
+	image.fill(qRgba(128, 128, 128, 128));
 	setPixmap(QPixmap::fromImage(image));
 	setMouseTracking(true);
 	setStatusTip(tr("Seek by dragging"));
