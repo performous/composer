@@ -144,34 +144,34 @@ void PitchVis::renderer() {
 		QSettings settings; // Default QSettings parameters given in main()
 		bool aa = settings.value("anti-aliasing", true).toBool();
 
-		QPainter painter;
-		painter.begin(&image);
-		if (aa) painter.setRenderHint(QPainter::Antialiasing);
-		painter.fillRect(image.rect(), QColor(NoteGraphWidget::BGColor)); // Otherwise the image will have all kinds of carbage
+		{
+			QPainter painter(&image);
+			if (aa) painter.setRenderHint(QPainter::Antialiasing);
+			painter.fillRect(image.rect(), QColor(NoteGraphWidget::BGColor)); // Otherwise the image will have all kinds of carbage
 
-		QPen pen;
-		pen.setWidth(8);
-		pen.setCapStyle(Qt::RoundCap);
+			QPen pen;
+			pen.setWidth(8);
+			pen.setCapStyle(Qt::RoundCap);
 
-		PitchVis::Paths const& paths = getPaths();
-		for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
-			PitchPath::Fragments const& fragments = it->fragments;
-			int oldx, oldy;
-			// Only render paths in view
-			if (widget->s2px(fragments.back().time) < x1) continue;
-			else if (widget->s2px(fragments.front().time) > x2) break;
-			// Iterate through the path points
-			for (PitchPath::Fragments::const_iterator it2 = fragments.begin(), it2end = fragments.end(); it2 != it2end; ++it2) {
-				// TODO: Take y-size into account (change also the paint calls in NoteGraphWidget)
-				int x = widget->s2px(it2->time) - x1;
-				int y = widget->n2px(it2->note);
-				pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
-				painter.setPen(pen);
-				if (it2 != fragments.begin()) painter.drawLine(oldx, oldy, x, y);
-				oldx = x; oldy = y;
+			PitchVis::Paths const& paths = getPaths();
+			for (PitchVis::Paths::const_iterator it = paths.begin(), itend = paths.end(); it != itend; ++it) {
+				PitchPath::Fragments const& fragments = it->fragments;
+				int oldx, oldy;
+				// Only render paths in view
+				if (widget->s2px(fragments.back().time) < x1) continue;
+				else if (widget->s2px(fragments.front().time) > x2) break;
+				// Iterate through the path points
+				for (PitchPath::Fragments::const_iterator it2 = fragments.begin(), it2end = fragments.end(); it2 != it2end; ++it2) {
+					// TODO: Take y-size into account (change also the paint calls in NoteGraphWidget)
+					int x = widget->s2px(it2->time) - x1;
+					int y = widget->n2px(it2->note);
+					pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
+					painter.setPen(pen);
+					if (it2 != fragments.begin()) painter.drawLine(oldx, oldy, x, y);
+					oldx = x; oldy = y;
+				}
 			}
 		}
-		painter.end();
 
 		// Send the image
 		// This is actually delivered by the reciever's event loop thread, and not called directly from here

@@ -55,23 +55,22 @@ void NoteLabel::createPixmap()
 		gradient.setColorAt(1.0, QColor(100 * ff, 120 * ff, 100 * ff, alpha));
 	}
 
-	QPainter painter;
-	painter.begin(&image);
-	painter.setRenderHint(QPainter::Antialiasing);
-	painter.setPen(isSelected() ? Qt::red : Qt::black); // Hilight selected note
-	painter.setBrush(gradient);
-	painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1), 8, 8);
+	{
+		QPainter painter(&image);
+		painter.setRenderHint(QPainter::Antialiasing);
+		painter.setPen(isSelected() ? Qt::red : Qt::black); // Hilight selected note
+		painter.setBrush(gradient);
+		painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1), 8, 8);
 
-	painter.setFont(font);
-	painter.drawText(QRect(QPoint(text_margin, text_margin), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
+		painter.setFont(font);
+		painter.drawText(QRect(QPoint(text_margin, text_margin), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
 
-	// Render sentence end indicator
-	if (m_note.lineBreak) {
-		painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 4));
-		painter.drawLine(2, 0, 2, image.height()-1);
+		// Render sentence end indicator
+		if (m_note.lineBreak) {
+			painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 4));
+			painter.drawLine(2, 0, 2, image.height()-1);
+		}
 	}
-
-	painter.end();
 
 	setPixmap(QPixmap::fromImage(image));
 

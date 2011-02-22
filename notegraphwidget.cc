@@ -180,8 +180,7 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 	int x1, y1, x2, y2;
 	calcViewport(x1, y1, x2, y2);
 
-	QPainter painter;
-	painter.begin(this);
+	QPainter painter(this);
 
 	// PitchVis pixmap
 	if (!m_pixmap.isNull())
@@ -216,8 +215,6 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 		painter.setPen(pen);
 		painter.drawRect(QRect(m_mouseHotSpot, mousep));
 	}
-
-	painter.end();
 }
 
 void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
@@ -724,12 +721,13 @@ SeekHandle::SeekHandle(QWidget *parent)
 	gradient.setColorAt(0.75, QColor(255,255,0,0));
 	gradient.setColorAt(1.00, QColor(255,255,0,0));
 
-	QPainter painter;
-	painter.begin(&image);
-	painter.setRenderHint(QPainter::Antialiasing);
-	painter.setBrush(gradient);
-	painter.setPen(Qt::NoPen);
-	painter.drawRect(QRect(0, 0, image.width(), image.height()));
+	{
+		QPainter painter(&image);
+		painter.setRenderHint(QPainter::Antialiasing);
+		painter.setBrush(gradient);
+		painter.setPen(Qt::NoPen);
+		painter.drawRect(QRect(0, 0, image.width(), image.height()));
+	}
 
 	setPixmap(QPixmap::fromImage(image));
 	setMouseTracking(true);
