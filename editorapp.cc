@@ -9,6 +9,7 @@
 #include <QWhatsThis>
 #include <QUrl>
 #include <QCloseEvent>
+#include <QPainter>
 #include <QSettings>
 #include <phonon/AudioOutput>
 #include <phonon/VideoPlayer>
@@ -103,6 +104,13 @@ EditorApp::EditorApp(QWidget *parent)
 	updateNoteInfo(NULL);
 
 	song.reset(new Song);
+
+	// The piano keys
+	piano = new Piano(noteGraph, ui.topFrame);
+	QHBoxLayout *hl = new QHBoxLayout(ui.topFrame);
+	hl->addWidget(piano);
+	hl->addWidget(ui.noteGraphScroller);
+	ui.topFrame->setLayout(hl);
 
 	// Set status tips to tool tips
 	handleTips(ui.tabNote);
@@ -902,4 +910,32 @@ AboutDialog::AboutDialog(QWidget* parent)
 
 	connect(cmdClose, SIGNAL(clicked()), this, SLOT(accept()));
 	setModal(true);
+}
+
+
+
+Piano::Piano(NoteGraphWidget *ngw, QWidget *parent)
+	: QLabel(parent)
+{
+	QImage image(50, 768, QImage::Format_ARGB32_Premultiplied);
+	image.fill(qRgba(0, 0, 0, 0));
+	{
+		QPainter painter(&image);
+		// Piano
+		MusicalScale scale;
+		QColor background;
+		int note_height = ngw->n2px(0) - ngw->n2px(1);
+		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
+		painter.setPen(pen);
+		for (int i = 1; i < 12*4; ++i) {
+			if(scale.isSharp(i)) {
+				background = QColor("#000000");
+			} else {
+				background = QColor("#ffffff");
+			}
+			painter.fillRect(0, ngw->n2px(i)-note_height/2, image.width(), note_height, background);
+			painter.drawRect(0, ngw->n2px(i)-note_height/2, image.width(), note_height);
+		}
+	}
+	setPixmap(QPixmap::fromImage(image));
 }

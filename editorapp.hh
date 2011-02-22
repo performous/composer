@@ -27,6 +27,13 @@ public:
 	AboutDialog(QWidget* parent = 0);
 };
 
+class Piano: public QLabel
+{
+	Q_OBJECT
+public:
+	Piano(NoteGraphWidget *ngw, QWidget *parent = 0);
+};
+
 
 class EditorApp: public QMainWindow
 {
@@ -128,6 +135,7 @@ private:
 	Phonon::AudioOutput *audioOutput;
 	Phonon::VideoPlayer *video;
 	QScopedPointer<Synth> synth;
+	Piano *piano;
 	QProgressBar *statusbarProgress;
 	QPushButton *statusbarButton;
 	QString projectFileName;
