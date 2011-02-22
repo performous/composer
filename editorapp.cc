@@ -99,18 +99,21 @@ EditorApp::EditorApp(QWidget *parent)
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 
-	// NoteGraph setup down here so that the objects we setup signals are already created
-	setupNoteGraph();
-	updateNoteInfo(NULL);
-
-	song.reset(new Song);
-
 	// The piano keys
-	piano = new Piano(noteGraph, ui.topFrame);
+	piano = new Piano(ui.topFrame);
 	QHBoxLayout *hl = new QHBoxLayout(ui.topFrame);
 	hl->addWidget(piano);
 	hl->addWidget(ui.noteGraphScroller);
 	ui.topFrame->setLayout(hl);
+	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(updatePiano(int)));
+
+	// NoteGraph setup down here so that the objects we setup signals are already created
+	setupNoteGraph();
+	updateNoteInfo(NULL);
+
+	piano->updatePixmap(noteGraph->n2px(0) - noteGraph->n2px(1));
+
+	song.reset(new Song);
 
 	// Set status tips to tool tips
 	handleTips(ui.tabNote);
@@ -882,6 +885,7 @@ void EditorApp::writeSettings()
  }
 
 
+
 AboutDialog::AboutDialog(QWidget* parent)
 	: QDialog(parent)
 {
@@ -914,27 +918,28 @@ AboutDialog::AboutDialog(QWidget* parent)
 
 
 
-Piano::Piano(NoteGraphWidget *ngw, QWidget *parent)
-	: QLabel(parent)
+void EditorApp::updatePiano(int y)
 {
-	QImage image(50, 768, QImage::Format_ARGB32_Premultiplied);
+	if (!piano) return;
+	piano->move(piano->x(), ui.noteGraphScroller->y() - y);
+}
+
+Piano::Piano(QWidget *parent): QLabel(parent) {}
+
+void Piano::updatePixmap(int noteHeight)
+{
+	const int notes = 12*6;
+	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 	{
 		QPainter painter(&image);
-		// Piano
 		MusicalScale scale;
-		QColor background;
-		int note_height = ngw->n2px(0) - ngw->n2px(1);
 		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
 		painter.setPen(pen);
-		for (int i = 1; i < 12*4; ++i) {
-			if(scale.isSharp(i)) {
-				background = QColor("#000000");
-			} else {
-				background = QColor("#ffffff");
-			}
-			painter.fillRect(0, ngw->n2px(i)-note_height/2, image.width(), note_height, background);
-			painter.drawRect(0, ngw->n2px(i)-note_height/2, image.width(), note_height);
+		for (int i = 0; i < notes; ++i) {
+			QColor background(scale.isSharp(i) ? "#000000" : "#ffffff");
+			painter.fillRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight, background);
+			painter.drawRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight);
 		}
 	}
 	setPixmap(QPixmap::fromImage(image));

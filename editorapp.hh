@@ -31,7 +31,9 @@ class Piano: public QLabel
 {
 	Q_OBJECT
 public:
-	Piano(NoteGraphWidget *ngw, QWidget *parent = 0);
+	Piano(QWidget *parent = 0);
+public slots:
+	void updatePixmap(int noteHeight);
 };
 
 
@@ -68,6 +70,7 @@ public slots:
 	void audioTick(qint64 time);
 	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
 	void statusBarMessage(const QString& message);
+	void updatePiano(int y);
 
 	// Automatic slots
 
