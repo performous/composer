@@ -13,6 +13,11 @@ class SongParser {
   public:
 	/// constructor
 	SongParser(Song& s);
+
+	static bool looksLikeSongFile(QString const& data) {
+		return txtCheck(data) || xmlCheck(data) || iniCheck(data) || smCheck(data);
+	}
+
   private:
 	void finalize();
 
@@ -24,22 +29,22 @@ class SongParser {
 	double m_gap;
 
 	// UltraStar TXT
-	bool txtCheck(QString const& data);
+	static bool txtCheck(QString const& data);
 	void txtParse();
 	bool txtParseField(QString const& line);
 	bool txtParseNote(QString line, VocalTrack &vocal);
 
 	// SingStar XML
-	bool xmlCheck(QString const& data);
+	static bool xmlCheck(QString const& data);
 	void xmlParse();
 
-	bool iniCheck(QString const& data);
+	static bool iniCheck(QString const& data);
 	void iniParse();
 	void iniParseField(QString const& line);
 	void midParse();
 
 	// FIXME: Dummy funcs
-	bool smCheck(QString const& data) { (void)data; return false; }
+	static bool smCheck(QString const& data) { (void)data; return false; }
 	void smParse() { }
 	bool smParseField(std::string line) { (void)line; return false; }
 	Notes smParseNotes(std::string line) { (void)line; return Notes(); }

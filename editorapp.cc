@@ -18,6 +18,7 @@
 #include "editorapp.hh"
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
+#include "songparser.hh"
 #include "songwriter.hh"
 #include "textcodecselector.hh"
 #include "gettingstarted.hh"
@@ -633,7 +634,16 @@ void EditorApp::on_actionLyricsFromFile_triggered()
 				return;
 
 			QString text = TextCodecSelector::readAllAndHandleEncoding(file, this);
-			if (text != "") noteGraph->setLyrics(text);
+			if (text != "") {
+				if (SongParser::looksLikeSongFile(text)
+					&& QMessageBox::question(this, tr("Song file detected"),
+						tr("The file you are opening doesn't look like plain text lyrics, but rather an actual song file. Would you like to reload it as such?"),
+						QMessageBox::Yes | QMessageBox::No)
+					== QMessageBox::Yes)
+				{
+					openFile(fileName);
+				} else noteGraph->setLyrics(text);
+			}
 		}
 	}
 }
