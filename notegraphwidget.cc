@@ -192,6 +192,22 @@ void NoteGraphWidget::paintEvent(QPaintEvent*) {
 	for (int i = 1; i < 4; ++i)
 		painter.drawLine(x1, n2px(i*12), x2, n2px(i*12));
 
+	// Piano
+	MusicalScale scale;
+	QColor background;
+	int note_width = n2px(0)-n2px(1);
+	pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
+	painter.setPen(pen);
+	for (int i = 1; i < 12*4; ++i) {
+		if(scale.isSharp(i)) {
+			background = QColor("#000000");
+		} else {
+			background = QColor("#ffffff");
+		}
+		painter.fillRect(x1, n2px(i)-note_width/2, 50, note_width, background);
+		painter.drawRect(x1, n2px(i)-note_width/2, 50, note_width);
+	}
+
 	// Selection box
 	if (!m_mouseHotSpot.isNull()) {
 		QPoint mousep = mapFromGlobal(QCursor::pos());
