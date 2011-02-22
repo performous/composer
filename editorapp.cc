@@ -133,6 +133,7 @@ void EditorApp::setupNoteGraph()
 	// Signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
+	connect(noteGraph, SIGNAL(statusBarMessage(QString)), this, SLOT(statusBarMessage(QString)));
 	connect(statusbarButton, SIGNAL(clicked()), noteGraph, SLOT(abortPitch()));
 	connect(ui.noteGraphScroller->horizontalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
@@ -160,6 +161,11 @@ void EditorApp::operationDone(const Operation &op)
 	opStack.push(op);
 	updateMenuStates();
 	redoStack.clear();
+}
+
+void EditorApp::statusBarMessage(const QString& message)
+{
+	statusBar()->showMessage(message);
 }
 
 void EditorApp::doOpStack()

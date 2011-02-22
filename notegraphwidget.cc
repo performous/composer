@@ -43,6 +43,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
+	setMouseTracking(true);
 	setWhatsThis(tr("Note graph that displays the song notes and allows you to manipulate them."));
 
 	// Context menu
@@ -503,6 +504,7 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
+	emit statusBarMessage(QString("Time: %1 s, note: %2").arg(px2s(event->x())).arg(round(px2n(event->y()))));
 	emit updateNoteInfo(selectedNote());
 }
 

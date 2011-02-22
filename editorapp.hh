@@ -60,6 +60,7 @@ public slots:
 	void metaDataChanged();
 	void audioTick(qint64 time);
 	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
+	void statusBarMessage(const QString& message);
 
 	// Automatic slots
 

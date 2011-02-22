@@ -72,6 +72,7 @@ public:
 signals:
 	void updateNoteInfo(NoteLabel*);
 	void operationDone(const Operation&);
+	void statusBarMessage(QString);
 
 public slots:
 	void selectNextSyllable(bool backwards = false, bool addToSelection = false);
