@@ -938,9 +938,10 @@ Piano::Piano(QWidget *parent): QLabel(parent) {}
 
 void Piano::updatePixmap(int noteHeight)
 {
-	const int notes = 12*6;
+	const int notes = 12 * 4; // Four octaves
 	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
+	setFixedSize(image.width(), image.height());
 	{
 		QPainter painter(&image);
 		MusicalScale scale;
