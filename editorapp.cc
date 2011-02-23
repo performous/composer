@@ -954,7 +954,10 @@ void Piano::updatePixmap(NoteGraphWidget *ngw)
 {
 	if (!ngw) return;
 	const int notes = 12 * 4; // Four octaves
+	const QColor borderColor = QColor("#c0c0c0");
+	const QColor selectionColor = QColor("#090");
 	int noteHeight = ngw->n2px(0) - ngw->n2px(1);
+
 	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 	setFixedSize(image.width(), image.height());
@@ -970,8 +973,8 @@ void Piano::updatePixmap(NoteGraphWidget *ngw)
 			int y2 = image.height() - i * noteHeight;  // Note center y
 			y2 -= (scale.isSharp(i + 1) ? 1.0 : 0.5) * noteHeight;  // Key top y
 			// Pick border color according to selection status
-			if (selectionMatches(i, ngw)) pen.setColor(QColor("#090"));
-			else pen.setColor(QColor("#c0c0c0"));
+			if (selectionMatches(i, ngw)) pen.setColor(selectionColor);
+			else pen.setColor(borderColor);
 			painter.setPen(pen);
 			// Skip the first key because y hasn't been calculated yet
 			if (i > -1) {
@@ -986,8 +989,8 @@ void Piano::updatePixmap(NoteGraphWidget *ngw)
 			if (!scale.isSharp(i)) continue;
 			y = image.height() - i*noteHeight - noteHeight / 2;
 			// Pick border color according to selection status
-			if (selectionMatches(i, ngw)) pen.setColor(QColor("#090"));
-			else pen.setColor(QColor("#c0c0c0"));
+			if (selectionMatches(i, ngw)) pen.setColor(selectionColor);
+			else pen.setColor(borderColor);
 			painter.setPen(pen);
 			painter.fillRect(0, y, w, noteHeight, QColor("#000000"));
 			painter.drawRect(0, y, w, noteHeight);

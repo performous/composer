@@ -24,6 +24,7 @@ namespace {
 	}
 
 	static const double endMarginSeconds = 5.0;
+	static const int NoteGraphHeight = 768;
 }
 
 
@@ -39,7 +40,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	// Initially expanding horizontally to fill the space
 	QSizePolicy sp(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	setSizePolicy(sp);
-	setFixedHeight(768);
+	setFixedHeight(NoteGraphHeight);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -696,7 +697,7 @@ QString NoteGraphWidget::dumpLyrics() const
 SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
-	QImage image(8, 768, QImage::Format_ARGB32_Premultiplied);
+	QImage image(8, NoteGraphHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(128, 128, 128, 128));
 	setPixmap(QPixmap::fromImage(image));
 	setMouseTracking(true);
