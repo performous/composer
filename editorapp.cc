@@ -139,8 +139,8 @@ void EditorApp::setupNoteGraph()
 	ui.noteGraphScroller->setWidget(noteGraph);
 
 	// Splitter sizes cannot be set through designer :(
-	QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
-	ui.splitter->setSizes(ss);
+	//QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
+	//ui.splitter->setSizes(ss);
 
 	// Signals/slots
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
