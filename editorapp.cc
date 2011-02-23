@@ -949,20 +949,21 @@ void Piano::updatePixmap(int noteHeight)
 		painter.setPen(pen);
 		int y;
 		int w = image.width();
-		for (int i = 0; i < notes; ++i) {
+		// Render only the white keys first
+		for (int i = -1; i < notes; ++i) {
 			if (scale.isSharp(i)) continue;
 			int y2 = image.height() - i * noteHeight;  // Note center y
 			y2 -= (scale.isSharp(i + 1) ? 1.0 : 0.5) * noteHeight;  // Key top y
 			// Skip the first key because y hasn't been calculated yet
-			if (i > 0) {
-				bool sh = false;
+			if (i > -1) {
 				painter.fillRect(0, y2, w, y - y2, QColor("#ffffff"));
 				painter.drawRect(0, y2, w, y - y2);
 			}
 			y = y2;  // The next key bottom y
 		}
-		w /= 2;  // Half length black keys
-		for (int i = 1; i < notes; ++i) {
+		// Now render the black keys
+		w *= 0.6;
+		for (int i = 0; i < notes; ++i) {
 			if (!scale.isSharp(i)) continue;
 			y = image.height() - i*noteHeight - noteHeight / 2;
 			painter.fillRect(0, y, w, noteHeight, QColor("#000000"));

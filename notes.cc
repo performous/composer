@@ -25,9 +25,10 @@ unsigned int MusicalScale::getNoteNum(int id) const {
 }
 
 bool MusicalScale::isSharp(int id) const {
-	if (id < 0) throw std::logic_error("MusicalScale::isSharp: Invalid note ID");
+	id %= 12;
+	if (id < 0) id += 12;  // Fix the modulus of a negative value
 	// C major scale
-	switch (id % 12) {
+	switch (id) {
 	  case 1: case 3: case 6: case 8: case 10: return true;
 	}
 	return false;
