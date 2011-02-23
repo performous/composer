@@ -938,16 +938,17 @@ Piano::Piano(QWidget *parent): QLabel(parent) {}
 
 void Piano::updatePixmap(int noteHeight)
 {
-	const int notes = 12*6;
+	const int notes = 12 * 4; // Four octaves
 	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
+	setFixedSize(image.width(), image.height());
 	{
 		QPainter painter(&image);
 		MusicalScale scale;
 		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
 		painter.setPen(pen);
 		for (int i = 0; i < notes; ++i) {
-			bool sh = scale.isSharp(i);
+			bool sh = scale.isSharp(i); // Sharp notes have black and shorter keys
 			QColor background(sh ? "#000000" : "#ffffff");
 			painter.fillRect(0, image.height() - i*noteHeight - noteHeight/2, image.width() * (sh ? 0.8 : 1.0), noteHeight, background);
 			painter.drawRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight);
