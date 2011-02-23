@@ -69,6 +69,7 @@ public slots:
 	void metaDataChanged();
 	void audioTick(qint64 time);
 	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
+	void playBuffer(const QByteArray& buffer);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);
 	void clearLabelHighlights();

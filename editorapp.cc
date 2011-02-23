@@ -770,6 +770,7 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 {
 	if (checked && player && player->state() == Phonon::PlayingState) {
 		synth.reset(new Synth);
+		connect(synth.data(), SIGNAL(playBuffer(QByteArray)), this, SLOT(playBuffer(QByteArray)));
 	} else if (!checked) {
 		synth.reset();
 	}
@@ -823,6 +824,12 @@ void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstat
 		}
 	}
 }
+
+void EditorApp::playBuffer(const QByteArray& buffer)
+{
+	new BufferPlayer(buffer, this);
+}
+
 
 void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }

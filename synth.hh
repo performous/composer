@@ -37,9 +37,7 @@ class Synth: public QThread
 public:
 	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_noteBegin(), m_curBuffer(), m_quit()
 	{
-		// Apparantly we need to register some types
-		qRegisterMetaType<Phonon::MediaSource>("MediaSource");
-		qRegisterMetaType<QMultiMap<QString,QString> >("QMultiMap<QString,QString>");
+		qRegisterMetaType<QByteArray>("QByteArray"); // Register type for use with queued connections
 	}
 
 	~Synth() { stop(); wait(); }
@@ -60,18 +58,12 @@ public:
 		m_condition.wakeOne();
 	}
 
+signals:
+	void playBuffer(const QByteArray&);
+
 protected:
 	/// Thread runs here
 	void run() {
-		// Initialize players & buffers (must be done here so that they are in the right thread).
-		// There is two so that one can play sound while other loads the next one.
-		QObject playerParent; // Dummy object that will handle deleting the players
-		for (int i = 0; i < 2; ++i) {
-			m_player[i] = Phonon::createPlayer(Phonon::MusicCategory);
-			m_player[i]->setParent(&playerParent);
-			m_soundData[i] = new QBuffer(&playerParent);
-		}
-
 		calcNext();
 		while (!m_quit) {
 			m_mutex.lock();
@@ -86,9 +78,8 @@ protected:
 				// Time-out: time to play the music
 				m_mutex.unlock();
 				if (m_quit) break;
-				m_player[m_curBuffer]->play();
+				emit playBuffer(m_soundData[m_curBuffer]);
 				m_curBuffer = (m_curBuffer+1) % 2;
-				m_player[m_curBuffer]->clear();
 				// Slightly hacky stuff follows:
 				// We advance the time a bit to make sure we are over the note beginning.
 				// Then cache the next note, but put longer delay (which will be corrected
@@ -99,9 +90,6 @@ protected:
 				m_delay = std::max(m_delay, 1.0);
 			}
 		}
-
-		m_player[0]->clear();
-		m_player[1]->clear();
 	}
 
 private:
@@ -121,9 +109,7 @@ private:
 		if (n.begin != m_noteBegin) {
 			// Need to create a new buffer
 			m_noteBegin = n.begin;
-			m_player[m_curBuffer]->clear();
-			createBuffer(n.note, n.length);
-			m_player[m_curBuffer]->setCurrentSource(m_soundData[m_curBuffer]);
+			createBuffer(n.note % 12, n.length);
 		}
 		// Compensate for the time spent in this function
 		m_delay -= timer.elapsed() / 1000.0;
@@ -135,7 +121,7 @@ private:
 		// This is simple beep, so we use mono, low sample rate and only 8 bits resolution
 		// --> quick to create and small memory foot print
 		std::string header = writeWavHeader(8, 1, sampleRate, length * sampleRate);
-		QByteArray buf(header.c_str(), header.size());
+		m_soundData[m_curBuffer] = QByteArray(header.c_str(), header.size());
 		double d = (note + 1) / 13.0;
 		double freq = MusicalScale().getNoteFreq(note + 12);
 		double phase = 0;
@@ -146,11 +132,8 @@ private:
 
 			// 8-bit
 			quint8 value = (fvalue + 1) * 0.5 * 255;
-			buf.push_back(value);
+			m_soundData[m_curBuffer].push_back(value);
 		}
-
-		m_soundData[m_curBuffer]->close();
-		m_soundData[m_curBuffer]->setData(buf);
 
 		//std::ofstream of("/tmp/wavdump.wav");
 		//of.write(buf.data(), buf.size());
@@ -183,10 +166,43 @@ private:
 	double m_delay; ///< How many seconds until the next sound must be played
 	double m_pos; ///< Position where we are now
 	double m_noteBegin; ///< Position of the next note
-	Phonon::MediaObject *m_player[2];
-	QBuffer *m_soundData[2];
+	QByteArray m_soundData[2];
 	int m_curBuffer;
 	bool m_quit;
 	QMutex m_mutex;
 	QWaitCondition m_condition;
+};
+
+
+class BufferPlayer: public QObject
+{
+	Q_OBJECT
+	Q_DISABLE_COPY(BufferPlayer);
+public:
+	BufferPlayer(const QByteArray& ba, QObject *parent): QObject(parent), m_data(ba) {
+		m_player = Phonon::createPlayer(Phonon::MusicCategory);
+		m_player->setParent(this);
+		m_buffer = new QBuffer(&m_data, this);
+		m_player->setCurrentSource(m_buffer);
+		connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
+		m_player->play();
+	}
+
+public slots:
+	void finished() {
+		m_player->clear();
+		{
+			// This seems a bit strange, but looks like it is the best
+			// way to release the resources without an occasional crash.
+			QObject deleter;
+			m_player->setParent(&deleter);
+			m_buffer->setParent(&deleter);
+		}
+		deleteLater();
+	}
+
+private:
+	QByteArray m_data;
+	QBuffer *m_buffer;
+	Phonon::MediaObject *m_player;
 };
