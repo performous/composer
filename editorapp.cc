@@ -947,8 +947,9 @@ void Piano::updatePixmap(int noteHeight)
 		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
 		painter.setPen(pen);
 		for (int i = 0; i < notes; ++i) {
-			QColor background(scale.isSharp(i) ? "#000000" : "#ffffff");
-			painter.fillRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight, background);
+			bool sh = scale.isSharp(i);
+			QColor background(sh ? "#000000" : "#ffffff");
+			painter.fillRect(0, image.height() - i*noteHeight - noteHeight/2, image.width() * (sh ? 0.8 : 1.0), noteHeight, background);
 			painter.drawRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight);
 		}
 	}
