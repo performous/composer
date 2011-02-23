@@ -946,11 +946,26 @@ void Piano::updatePixmap(int noteHeight)
 		MusicalScale scale;
 		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
 		painter.setPen(pen);
+		int y;
+		int w = image.width();
 		for (int i = 0; i < notes; ++i) {
-			bool sh = scale.isSharp(i);
-			QColor background(sh ? "#000000" : "#ffffff");
-			painter.fillRect(0, image.height() - i*noteHeight - noteHeight/2, image.width() * (sh ? 0.8 : 1.0), noteHeight, background);
-			painter.drawRect(0, image.height() - i*noteHeight - noteHeight/2, image.width(), noteHeight);
+			if (scale.isSharp(i)) continue;
+			int y2 = image.height() - i * noteHeight;  // Note center y
+			y2 -= (scale.isSharp(i + 1) ? 1.0 : 0.5) * noteHeight;  // Key top y
+			// Skip the first key because y hasn't been calculated yet
+			if (i > 0) {
+				bool sh = false;
+				painter.fillRect(0, y2, w, y - y2, QColor("#ffffff"));
+				painter.drawRect(0, y2, w, y - y2);
+			}
+			y = y2;  // The next key bottom y
+		}
+		w /= 2;  // Half length black keys
+		for (int i = 1; i < notes; ++i) {
+			if (!scale.isSharp(i)) continue;
+			y = image.height() - i*noteHeight - noteHeight / 2;
+			painter.fillRect(0, y, w, noteHeight, QColor("#000000"));
+			painter.drawRect(0, y, w, noteHeight);
 		}
 	}
 	setPixmap(QPixmap::fromImage(image));
