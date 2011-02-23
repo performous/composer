@@ -112,7 +112,7 @@ EditorApp::EditorApp(QWidget *parent)
 	setupNoteGraph();
 	updateNoteInfo(NULL);
 
-	piano->updatePixmap(noteGraph->n2px(0) - noteGraph->n2px(1));
+	piano->updatePixmap(noteGraph);
 
 	song.reset(new Song);
 
@@ -291,6 +291,10 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 		ui.chkLineBreak->setChecked(note->note().lineBreak);
 	}
 	updateMenuStates();
+	// Update piano
+	if (piano && noteGraph) {
+		piano->updatePixmap(noteGraph);
+	}
 }
 
 void EditorApp::analyzeProgress(int value, int maximum)
@@ -913,7 +917,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 		in.setCodec("UTF-8");
 		txtAuthors->setPlainText(in.readAll());
 	}
-	// Poplate License text
+	// Populate License text
 	{
 		QFile f(":/docs/License.txt");
 		f.open(QIODevice::ReadOnly);
@@ -928,6 +932,16 @@ AboutDialog::AboutDialog(QWidget* parent)
 
 
 
+namespace {
+	bool selectionMatches(int n, NoteGraphWidget *ngw) {
+		if (!ngw) return false;
+		const NoteLabels& nls = ngw->selectedNotes();
+		for (int i = 0; i < nls.size(); ++i)
+			if (nls[i]->note().note == n) return true;
+		return false;
+	}
+}
+
 void EditorApp::updatePiano(int y)
 {
 	if (!piano) return;
@@ -936,17 +950,18 @@ void EditorApp::updatePiano(int y)
 
 Piano::Piano(QWidget *parent): QLabel(parent) {}
 
-void Piano::updatePixmap(int noteHeight)
+void Piano::updatePixmap(NoteGraphWidget *ngw)
 {
+	if (!ngw) return;
 	const int notes = 12 * 4; // Four octaves
+	int noteHeight = ngw->n2px(0) - ngw->n2px(1);
 	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 	setFixedSize(image.width(), image.height());
 	{
 		QPainter painter(&image);
 		MusicalScale scale;
-		QPen pen; pen.setWidth(2); pen.setColor(QColor("#c0c0c0"));
-		painter.setPen(pen);
+		QPen pen; pen.setWidth(2);
 		int y;
 		int w = image.width();
 		// Render only the white keys first
@@ -954,10 +969,14 @@ void Piano::updatePixmap(int noteHeight)
 			if (scale.isSharp(i)) continue;
 			int y2 = image.height() - i * noteHeight;  // Note center y
 			y2 -= (scale.isSharp(i + 1) ? 1.0 : 0.5) * noteHeight;  // Key top y
+			// Pick border color according to selection status
+			if (selectionMatches(i, ngw)) pen.setColor(QColor("#090"));
+			else pen.setColor(QColor("#c0c0c0"));
+			painter.setPen(pen);
 			// Skip the first key because y hasn't been calculated yet
 			if (i > -1) {
 				painter.fillRect(0, y2, w, y - y2, QColor("#ffffff"));
-				painter.drawRect(0, y2, w, y - y2);
+				painter.drawRect(0, y2 + 2, w-1, y - y2 - 2);
 			}
 			y = y2;  // The next key bottom y
 		}
@@ -966,6 +985,10 @@ void Piano::updatePixmap(int noteHeight)
 		for (int i = 0; i < notes; ++i) {
 			if (!scale.isSharp(i)) continue;
 			y = image.height() - i*noteHeight - noteHeight / 2;
+			// Pick border color according to selection status
+			if (selectionMatches(i, ngw)) pen.setColor(QColor("#090"));
+			else pen.setColor(QColor("#c0c0c0"));
+			painter.setPen(pen);
 			painter.fillRect(0, y, w, noteHeight, QColor("#000000"));
 			painter.drawRect(0, y, w, noteHeight);
 		}

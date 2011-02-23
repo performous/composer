@@ -33,7 +33,7 @@ class Piano: public QLabel
 public:
 	Piano(QWidget *parent = 0);
 public slots:
-	void updatePixmap(int noteHeight);
+	void updatePixmap(NoteGraphWidget *ngw);
 };
 
 
