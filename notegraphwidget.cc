@@ -696,7 +696,7 @@ QString NoteGraphWidget::dumpLyrics() const
 SeekHandle::SeekHandle(QWidget *parent)
 	: QLabel(parent)
 {
-	QImage image(16, 768, QImage::Format_ARGB32_Premultiplied);
+	QImage image(8, 768, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(128, 128, 128, 128));
 	setPixmap(QPixmap::fromImage(image));
 	setMouseTracking(true);
