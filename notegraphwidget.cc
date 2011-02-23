@@ -58,7 +58,7 @@ NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 
 void NoteGraphWidget::setLyrics(QString lyrics)
 {
-	BusyDialog busy(this, 5);
+	BusyDialog busy(this, 2);
 	QTextStream ts(&lyrics, QIODevice::ReadOnly);
 
 	doOperation(Operation("CLEAR"));

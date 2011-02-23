@@ -8,7 +8,7 @@
 
 class BusyDialog: public QDialog {
 public:
-	BusyDialog(QWidget *parent = NULL, int eventsInterval = 30): QDialog(parent), timer(), interval(eventsInterval), count() {
+	BusyDialog(QWidget *parent = NULL, int eventsInterval = 10): QDialog(parent), timer(), interval(eventsInterval), count() {
 		QProgressBar *progress = new QProgressBar(this);
 		progress->setRange(0,0);
 		setWindowTitle(tr("Working..."));
@@ -18,7 +18,7 @@ public:
 		timer.start();
 	}
 	void operator()() {
-		if (count == 0) // Let's not process events all the time
+		if (count == 0 && isVisible()) // Let's not process events all the time
 			QApplication::processEvents();
 		count = (count + 1) % interval;
 		// Only show the dialog after certainamount of time

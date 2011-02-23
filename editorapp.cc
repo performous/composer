@@ -182,7 +182,7 @@ void EditorApp::statusBarMessage(const QString& message)
 
 void EditorApp::doOpStack()
 {
-	BusyDialog busy(this);
+	BusyDialog busy(this, 20);
 	noteGraph->clearNotes();
 	QString newMusic = "";
 	// Re-apply all operations in the stack
