@@ -117,9 +117,8 @@ EditorApp::EditorApp(QWidget *parent)
 	song.reset(new Song);
 
 	// Set status tips to tool tips
-	handleTips(ui.tabNote);
+	handleTips(ui.tabGeneral);
 	handleTips(ui.tabSong);
-	handleTips(ui.tabTools);
 
 	// FIXME: Remove these after rc release
 	//ui.actionFoFMIDI->setEnabled(false);
@@ -253,14 +252,9 @@ void EditorApp::updateTitle()
 void EditorApp::updateNoteInfo(NoteLabel *note)
 {
 	if (!note || !noteGraph || noteGraph->selectedNotes().size() > 1) {
-		ui.valNoteBegin->setText("-");
-		ui.valNoteEnd->setText("-");
-		ui.valNoteDuration->setText("-");
-		ui.valNote->setText("-");
 		ui.cmdSplit->setEnabled(false);
 		ui.cmdInsert->setEnabled(false);
 		ui.lblCurrentSentence->setText(tr("Current phrase:") + " -");
-		ui.lblPrevSentence->setText(tr("Previous phrase:") + " -");
 		// The next ones are available also for multi-note selections, so let's not disable them
 		if (!note || !noteGraph) {
 			ui.cmbNoteType->setEnabled(false);
@@ -271,16 +265,9 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 	if (note && noteGraph) {
 		if (noteGraph->selectedNotes().size() == 1) {
 			// These are only available for single note selections
-			MusicalScale ms;
-			ui.valNoteBegin->setText(QString::number(note->note().begin, 'f', 2) + tr(" s"));
-			ui.valNoteEnd->setText(QString::number(note->note().end, 'f', 2) + tr(" s"));
-			ui.valNoteDuration->setText(QString::number(note->note().length(), 'f', 2) + tr(" s"));
-			ui.valNote->setText(ms.getNoteStr(ms.getNoteFreq(note->note().note))
-				+ " (" + QString::number(note->note().note) + ")");
 			ui.cmdSplit->setEnabled(true);
 			ui.cmdInsert->setEnabled(true);
 			ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
-			ui.lblPrevSentence->setText(tr("Previous phrase:") + " " + noteGraph->getPrevSentence());
 		}
 		// The next ones are available also for multi-note selections
 		ui.cmbNoteType->setEnabled(true);

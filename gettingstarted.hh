@@ -39,10 +39,12 @@ public slots:
 	}
 
 	void on_cmdTimeLyrics_clicked(bool) {
-		m_editorApp->showTab(2);
+		// TODO: Add some coloring to labels or something
+		m_editorApp->showTab(0);
 	}
 
 	void on_cmdFineTuneLyrics_clicked(bool) {
+		// TODO: Add some coloring to labels or something
 		m_editorApp->showTab(0);
 	}
 

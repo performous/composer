@@ -486,7 +486,12 @@ void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
-	emit statusBarMessage(QString("Time: %1 s, note: %2").arg(px2s(event->x())).arg(round(px2n(event->y()))));
+	MusicalScale ms;
+	int note = round(px2n(event->y()));
+	emit statusBarMessage(QString("Time: %1 s, note: %2 (%3)")
+		.arg(px2s(event->x()))
+		.arg(ms.getNoteStr(ms.getNoteFreq(note)))
+		.arg(note));
 	emit updateNoteInfo(selectedNote());
 }
 
