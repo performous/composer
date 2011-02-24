@@ -75,8 +75,7 @@ void NoteLabel::createPixmap()
 	}
 
 	setPixmap(QPixmap::fromImage(image));
-
-	setStatusTip(tr("Lyric: ") + lyric());
+	updateTips();
 }
 
 void NoteLabel::setSelected(bool state) {
@@ -89,10 +88,9 @@ void NoteLabel::setSelected(bool state) {
 	}
 }
 
-void NoteLabel::resizeEvent(QResizeEvent *)
-{
-	createPixmap();
-}
+void NoteLabel::resizeEvent(QResizeEvent *) { createPixmap(); }
+
+void NoteLabel::moveEvent(QMoveEvent *) { updateTips(); }
 
 void NoteLabel::mouseMoveEvent(QMouseEvent *event)
 {
@@ -164,6 +162,10 @@ void NoteLabel::updateLabel()
 		resize(ngw->s2px(m_note.length()), height());
 		move(ngw->s2px(m_note.begin), ngw->n2px(m_note.note) - height() / 2);
 	}
+}
+
+void NoteLabel::updateTips()
+{
 	setToolTip(description(true));
 	setStatusTip(description(false));
 	setWhatsThis(description(true));

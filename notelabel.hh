@@ -26,6 +26,7 @@ public:
 	Note& note() { return m_note; }
 	Note note() const { return m_note; }
 	void updateLabel();
+	void updateTips();
 
 	bool isFloating() const { return m_floating; }
 	void setFloating(bool state) { m_floating = state; createPixmap(); }
@@ -43,6 +44,7 @@ public:
 
 protected:
 	void resizeEvent(QResizeEvent *event);
+	void moveEvent(QMoveEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 
 private:
