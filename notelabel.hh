@@ -15,7 +15,6 @@ public:
 
 	NoteLabel(const Note &note, QWidget *parent, bool floating = true);
 
-	void createPixmap();
 	QString lyric() const { return m_note.syllable; }
 	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(); }
 	QString description(bool multiline) const;
@@ -41,6 +40,9 @@ public:
 	operator Operation() const;
 
 	bool operator<(const NoteLabel &rhs) const { return m_note.begin < rhs.note().begin; }
+
+public slots:
+	void createPixmap();
 
 protected:
 	void resizeEvent(QResizeEvent *event);

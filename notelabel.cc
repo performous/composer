@@ -3,6 +3,7 @@
 #include <QToolTip>
 #include <QPainter>
 #include <QMenu>
+#include <QTimer>
 #include <iostream>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -18,11 +19,11 @@ const double NoteLabel::min_length = 0.05; // How many seconds minimum
 NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	: QLabel(parent), m_note(note), m_selected(false), m_floating(floating), m_resizing(0), m_hotspot()
 {
-	createPixmap();
 	updateLabel();
 	setMouseTracking(true);
 	setAttribute(Qt::WA_DeleteOnClose);
-	show();
+	// Deferred graphics generation (to make creation quick as object might also be deleted quickly)
+	QTimer::singleShot(2000, this, SLOT(createPixmap()));
 }
 
 void NoteLabel::createPixmap()
@@ -76,6 +77,7 @@ void NoteLabel::createPixmap()
 
 	setPixmap(QPixmap::fromImage(image));
 	updateTips();
+	show();
 }
 
 void NoteLabel::setSelected(bool state) {
