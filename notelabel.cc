@@ -11,7 +11,7 @@ namespace {
 	static const int text_margin = 3; // Margin of the label texts
 }
 
-const int NoteLabel::render_delay = 200; // How many ms to wait before updating pixmap after some action
+const int NoteLabel::render_delay = 300; // How many ms to wait before updating pixmap after some action
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const double NoteLabel::default_length = 0.5; // The preferred size of notes
 const double NoteLabel::min_length = 0.05; // How many seconds minimum
@@ -22,7 +22,7 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	updateLabel();
 	setMouseTracking(true);
 	// Deferred graphics generation (to make creation quick as object might also be deleted quickly)
-	QTimer::singleShot(500, this, SLOT(createPixmap()));
+	QTimer::singleShot(render_delay, this, SLOT(createPixmap()));
 }
 
 void NoteLabel::updatePixmap()
@@ -83,7 +83,7 @@ void NoteLabel::updatePixmap()
 void NoteLabel::setSelected(bool state) {
 	if (m_selected != state) {
 		m_selected = state;
-		QTimer::singleShot(render_delay, this, SLOT(updatePixmap()));
+		QTimer::singleShot(50, this, SLOT(updatePixmap())); // Quick update needed here for box selection
 		if (!m_selected) {
 			startResizing(0); // Reset
 			startDragging(QPoint()); // Reset
