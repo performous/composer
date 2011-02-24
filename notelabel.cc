@@ -3,7 +3,6 @@
 #include <QToolTip>
 #include <QPainter>
 #include <QMenu>
-#include <QTimer>
 #include <iostream>
 #include "notelabel.hh"
 #include "notegraphwidget.hh"
@@ -12,6 +11,7 @@ namespace {
 	static const int text_margin = 3; // Margin of the label texts
 }
 
+const int NoteLabel::render_delay = 200; // How many ms to wait before updating pixmap after some action
 const int NoteLabel::resize_margin = 5; // How many pixels is the resize area
 const double NoteLabel::default_length = 0.5; // The preferred size of notes
 const double NoteLabel::min_length = 0.05; // How many seconds minimum
@@ -83,7 +83,7 @@ void NoteLabel::updatePixmap()
 void NoteLabel::setSelected(bool state) {
 	if (m_selected != state) {
 		m_selected = state;
-		updatePixmap();
+		QTimer::singleShot(render_delay, this, SLOT(updatePixmap()));
 		if (!m_selected) {
 			startResizing(0); // Reset
 			startDragging(QPoint()); // Reset

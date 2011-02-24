@@ -244,13 +244,15 @@ void NoteLabelManager::move(NoteLabel *note, int value)
 		op << getNoteLabelId(n)
 		  << px2s(n->x()) << px2s(n->x() + n->width())
 		  << int(round(px2n(n->y() + m_noteHalfHeight))) + value;
-		doOperation(op);
+		doOperation(op, Operation::NO_UPDATE);
 	}
 
 	// Combine to one undo operation
 	if (i > 1) {
-		doOperation(Operation("COMBINER", i));
+		doOperation(Operation("COMBINER", i), Operation::NO_UPDATE);
 	}
+
+	updateNotes();
 }
 
 void NoteLabelManager::setType(NoteLabel *note, int index)
@@ -261,7 +263,8 @@ void NoteLabelManager::setType(NoteLabel *note, int index)
 		if (note->note().getTypeInt() == index) return;
 		Operation op("TYPE");
 		op << getNoteLabelId(note) << index;
-		doOperation(op);
+		doOperation(op, Operation::NO_UPDATE);
+		return;
 	}
 
 	// Multiple notes selected: apply to all
@@ -269,9 +272,9 @@ void NoteLabelManager::setType(NoteLabel *note, int index)
 	for (; i < m_selectedNotes.size(); ++i) {
 		Operation op("TYPE");
 		op << getNoteLabelId(m_selectedNotes[i]) << index;
-		doOperation(op);
+		doOperation(op, Operation::NO_UPDATE);
 	}
-	doOperation(Operation("COMBINER", i));
+	doOperation(Operation("COMBINER", i), Operation::NO_UPDATE);
 }
 
 void NoteLabelManager::setFloating(NoteLabel *note, bool state)
@@ -281,12 +284,13 @@ void NoteLabelManager::setFloating(NoteLabel *note, bool state)
 	if (m_selectedNotes.size() == 1 || !note->isSelected()) {
 		if (note->isFloating() == state) return;
 		doOperation(Operation("FLOATING", getNoteLabelId(note), state));
+		return;
 	}
 
 	// Multiple notes selected: apply to all
 	int i = 0;
 	for (; i < m_selectedNotes.size(); ++i) {
-		doOperation(Operation("FLOATING", getNoteLabelId(m_selectedNotes[i]), state));
+		doOperation(Operation("FLOATING", getNoteLabelId(m_selectedNotes[i]), state), Operation::NO_UPDATE);
 	}
 	doOperation(Operation("COMBINER", i));
 }
@@ -297,15 +301,15 @@ void NoteLabelManager::setLineBreak(NoteLabel *note, bool state)
 	// Easy case: only one note
 	if (m_selectedNotes.size() == 1 || !note->isSelected()) {
 		if (note->isLineBreak() == state) return;
-		doOperation(Operation("LINEBREAK", getNoteLabelId(note), state));
+		doOperation(Operation("LINEBREAK", getNoteLabelId(note), state), Operation::NO_UPDATE);
 	}
 
 	// Multiple notes selected: apply to all
 	int i = 0;
 	for (; i < m_selectedNotes.size(); ++i) {
-		doOperation(Operation("LINEBREAK", getNoteLabelId(m_selectedNotes[i]), state));
+		doOperation(Operation("LINEBREAK", getNoteLabelId(m_selectedNotes[i]), state), Operation::NO_UPDATE);
 	}
-	doOperation(Operation("COMBINER", i));
+	doOperation(Operation("COMBINER", i), Operation::NO_UPDATE);
 }
 
 void NoteLabelManager::editLyric(NoteLabel *note) {
@@ -321,7 +325,7 @@ void NoteLabelManager::editLyric(NoteLabel *note) {
 		// Create undo operation
 		Operation op("LYRIC");
 		op << getNoteLabelId(note) << text;
-		doOperation(op, Operation::NO_EXEC);
+		doOperation(op, Operation::NO_EXEC | Operation::NO_UPDATE);
 	}
 }
 
