@@ -119,9 +119,10 @@ private:
 
 	/// Creates the sound
 	void createBuffer(int note, double length) {
-		// This is simple beep, so we use mono, low sample rate and only 8 bits resolution
-		// --> quick to create and small memory foot print
-		std::string header = writeWavHeader(8, 1, sampleRate, length * sampleRate);
+		// This is simple beep, so we use mono and lowish sample rate
+		// --> quick to create and small memory footprint
+		// Going to 8 bits seems to create weird samples on Windows though
+		std::string header = writeWavHeader(16, 1, sampleRate, length * sampleRate);
 		m_soundData[m_curBuffer] = QByteArray(header.c_str(), header.size());
 		double d = (note + 1) / 13.0;
 		double freq = MusicalScale().getNoteFreq(note + 12);
@@ -131,9 +132,11 @@ private:
 			float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
 			phase += 2.0 * M_PI * freq / sampleRate;
 
-			// 8-bit
-			quint8 value = (fvalue + 1) * 0.5 * 255;
-			m_soundData[m_curBuffer].push_back(value);
+			// Convert float to 16-bit integer and push to buffer
+			qint16 svalue = fvalue * 32768;
+			char* value = reinterpret_cast<char*>(&svalue);
+			m_soundData[m_curBuffer].push_back(value[0]);
+			m_soundData[m_curBuffer].push_back(value[1]);
 		}
 
 		//std::ofstream of("/tmp/wavdump.wav");

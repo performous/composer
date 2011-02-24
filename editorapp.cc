@@ -124,13 +124,6 @@ EditorApp::EditorApp(QWidget *parent)
 	handleTips(ui.tabGeneral);
 	handleTips(ui.tabSong);
 
-	// FIXME: Remove these after rc release
-	//ui.actionFoFMIDI->setEnabled(false);
-#ifdef WIN32
-	//ui.chkSynth->setEnabled(false);
-#endif
-	////
-
 	QSettings settings;
 	if (settings.value("showhelp", true).toBool())
 		on_actionGettingStarted_triggered();
