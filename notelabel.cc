@@ -34,6 +34,8 @@ void NoteLabel::createPixmap()
 	QSize size(100, metric.size(Qt::TextSingleLine, lyric()).height() + 2 * text_margin);
 	if (ngw) size.setWidth(ngw->s2px(m_note.length()));
 
+	if (size.isEmpty()) return;
+
 	QImage image(size.width(), size.height(), QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
 
