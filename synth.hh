@@ -13,10 +13,6 @@
 #include "notes.hh"
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
-#ifdef Q_OS_WIN
-#include <QTemporaryFile>
-#include <QSound>
-#endif
 
 
 #ifndef M_PI
@@ -165,7 +161,7 @@ private:
 		return out.str();
 	}
 
-	static const int sampleRate = 8000; ///< Sample rate
+	static const int sampleRate = 22050; ///< Sample rate
 
 	SynthNotes m_notes; ///< Notes to synthesize
 	double m_delay; ///< How many seconds until the next sound must be played
@@ -184,41 +180,31 @@ class BufferPlayer: public QObject
 	Q_OBJECT
 	Q_DISABLE_COPY(BufferPlayer);
 public:
-	BufferPlayer(const QByteArray& ba, QObject *parent): QObject(parent) {
-#ifdef Q_OS_WIN
-		QTemporaryFile wavfile;
-		if (wavfile.open()) {
-			QDataStream stream(&wavfile);
-			stream.writeRawData(ba.data(), ba.size());
-			QSound::play(wavfile.fileName());
-		}
-		deleteLater();
-#else
-		m_data = ba;
+	BufferPlayer(QObject *parent): QObject(parent) {
 		m_player = Phonon::createPlayer(Phonon::MusicCategory);
 		m_player->setParent(this);
-		m_buffer = new QBuffer(&m_data, this);
-		m_player->setCurrentSource(m_buffer);
+		m_buffer = new QBuffer(this);
 		connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
-		m_player->play();
-#endif
+	}
+
+	bool play(const QByteArray& ba) {
+		if (m_player->state() != Phonon::PlayingState) {
+			m_player->clear();
+			m_buffer->close();
+			m_buffer->setData(ba);
+			m_player->setCurrentSource(m_buffer);
+			m_player->play();
+			return true;
+		}
+		return false;
 	}
 
 public slots:
 	void finished() {
 		m_player->clear();
-		{
-			// This seems a bit strange, but looks like it is the best
-			// way to release the resources without an occasional crash.
-			QObject deleter;
-			m_player->setParent(&deleter);
-			m_buffer->setParent(&deleter);
-		}
-		deleteLater();
 	}
 
 private:
-	QByteArray m_data;
 	QBuffer *m_buffer;
 	Phonon::MediaObject *m_player;
 };

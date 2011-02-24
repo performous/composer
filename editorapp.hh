@@ -139,10 +139,12 @@ private:
 	Phonon::MediaObject *player;
 	Phonon::AudioOutput *audioOutput;
 	Phonon::VideoPlayer *video;
+	BufferPlayer *bufferPlayers[2];
 	QScopedPointer<Synth> synth;
 	Piano *piano;
 	QProgressBar *statusbarProgress;
 	QPushButton *statusbarButton;
 	QString projectFileName;
 	QString latestPath;
+	int currentBufferPlayer;
 };

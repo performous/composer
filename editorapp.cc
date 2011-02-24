@@ -46,7 +46,7 @@ namespace {
 
 EditorApp::EditorApp(QWidget *parent)
 	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), video(), synth(), statusbarProgress(),
-	projectFileName(), latestPath(QDir::homePath())
+	projectFileName(), latestPath(QDir::homePath()), currentBufferPlayer()
 {
 	ui.setupUi(this);
 	readSettings();
@@ -96,6 +96,9 @@ EditorApp::EditorApp(QWidget *parent)
 	audioOutput = new Phonon::AudioOutput(this);
 	player->setTickInterval(100);
 	Phonon::createPath(player, audioOutput);
+	bufferPlayers[0] = new BufferPlayer(this);
+	bufferPlayers[1] = new BufferPlayer(this);
+
 	// Audio signals
 	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
@@ -771,11 +774,7 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 	if (checked && player && player->state() == Phonon::PlayingState) {
 		synth.reset(new Synth);
 		connect(synth.data(), SIGNAL(playBuffer(QByteArray)), this, SLOT(playBuffer(QByteArray)));
-#ifdef Q_OS_WIN
-		if (audioOutput) audioOutput->setVolume(0.25);
-#else
-		if (audioOutput) audioOutput->setVolume(0.75);
-#endif
+		if (audioOutput) audioOutput->setVolume(0.66);
 	} else if (!checked) {
 		synth.reset();
 		if (audioOutput) audioOutput->setVolume(1.0);
@@ -833,7 +832,8 @@ void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstat
 
 void EditorApp::playBuffer(const QByteArray& buffer)
 {
-	new BufferPlayer(buffer, this);
+	if (bufferPlayers[currentBufferPlayer]->play(buffer))
+		currentBufferPlayer = (currentBufferPlayer+1) % 2;
 }
 
 
