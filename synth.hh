@@ -51,6 +51,7 @@ public:
 		QMutexLocker locker(&m_mutex);
 		m_pos = pos / 1000.0;
 		m_notes = notes;
+		if (m_notes.isEmpty()) m_quit = true;
 
 		if (isRunning()) m_condition.wakeOne();
 		else start();
@@ -105,7 +106,7 @@ private:
 			QMutexLocker locker(&m_mutex);
 			SynthNotes::const_iterator it = m_notes.begin();
 			while (it != m_notes.end() && it->begin < m_pos) ++it;
-			if (it == m_notes.end()) { m_delay = ULONG_MAX / 1000.0; return; }
+			if (it == m_notes.end()) { m_delay = 1000.0; return; }
 			n = *it;
 		}
 
@@ -183,7 +184,7 @@ class BufferPlayer: public QObject
 	Q_OBJECT
 	Q_DISABLE_COPY(BufferPlayer);
 public:
-	BufferPlayer(const QByteArray& ba, QObject *parent): QObject(parent), m_data(ba) {
+	BufferPlayer(const QByteArray& ba, QObject *parent): QObject(parent) {
 #ifdef Q_OS_WIN
 		QTemporaryFile wavfile;
 		if (wavfile.open()) {
@@ -191,8 +192,9 @@ public:
 			stream.writeRawData(ba.data(), ba.size());
 			QSound::play(wavfile.fileName());
 		}
-
+		deleteLater();
 #else
+		m_data = ba;
 		m_player = Phonon::createPlayer(Phonon::MusicCategory);
 		m_player->setParent(this);
 		m_buffer = new QBuffer(&m_data, this);
