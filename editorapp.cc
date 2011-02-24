@@ -11,6 +11,7 @@
 #include <QCloseEvent>
 #include <QPainter>
 #include <QSettings>
+#include <QTimer>
 #include <phonon/AudioOutput>
 #include <phonon/VideoPlayer>
 #include <iostream>
@@ -851,6 +852,36 @@ void EditorApp::on_chkFloating_clicked(bool checked)
 void EditorApp::on_chkLineBreak_clicked(bool checked)
 {
 	if (noteGraph) noteGraph->setLineBreak(noteGraph->selectedNote(), checked);
+}
+
+void EditorApp::highlightLabel(QString id)
+{
+	const QString style = "background-color: #f00; font-weight: bold";
+	clearLabelHighlights();
+
+	// Set correct tab
+	if (id == "SONG") ui.tabWidget->setCurrentIndex(1);
+	else ui.tabWidget->setCurrentIndex(0);
+
+	// Color the labels
+	if (id == "TIMING") {
+		ui.lblPlayback->setStyleSheet(style);
+		ui.lblTiming->setStyleSheet(style);
+	} else if (id == "TUNING") {
+		ui.lblTools->setStyleSheet(style);
+		ui.lblNoteProperties->setStyleSheet(style);
+	}
+
+	// Clear highlights after a while
+	QTimer::singleShot(4000, this, SLOT(clearLabelHighlights()));
+}
+
+void EditorApp::clearLabelHighlights()
+{
+	ui.lblPlayback->setStyleSheet("");
+	ui.lblTiming->setStyleSheet("");
+	ui.lblTools->setStyleSheet("");
+	ui.lblNoteProperties->setStyleSheet("");
 }
 
 void EditorApp::closeEvent(QCloseEvent *event)

@@ -39,17 +39,15 @@ public slots:
 	}
 
 	void on_cmdTimeLyrics_clicked(bool) {
-		// TODO: Add some coloring to labels or something
-		m_editorApp->showTab(0);
+		m_editorApp->highlightLabel("TIMING");
 	}
 
 	void on_cmdFineTuneLyrics_clicked(bool) {
-		// TODO: Add some coloring to labels or something
-		m_editorApp->showTab(0);
+		m_editorApp->highlightLabel("TUNING");
 	}
 
 	void on_cmdMetadata_clicked(bool) {
-		m_editorApp->showTab(1);
+		m_editorApp->highlightLabel("SONG");
 	}
 
 	void on_cmdExport_clicked(bool) {

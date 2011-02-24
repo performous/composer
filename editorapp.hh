@@ -48,7 +48,7 @@ public:
 	void updateSongMeta(bool readFromSongToUI = false);
 	void updateMenuStates();
 	void updateTitle();
-	void showTab(int tab) { ui.tabWidget->setCurrentIndex(tab); }
+	void highlightLabel(QString id);
 	void showExportMenu() { ui.menuExport->exec(pos() + QPoint(0, ui.menubar->height())); }
 
 private:
@@ -71,6 +71,7 @@ public slots:
 	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);
+	void clearLabelHighlights();
 
 	// Automatic slots
 
