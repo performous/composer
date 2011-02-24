@@ -287,16 +287,17 @@ void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
 {
 	m_playbackPos = time;
 	int x = s2px(m_playbackPos / 1000.0) - m_seekHandle.width() / 2;
-	killTimer(m_playbackTimer);
+	if (m_playbackTimer) killTimer(m_playbackTimer);
 	m_seekHandle.move(x, 0);
-	if (smoothing)
-		m_playbackTimer = startTimer(20); // Hope for 50 fps
+	if (smoothing) m_playbackTimer = startTimer(20); // Hope for 50 fps
+	else m_playbackTimer = 0;
 	m_playbackInterval.restart();
 }
 
 void NoteGraphWidget::stopMusic()
 {
-	killTimer(m_playbackTimer);
+	if (m_playbackTimer) killTimer(m_playbackTimer);
+	m_playbackTimer = 0;
 }
 
 void NoteGraphWidget::seek(int x)
