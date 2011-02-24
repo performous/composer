@@ -374,7 +374,7 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
 		}
-		child->createPixmap();
+		child->updatePixmap();
 
 	// Middle Click
 	} else if (event->button() == Qt::MiddleButton) {

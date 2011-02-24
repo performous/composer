@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QLabel>
+#include <QCloseEvent>
 #include "notes.hh"
 #include "operation.hh"
 
@@ -16,7 +17,7 @@ public:
 	NoteLabel(const Note &note, QWidget *parent, bool floating = true);
 
 	QString lyric() const { return m_note.syllable; }
-	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(); }
+	void setLyric(const QString &text) { m_note.syllable = text; updatePixmap(); }
 	QString description(bool multiline) const;
 
 	bool isSelected() const { return m_selected; }
@@ -28,10 +29,10 @@ public:
 	void updateTips();
 
 	bool isFloating() const { return m_floating; }
-	void setFloating(bool state) { m_floating = state; createPixmap(); }
+	void setFloating(bool state) { m_floating = state; updatePixmap(); }
 	bool isLineBreak() const { return m_note.lineBreak; }
-	void setLineBreak(bool state) { m_note.lineBreak = state; createPixmap(); }
-	void setType(int newtype) { m_note.type = Note::types[newtype]; createPixmap(); }
+	void setLineBreak(bool state) { m_note.lineBreak = state; updatePixmap(); }
+	void setType(int newtype) { m_note.type = Note::types[newtype]; updatePixmap(); }
 
 	void startResizing(int dir);
 	void startDragging(const QPoint& point);
@@ -42,12 +43,14 @@ public:
 	bool operator<(const NoteLabel &rhs) const { return m_note.begin < rhs.note().begin; }
 
 public slots:
-	void createPixmap();
+	void createPixmap() { show(); updatePixmap(); }
+	void updatePixmap();
 
 protected:
 	void resizeEvent(QResizeEvent *event);
 	void moveEvent(QMoveEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
+	void closeEvent(QCloseEvent *event) { deleteLater(); event->accept(); }
 
 private:
 	Note m_note;

@@ -21,13 +21,13 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 {
 	updateLabel();
 	setMouseTracking(true);
-	setAttribute(Qt::WA_DeleteOnClose);
 	// Deferred graphics generation (to make creation quick as object might also be deleted quickly)
-	QTimer::singleShot(2000, this, SLOT(createPixmap()));
+	QTimer::singleShot(500, this, SLOT(createPixmap()));
 }
 
-void NoteLabel::createPixmap()
+void NoteLabel::updatePixmap()
 {
+	if (isHidden()) return;
 	QFont font;
 	font.setStyleStrategy(QFont::ForceOutline);
 	QFontMetrics metric(font);
@@ -82,7 +82,8 @@ void NoteLabel::createPixmap()
 
 void NoteLabel::setSelected(bool state) {
 	if (m_selected != state) {
-		m_selected = state; createPixmap();
+		m_selected = state;
+		updatePixmap();
 		if (!m_selected) {
 			startResizing(0); // Reset
 			startDragging(QPoint()); // Reset
@@ -90,7 +91,7 @@ void NoteLabel::setSelected(bool state) {
 	}
 }
 
-void NoteLabel::resizeEvent(QResizeEvent *) { createPixmap(); }
+void NoteLabel::resizeEvent(QResizeEvent *) { updatePixmap(); }
 
 void NoteLabel::moveEvent(QMoveEvent *) { updateTips(); }
 

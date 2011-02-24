@@ -375,7 +375,6 @@ void NoteLabelManager::doOperation(const Operation& op, int flags)
 					} else {
 						std::cerr << "Error: Unkown operation type " << action.toStdString() << std::endl;
 					}
-					n->createPixmap();
 				}
 			}
 		} catch (std::runtime_error&) {
