@@ -181,16 +181,20 @@ void EditorApp::doOpStack()
 	BusyDialog busy(this, 20);
 	noteGraph->clearNotes();
 	QString newMusic = "";
+	OperationStack::iterator opit = opStack.begin();
 	// Re-apply all operations in the stack
-	for (OperationStack::const_iterator opit = opStack.begin(); opit != opStack.end(); ++opit) {
+	while (opit != opStack.end()) {
 		//std::cout << "Doing op: " << opit->dump() << std::endl;
 		busy();
+		bool erased = false;
 		try {
 			if (opit->op() == "META") {
 				// META ops are handled differently:
 				// They are run once and then removed from the stack.
 				// They are written to disk when saving though.
 				QString metakey = opit->s(1), metavalue = opit->s(2);
+				opit = opStack.erase(opit);
+				erased = true;
 				if (metakey == "MUSICFILE") {
 					newMusic = metavalue;
 				} else if (metakey == "TITLE") {
@@ -208,6 +212,11 @@ void EditorApp::doOpStack()
 			} else // Regular note operations
 				noteGraph->doOperation(*opit, Operation::NO_EMIT);
 		} catch (std::exception& e) { std::cout << e.what() << std::endl; }
+
+		if (!erased) {
+			++opit;
+			erased = false;
+		}
 	}
 
 	if (!newMusic.isEmpty()) setMusic(newMusic);
