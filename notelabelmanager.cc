@@ -326,7 +326,7 @@ void NoteLabelManager::editLyric(NoteLabel *note) {
 }
 
 
-void NoteLabelManager::doOperation(const Operation& op, Operation::OperationFlags flags)
+void NoteLabelManager::doOperation(const Operation& op, int flags)
 {
 	if (!(flags & Operation::NO_EXEC)) {
 		try {

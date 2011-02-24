@@ -182,6 +182,7 @@ void EditorApp::doOpStack()
 	noteGraph->clearNotes();
 	QString newMusic = "";
 	OperationStack::iterator opit = opStack.begin();
+
 	// Re-apply all operations in the stack
 	while (opit != opStack.end()) {
 		//std::cout << "Doing op: " << opit->dump() << std::endl;
@@ -210,7 +211,7 @@ void EditorApp::doOpStack()
 				updateSongMeta(true);
 
 			} else // Regular note operations
-				noteGraph->doOperation(*opit, Operation::NO_EMIT);
+				noteGraph->doOperation(*opit, Operation::NO_EMIT | Operation::NO_UPDATE);
 		} catch (std::exception& e) { std::cout << e.what() << std::endl; }
 
 		if (!erased) {
@@ -219,6 +220,7 @@ void EditorApp::doOpStack()
 		}
 	}
 
+	noteGraph->updateNotes();
 	if (!newMusic.isEmpty()) setMusic(newMusic);
 	updateMenuStates();
 }
@@ -393,7 +395,6 @@ void EditorApp::openFile(QString fileName)
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
-
 	}
 }
 

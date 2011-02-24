@@ -59,7 +59,7 @@ public:
 	void setLineBreak(NoteLabel *note, bool state);
 	void setType(NoteLabel *note, int newtype);
 
-	void doOperation(const Operation& op, Operation::OperationFlags flags = Operation::NORMAL);
+	void doOperation(const Operation& op, int flags = Operation::NORMAL);
 
 	void zoom(float steps, double focalSecs = -1);
 	int getZoomLevel() const;
