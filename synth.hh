@@ -59,6 +59,32 @@ public:
 		m_condition.wakeOne();
 	}
 
+	/// Creates the sound
+	static void createBuffer(QByteArray &buffer, int note, double length) {
+		// This is simple beep, so we use mono and lowish sample rate
+		// --> quick to create and small memory footprint
+		// Going to 8 bits seems to create weird samples on Windows though
+		std::string header = writeWavHeader(16, 1, sampleRate, length * sampleRate);
+		buffer = QByteArray(header.c_str(), header.size());
+		double d = (note + 1) / 13.0;
+		double freq = MusicalScale().getNoteFreq(note + 12);
+		double phase = 0;
+		// Synthesize tones
+		for (size_t i = 0; i < length * sampleRate; ++i) {
+			float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
+			phase += 2.0 * M_PI * freq / sampleRate;
+
+			// Convert float to 16-bit integer and push to buffer
+			qint16 svalue = fvalue * 32768;
+			char* value = reinterpret_cast<char*>(&svalue);
+			buffer.push_back(value[0]);
+			buffer.push_back(value[1]);
+		}
+
+		//std::ofstream of("/tmp/wavdump.wav");
+		//of.write(buf.data(), buf.size());
+	}
+
 signals:
 	void playBuffer(const QByteArray&);
 
@@ -110,41 +136,15 @@ private:
 		if (n.begin != m_noteBegin) {
 			// Need to create a new buffer
 			m_noteBegin = n.begin;
-			createBuffer(n.note % 12, n.length);
+			createBuffer(m_soundData[m_curBuffer], n.note % 12, n.length);
 		}
 		// Compensate for the time spent in this function
 		m_delay -= timer.elapsed() / 1000.0;
 		if (m_delay <= 0.001) m_delay = 0.001;
 	}
 
-	/// Creates the sound
-	void createBuffer(int note, double length) {
-		// This is simple beep, so we use mono and lowish sample rate
-		// --> quick to create and small memory footprint
-		// Going to 8 bits seems to create weird samples on Windows though
-		std::string header = writeWavHeader(16, 1, sampleRate, length * sampleRate);
-		m_soundData[m_curBuffer] = QByteArray(header.c_str(), header.size());
-		double d = (note + 1) / 13.0;
-		double freq = MusicalScale().getNoteFreq(note + 12);
-		double phase = 0;
-		// Synthesize tones
-		for (size_t i = 0; i < length * sampleRate; ++i) {
-			float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
-			phase += 2.0 * M_PI * freq / sampleRate;
-
-			// Convert float to 16-bit integer and push to buffer
-			qint16 svalue = fvalue * 32768;
-			char* value = reinterpret_cast<char*>(&svalue);
-			m_soundData[m_curBuffer].push_back(value[0]);
-			m_soundData[m_curBuffer].push_back(value[1]);
-		}
-
-		//std::ofstream of("/tmp/wavdump.wav");
-		//of.write(buf.data(), buf.size());
-	}
-
 	/// WAV header writer
-	std::string writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsigned samples) {
+	static std::string writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsigned samples) {
 		std::ostringstream out;
 		unsigned bps = ch * bits / 8; // Bytes per sample
 		unsigned datasize = bps * samples;

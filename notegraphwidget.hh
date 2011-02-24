@@ -109,6 +109,7 @@ class NoteGraphWidget: public NoteLabelManager
 
 public:
 	static const QString BGColor;
+	static const int Height;
 
 	NoteGraphWidget(QWidget *parent = 0);
 

@@ -34,6 +34,11 @@ public:
 	Piano(QWidget *parent = 0);
 public slots:
 	void updatePixmap(NoteGraphWidget *ngw);
+protected:
+	void mousePressEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
+private:
+	BufferPlayer *m_player;
 };
 
 

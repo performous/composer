@@ -984,17 +984,19 @@ void EditorApp::updatePiano(int y)
 	piano->move(piano->x(), ui.noteGraphScroller->y() - y);
 }
 
-Piano::Piano(QWidget *parent): QLabel(parent) {}
+Piano::Piano(QWidget *parent): QLabel(parent), m_player(new BufferPlayer(this))
+{
+	setMouseTracking(true);
+}
 
 void Piano::updatePixmap(NoteGraphWidget *ngw)
 {
-	if (!ngw) return;
 	const int notes = 12 * 4; // Four octaves
 	const QColor borderColor = QColor("#c0c0c0");
 	const QColor selectionColor = QColor("#a00");
 	const QColor mouseColor = QColor("#090");
-	int noteHeight = ngw->n2px(0) - ngw->n2px(1);
-	int mousen = int(round(ngw->px2n(mapFromGlobal(QCursor::pos()).y())));
+	int noteHeight = 16;
+	int mousen = round((NoteGraphWidget::Height - mapFromGlobal(QCursor::pos()).y()) / 16.0);
 
 	QImage image(50, notes * noteHeight, QImage::Format_ARGB32_Premultiplied);
 	image.fill(qRgba(0, 0, 0, 0));
@@ -1037,4 +1039,18 @@ void Piano::updatePixmap(NoteGraphWidget *ngw)
 		}
 	}
 	setPixmap(QPixmap::fromImage(image));
+}
+
+void Piano::mousePressEvent(QMouseEvent *event)
+{
+	if (!m_player) return;
+	QByteArray ba;
+	int n = round((NoteGraphWidget::Height - event->pos().y()) / 16.0);
+	Synth::createBuffer(ba, n % 12, 0.2);
+	m_player->play(ba);
+}
+
+void Piano::mouseMoveEvent(QMouseEvent *event)
+{
+	updatePixmap(NULL);
 }
