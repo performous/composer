@@ -415,15 +415,14 @@ void NoteGraphWidget::mouseReleaseEvent(QMouseEvent *event)
 		if (selectedNote()) {
 			int movecount = 0;
 			for (int i = 0; i < m_selectedNotes.size(); ++i) {
-				NoteLabel *n = m_selectedNotes[i];
-				n->startResizing(0);
-				n->startDragging(QPoint());
+				NoteLabel *nl = m_selectedNotes[i];
+				nl->startResizing(0);
+				nl->startDragging(QPoint());
+				const Note& n = nl->note();
 				if (m_actionHappened) {
 					// Operation for undo stack & saving
 					Operation op("MOVE");
-					op << getNoteLabelId(n)
-					  << px2s(n->x()) << px2s(n->x() + n->width())
-					  << int(round(px2n(n->y() + m_noteHalfHeight)));
+					op << getNoteLabelId(nl) << n.begin << n.end << n.note;
 					doOperation(op, Operation::NO_EXEC);
 					++movecount;
 				}

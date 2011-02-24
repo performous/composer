@@ -240,11 +240,9 @@ void NoteLabelManager::move(NoteLabel *note, int value)
 
 	int i = 0; // We need this after the loop
 	for (; i < m_selectedNotes.size(); ++i) {
-		NoteLabel *n = m_selectedNotes[i];
+		const Note &n = m_selectedNotes[i]->note();
 		Operation op("MOVE");
-		op << getNoteLabelId(n)
-		  << px2s(n->x()) << px2s(n->x() + n->width())
-		  << int(round(px2n(n->y() + m_noteHalfHeight))) + value;
+		op << getNoteLabelId(m_selectedNotes[i]) << n.begin << n.end << n.note + value;
 		doOperation(op, Operation::NO_UPDATE);
 	}
 
