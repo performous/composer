@@ -32,7 +32,7 @@ namespace {
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_mouseHotSpot(), m_seeking(), m_actionHappened(),
-	m_pitch(), m_seekHandle(this), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
+	m_pitch(), m_seekHandle(this), m_nextNotePixmap(), m_notePixmapTimer(), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: " + BGColor + "; }");
@@ -76,7 +76,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			if (!word.isEmpty()) {
 				Note note(word); note.end = NoteLabel::default_length; note.note = 24;
 				if (sentenceStart) note.lineBreak = true;
-				doOperation(opFromNote(note, m_notes.size(), !firstNote));
+				doOperation(opFromNote(note, m_notes.size(), !firstNote), Operation::NO_UPDATE);
 				firstNote = false;
 				sentenceStart = false;
 			}
@@ -96,7 +96,7 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
-		doOperation(opFromNote(*it, m_notes.size(), false));
+		doOperation(opFromNote(*it, m_notes.size(), false), Operation::NO_UPDATE);
 		busy();
 	}
 
@@ -130,6 +130,9 @@ void NoteGraphWidget::finalizeNewLyrics()
 
 	// Scroll to show the first note
 	scrollToFirstNote();
+
+	// Start creating pixmaps for notes
+	startNotePixmapUpdates();
 }
 
 void NoteGraphWidget::scrollToFirstNote()
@@ -171,10 +174,30 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 			killTimer(m_analyzeTimer);
 			updatePitch();
 		}
+	} else if (event->timerId() == m_notePixmapTimer) {
+		// Here we create a pixmap for a NoteLabel
+		if (m_nextNotePixmap >= m_notes.size()) {
+			killTimer(m_notePixmapTimer);
+			m_notePixmapTimer = 0;
+			m_nextNotePixmap = 0;
+			return;
+		}
+		// Loop until a pixmap-to-create is found
+		while (m_nextNotePixmap < m_notes.size() && !m_notes[m_nextNotePixmap]->createPixmap())
+			++m_nextNotePixmap;
+		++m_nextNotePixmap;
 	}
 }
 
-void NoteGraphWidget::paintEvent(QPaintEvent*) {
+void NoteGraphWidget::startNotePixmapUpdates()
+{
+	// With 0-delay, note pixmaps are created whenever there is not events to process
+	if (!m_notePixmapTimer) m_notePixmapTimer = startTimer(0);
+	m_nextNotePixmap = 0;
+}
+
+void NoteGraphWidget::paintEvent(QPaintEvent*)
+{
 	setFixedSize(s2px(m_duration), height());
 
 	// Find out the viewport

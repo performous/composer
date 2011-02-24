@@ -21,8 +21,7 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 {
 	updateLabel();
 	setMouseTracking(true);
-	// Deferred graphics generation (to make creation quick as object might also be deleted quickly)
-	QTimer::singleShot(render_delay, this, SLOT(createPixmap()));
+	hide();
 }
 
 void NoteLabel::updatePixmap()

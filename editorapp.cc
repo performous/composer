@@ -221,6 +221,7 @@ void EditorApp::doOpStack()
 	}
 
 	noteGraph->updateNotes();
+	noteGraph->startNotePixmapUpdates();
 	if (!newMusic.isEmpty()) setMusic(newMusic);
 	updateMenuStates();
 }

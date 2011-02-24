@@ -36,6 +36,7 @@ public:
 	NoteLabelManager(QWidget *parent = 0);
 
 	virtual void updateNotes(bool leftToRight = true) {}
+	virtual void startNotePixmapUpdates() {}
 
 	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
@@ -134,6 +135,7 @@ public slots:
 	void updatePitch();
 	void abortPitch() { if (m_pitch) m_pitch->cancel(); }
 	void scrollToFirstNote();
+	void startNotePixmapUpdates();
 
 signals:
 	void analyzeProgress(int, int);
@@ -161,6 +163,8 @@ private:
 	bool m_actionHappened;
 	QScopedPointer<PitchVis> m_pitch;
 	SeekHandle m_seekHandle;
+	int m_nextNotePixmap;
+	int m_notePixmapTimer;
 	int m_analyzeTimer;
 	int m_playbackTimer;
 	QElapsedTimer m_playbackInterval;

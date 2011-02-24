@@ -45,7 +45,7 @@ public:
 	bool operator<(const NoteLabel &rhs) const { return m_note.begin < rhs.note().begin; }
 
 public slots:
-	void createPixmap() { show(); updatePixmap(); }
+	bool createPixmap() { if (isVisible()) return false; show(); updatePixmap(); return true; }
 	void updatePixmap();
 
 protected:

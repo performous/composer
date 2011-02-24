@@ -162,7 +162,7 @@ void NoteLabelManager::createNote(double time)
 		int nlvl = (id > 0) ? m_notes[id-1]->note().note : 24;
 
 		QTextStream ts(&text, QIODevice::ReadOnly);
-		// Loop throguh all words
+		// Loop through all words
 		while (!ts.atEnd()) {
 			QString word;
 			ts >> word;
@@ -180,6 +180,7 @@ void NoteLabelManager::createNote(double time)
 				++id;
 			}
 		}
+		startNotePixmapUpdates();
 	}
 }
 
