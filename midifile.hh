@@ -66,9 +66,9 @@ namespace mid {
 		void parseMThd();
 		void parseMTrk();
 		void parseRiff(char const* name);
-		template <typename T> T read() {
-			T value = 0;
-			for (int i = sizeof(T) - 1; i >= 0; --i) value |= *m_pos++ << (8 * i);
+		template <unsigned N> unsigned read() {
+			unsigned value = 0;
+			for (unsigned i = N - 1; i < N; --i) value |= *m_pos++ << (8 * i);
 			return value;
 		}
 
@@ -91,6 +91,44 @@ namespace mid {
 		unsigned m_division;
 		unsigned m_runningStatus;
 	};
-	
+
+	class Writer {
+	public:
+	private:
+		void writeMThd(unsigned tracks, unsigned division) {
+			beginRiff("MThd");
+			write<2>(1); // fmt	1 (multitrack)
+			write<2>(tracks);
+			write<2>(division);
+			endRiff();
+		}
+		void writeMTrk() {
+			beginRiff("MTrk");
+		}
+		void beginRiff(char const* name) {
+			m_riffBegin = m_data.size();
+			m_data.resize(m_riffBegin + 8);  // Add space for header
+			std::copy(name, name + 4, m_data.begin() + m_riffBegin);  // Set RIFF name
+		}
+		void endRiff() {
+			unsigned size = m_data.size() - 8 - m_riffBegin;
+			m_data[m_riffBegin + 4] = size >> 24;
+			m_data[m_riffBegin + 5] = size >> 16;
+			m_data[m_riffBegin + 6] = size >> 8;
+			m_data[m_riffBegin + 7] = size;
+		}
+		template <unsigned N> void write(unsigned value) {
+			for (unsigned i = N - 1; i < N; --i) m_data.push_back(value >> (8 * i));
+		}
+		void write_varlen(unsigned value) {
+			if (value >= 0x10000000U) throw std::logic_error("Value cannot be MIDI varlen encoded");
+			if (value >= 0x200000U) m_data.push_back(0x80 | (value >> 21));
+			if (value >= 0x4000U) m_data.push_back(0x80 | (value >> 14));
+			if (value >= 0x80U) m_data.push_back(0x80 | (value >> 7));
+			m_data.push_back(value & 0x7F);
+		}
+		std::vector<value_type> m_data;
+		unsigned m_riffBegin;
+	};
 }
 

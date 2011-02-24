@@ -33,16 +33,16 @@ bool Reader::nextTrack() {
 void Reader::parseRiff(char const* name) {
 	if (!std::equal(name, name + 4, m_pos)) throw std::runtime_error("MIDI header " + std::string(name) + " not found, instead found " + std::string(m_pos, m_pos + 4));
 	m_pos += 4;
-	unsigned size = read<uint32_t>();
+	unsigned size = read<4>();
 	if (m_fileEnd - m_pos < size) throw std::runtime_error("Unexpected end of file within MIDI header " + std::string(name));
 	m_riffEnd = m_pos + size;
 }
 
 void Reader::parseMThd() {
 	parseRiff("MThd");
-	unsigned fmt = read<uint16_t>();
-	m_tracks = read<uint16_t>();
-	m_division = read<uint16_t>();
+	unsigned fmt = read<2>();
+	m_tracks = read<2>();
+	m_division = read<2>();
 	if (fmt == 2) throw std::runtime_error("MIDI format 2 not supported.");
 	if (fmt == 0 && m_tracks == 1) return;  // Old single track format
 	if (fmt == 1 && m_tracks > 1) return;  // New format (timing info on first track)
@@ -61,7 +61,7 @@ bool Reader::parseEvent(Event& ev) {
 	// Event header
 	{
 		ev.timecode = read_varlen();
-		unsigned event = read<uint8_t>();
+		unsigned event = read<1>();
 		if (event & 0x80) {
 			if (event < 0xF0) m_runningStatus = event;  // Stored for regular (0x00..0xEF)
 			else if (event < 0xF8) m_runningStatus = 0;  // Cleared for System Common Category (0xF0..0xF7)
@@ -74,7 +74,7 @@ bool Reader::parseEvent(Event& ev) {
 		ev.type = static_cast<Event::Type>(event & 0xF0);
 		ev.channel = event & 0x0F;
 	}
-	if (ev.type != Event::SPECIAL || ev.channel >= 8) ev.arg1 = read<uint8_t>();  // Everything except System Common takes one argument
+	if (ev.type != Event::SPECIAL || ev.channel >= 8) ev.arg1 = read<1>();  // Everything except System Common takes one argument
 	unsigned tmp;
 	switch (ev.type) {
 	case Event::NOTE_ON:
@@ -82,7 +82,7 @@ bool Reader::parseEvent(Event& ev) {
 	case Event::NOTE_AFTERTOUCH:
 	case Event::CONTROLLER:
 	case Event::PITCH_BEND:
-		ev.arg2 = read<uint8_t>();
+		ev.arg2 = read<1>();
 		break;
 	case Event::PROGRAM_CHANGE:
 	case Event::CHANNEL_AFTERTOUCH:
