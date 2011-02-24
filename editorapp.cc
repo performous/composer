@@ -762,7 +762,7 @@ void EditorApp::playButton()
 	} else {
 		ui.cmdPlay->setText(tr("Play"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
-		synth.reset();
+		on_chkSynth_clicked(false);
 	}
 }
 
@@ -771,8 +771,14 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 	if (checked && player && player->state() == Phonon::PlayingState) {
 		synth.reset(new Synth);
 		connect(synth.data(), SIGNAL(playBuffer(QByteArray)), this, SLOT(playBuffer(QByteArray)));
+#ifdef Q_OS_WIN
+		if (audioOutput) audioOutput->setVolume(0.25);
+#else
+		if (audioOutput) audioOutput->setVolume(0.75);
+#endif
 	} else if (!checked) {
 		synth.reset();
+		if (audioOutput) audioOutput->setVolume(1.0);
 	}
 }
 

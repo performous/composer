@@ -13,6 +13,10 @@
 #include "notes.hh"
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
+#ifdef Q_OS_WIN
+#include <QTemporaryFile>
+#include <QSound>
+#endif
 
 
 #ifndef M_PI
@@ -180,12 +184,22 @@ class BufferPlayer: public QObject
 	Q_DISABLE_COPY(BufferPlayer);
 public:
 	BufferPlayer(const QByteArray& ba, QObject *parent): QObject(parent), m_data(ba) {
+#ifdef Q_OS_WIN
+		QTemporaryFile wavfile;
+		if (wavfile.open()) {
+			QDataStream stream(&wavfile);
+			stream.writeRawData(ba.data(), ba.size());
+			QSound::play(wavfile.fileName());
+		}
+
+#else
 		m_player = Phonon::createPlayer(Phonon::MusicCategory);
 		m_player->setParent(this);
 		m_buffer = new QBuffer(&m_data, this);
 		m_player->setCurrentSource(m_buffer);
 		connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
 		m_player->play();
+#endif
 	}
 
 public slots:
