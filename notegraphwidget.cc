@@ -650,6 +650,10 @@ QString NoteGraphWidget::getCurrentSentence() const
 	QString lyrics;
 	if (!m_notes.isEmpty() && selectedNote()) {
 		int id = getNoteLabelId(selectedNote());
+		// Get to phrase beginning
+		while (id >= 0 && !m_notes[id]->note().lineBreak) --id;
+		if (id < 0) return "";
+		// Now loop the phrase
 		for (int i = id; i < m_notes.size(); ++i) {
 			if (i != id && m_notes[i]->note().lineBreak) break;
 			// Selected notes are highlighted with different color
@@ -668,12 +672,15 @@ QString NoteGraphWidget::getPrevSentence() const
 	QString lyrics;
 	if (!m_notes.isEmpty() && selectedNote()) {
 		// First find the previous start
-		int id = getNoteLabelId(selectedNote()), i = id-1;
-		for (; i >= 0 && !m_notes[i]->note().lineBreak; --i) ;
-		if (i < 0) return "";
+		int id = getNoteLabelId(selectedNote());
+		while (id >= 0 && !m_notes[id]->note().lineBreak) --id;
+		if (id < 0) return "";
+		--id;
+		while (id >= 0 && !m_notes[id]->note().lineBreak) --id;
+		if (id < 0) return "";
 
 		// Now get the sentence
-		for (id = i; i < m_notes.size(); ++i) {
+		for (int i = id; i < m_notes.size(); ++i) {
 			if (i != id && m_notes[i]->note().lineBreak) break;
 			lyrics += m_notes[i]->lyric() + " ";
 		}

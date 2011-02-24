@@ -267,7 +267,8 @@ void EditorApp::updateNoteInfo(NoteLabel *note)
 			// These are only available for single note selections
 			ui.cmdSplit->setEnabled(true);
 			ui.cmdInsert->setEnabled(true);
-			ui.lblCurrentSentence->setText(tr("Current phrase:") + " <b>" + noteGraph->getCurrentSentence() + "</b>");
+			ui.lblCurrentSentence->setText(tr("Current phrase: ")
+				+ "<small>" + noteGraph->getPrevSentence() + "</small> <b>" + noteGraph->getCurrentSentence() + "</b>");
 		}
 		// The next ones are available also for multi-note selections
 		ui.cmbNoteType->setEnabled(true);

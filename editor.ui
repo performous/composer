@@ -211,7 +211,7 @@
           </property>
          </spacer>
         </item>
-        <item row="4" column="0">
+        <item row="4" column="0" colspan="4">
          <widget class="QLabel" name="lblCurrentSentence">
           <property name="text">
            <string>Current phrase:</string>
