@@ -36,10 +36,10 @@
        </sizepolicy>
       </property>
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Plain</enum>
       </property>
       <widget class="QScrollArea" name="noteGraphScroller">
        <property name="geometry">
@@ -64,9 +64,6 @@
         </property>
        </widget>
       </widget>
-      <zorder>noteGraphScroller</zorder>
-      <zorder>tabWidget</zorder>
-      <zorder>tabWidget</zorder>
      </widget>
     </item>
     <item>
