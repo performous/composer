@@ -18,6 +18,7 @@ public:
 	void createPixmap();
 	QString lyric() const { return m_note.syllable; }
 	void setLyric(const QString &text) { m_note.syllable = text; createPixmap(); }
+	QString description(bool multiline) const;
 
 	bool isSelected() const { return m_selected; }
 	void setSelected(bool state = true);

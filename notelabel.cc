@@ -162,13 +162,23 @@ void NoteLabel::updateLabel()
 		resize(ngw->s2px(m_note.length()), height());
 		move(ngw->s2px(m_note.begin), ngw->n2px(m_note.note) - height() / 2);
 	}
+	setToolTip(description(true));
+	setStatusTip(description(false));
+	setWhatsThis(description(true));
+}
+
+QString NoteLabel::description(bool multiline) const
+{
 	MusicalScale ms;
-	setToolTip(QString("\"%1\"\n%2\n%3\n%4 s - %5 s")
+	return QString("Syllable: \"%2\"%1Type: %3%1Note: %4 (%5)%1%6 s - %7 s (= %8 s)")
+		.arg(multiline ? "\n" : ", ")
 		.arg(lyric())
 		.arg(m_note.typeString())
 		.arg(ms.getNoteStr(ms.getNoteFreq(m_note.note)))
-		.arg(QString::number(m_note.begin, 'f', 3))
-		.arg(QString::number(m_note.end, 'f', 3))
+		.arg(m_note.note)
+		.arg(QString::number(m_note.begin, 'f', 4))
+		.arg(QString::number(m_note.end, 'f', 4))
+		.arg(QString::number(m_note.length(), 'f', 4)
 		);
 }
 
