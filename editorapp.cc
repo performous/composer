@@ -182,7 +182,7 @@ void EditorApp::doOpStack()
 	noteGraph->clearNotes();
 	QString newMusic = "";
 	OperationStack::iterator opit = opStack.begin();
-QElapsedTimer t; t.start();
+
 	// Re-apply all operations in the stack
 	while (opit != opStack.end()) {
 		//std::cout << "Doing op: " << opit->dump() << std::endl;
@@ -219,7 +219,7 @@ QElapsedTimer t; t.start();
 			erased = false;
 		}
 	}
-	std::cout << t.elapsed() << std::endl;
+
 	noteGraph->updateNotes();
 	if (!newMusic.isEmpty()) setMusic(newMusic);
 	updateMenuStates();
