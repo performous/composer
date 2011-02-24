@@ -397,7 +397,6 @@ void NoteGraphWidget::mousePressEvent(QMouseEvent *event)
 			m_selectedAction = MOVE;
 			child->startDragging(hotSpot);
 		}
-		child->updatePixmap();
 
 	// Middle Click
 	} else if (event->button() == Qt::MiddleButton) {
@@ -479,9 +478,9 @@ void NoteGraphWidget::mouseDoubleClickEvent(QMouseEvent *event)
 void NoteGraphWidget::mouseMoveEvent(QMouseEvent *event)
 {
 	if (!m_actionHappened) {
-		m_actionHappened = true; // We have movement, so resize/move can be accepted
 		// Unfloat all selected notes, otherwise the move would be b0rked by auto-pitch
 		if (m_selectedAction != NONE && selectedNote()) {
+			m_actionHappened = true; // We have movement, so resize/move can be accepted
 			// Undo op is handled later by the MOVE constructed at drop
 			for (int i = 0; i < m_selectedNotes.size(); ++i)
 				m_selectedNotes[i]->setFloating(false);
