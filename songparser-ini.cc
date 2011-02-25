@@ -78,6 +78,7 @@ void SongParser::midParse() {
 			if (ev.type == Event::NOTE_ON) {
 				if (ev.arg1 >= 100) continue;  // Skip control signals
 				vt.notes.push_back(Note(strConv(lyric)));
+				lyric.clear();
 				Note& n = vt.notes.back();
 				n.begin = n.end = tsTime(timecode);
 				n.note = ev.arg1;
