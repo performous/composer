@@ -5,9 +5,10 @@
 #include <iterator>
 #include <sstream>
 
-using namespace mid;
+using namespace midifile;
 
 Reader::Reader(char const* filename) {
+	// Read the entire file into a buffer
 	{
 		std::ifstream file(filename, std::ios::binary);
 		if (!file.is_open()) throw std::runtime_error("Unable to open " + std::string(filename));
@@ -21,11 +22,10 @@ Reader::Reader(char const* filename) {
 		m_fileEnd = m_pos + size;
 	}
 	parseMThd();
-	parseMTrk();
 }
 
-bool Reader::nextTrack() {
-	m_pos = m_riffEnd;
+bool Reader::startTrack() {
+	m_pos = m_riffEnd;  // Jump to the end of the current riff
 	if (m_pos == m_fileEnd) return false;
 	parseMTrk();
 	return true;
@@ -99,6 +99,27 @@ bool Reader::parseEvent(Event& ev) {
 	return true;
 }
 
+Writer::Writer(unsigned fmt, unsigned tracks, unsigned division) {
+	beginRiff("MThd");
+	if (fmt == 0 && tracks != 1) throw std::logic_error("Format 0 MIDI must have exactly one track");
+	if (fmt == 1 && tracks < 2) throw std::logic_error("Format 1 MIDI must have a separate timing track");
+	if (division == 0) throw std::logic_error("Division must be set to a positive value");
+	write<2>(fmt);
+	write<2>(tracks);
+	write<2>(division);
+}
+
+void Writer::save(char const* filename) {
+	endRiff();
+	std::ofstream f(filename, std::ios::binary);
+	f.write(reinterpret_cast<char const*>(&m_data[0]), m_data.size());
+}
+
+void Writer::startTrack() {
+	endRiff();
+	beginRiff("MTrk");
+}
+
 void Writer::writeEvent(Event const& ev) {
 	write_varlen(ev.timecode);
 	if (ev.type & ~0xF0 || ev.type < 0x80) throw std::logic_error("Invalid MIDI event type");
@@ -122,6 +143,23 @@ void Writer::writeEvent(Event const& ev) {
 		std::copy(ev.begin, ev.end, std::back_inserter(m_data));
 		break;
 	}	
+}
+
+void Writer::beginRiff(char const* name) {
+	m_riffBegin = m_data.size();
+	m_data.resize(m_riffBegin + 8);  // Add space for header
+	std::copy(name, name + 4, m_data.begin() + m_riffBegin);  // Set RIFF name
+}
+
+void Writer::endRiff() {
+	unsigned size = m_data.size() - m_riffBegin;
+	if (size == 0) return;  // Nothing to close
+	size -= 8;
+	m_data[m_riffBegin + 4] = size >> 24;
+	m_data[m_riffBegin + 5] = size >> 16;
+	m_data[m_riffBegin + 6] = size >> 8;
+	m_data[m_riffBegin + 7] = size;
+	m_riffBegin = m_data.size();
 }
 
 // Debugging facilities follow

@@ -61,13 +61,13 @@ namespace {
 
 void SongParser::midParse() {
 	QByteArray name = (m_song.path + "notes.mid").toLocal8Bit();
-	using namespace mid;
-	Reader reader(std::string(name.data(), name.size()).c_str());
+	midifile::Reader reader(std::string(name.data(), name.size()).c_str());
+	using midifile::Event;
 	double tempo = 120.0;
 	double division = reader.getDivision();
 	addBPM(0, tempo, division);
 	unsigned track = 0;
-	do {
+	while (++track, reader.startTrack()) {
 		VocalTrack vt("");
 		unsigned timecode = 0;
 		std::string trackName, lyric;
@@ -129,7 +129,7 @@ void SongParser::midParse() {
 			}
 		}
 		if (trackName == "PART VOCALS") m_song.insertVocalTrack("vocals", vt);
-	} while (++track, reader.nextTrack());
+	};
 }
 
 #if 0
