@@ -105,6 +105,7 @@ namespace mid {
 		void writeMTrk() {
 			beginRiff("MTrk");
 		}
+		void writeEvent(Event const& ev);
 		void beginRiff(char const* name) {
 			m_riffBegin = m_data.size();
 			m_data.resize(m_riffBegin + 8);  // Add space for header

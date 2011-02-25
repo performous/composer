@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 
 using namespace mid;
@@ -96,6 +97,31 @@ bool Reader::parseEvent(Event& ev) {
 	}
 	if (m_pos > m_riffEnd) throw std::runtime_error("MIDI event went past the end of Mtrk");
 	return true;
+}
+
+void Writer::writeEvent(Event const& ev) {
+	write_varlen(ev.timecode);
+	if (ev.type & ~0xF0 || ev.type < 0x80) throw std::logic_error("Invalid MIDI event type");
+	if (ev.type & ~0x0F) throw std::logic_error("Invalid MIDI channel number");
+	write<1>(ev.type | ev.channel);
+	if (ev.type != Event::SPECIAL || ev.channel >= 8) write<1>(ev.arg1);  // Everything except System Common takes one argument
+	switch (ev.type) {
+	case Event::NOTE_ON:
+	case Event::NOTE_OFF:
+	case Event::NOTE_AFTERTOUCH:
+	case Event::CONTROLLER:
+	case Event::PITCH_BEND:
+		write<1>(ev.arg2);
+		break;
+	case Event::PROGRAM_CHANGE:
+	case Event::CHANNEL_AFTERTOUCH:
+		if (ev.arg2 != 0) throw std::logic_error("MIDI event with non-zero arg2 for event that only takes one arg");
+		break;  // No arg2 for these
+	case Event::SPECIAL:  // Special category (system exclusive or meta event)
+		write_varlen(ev.end - ev.begin);  // data size
+		std::copy(ev.begin, ev.end, std::back_inserter(m_data));
+		break;
+	}	
 }
 
 // Debugging facilities follow
