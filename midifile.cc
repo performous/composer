@@ -123,7 +123,7 @@ void Writer::startTrack() {
 void Writer::writeEvent(Event const& ev) {
 	write_varlen(ev.timecode);
 	if (ev.type & ~0xF0 || ev.type < 0x80) throw std::logic_error("Invalid MIDI event type");
-	if (ev.type & ~0x0F) throw std::logic_error("Invalid MIDI channel number");
+	if (ev.channel & ~0x0F) throw std::logic_error("Invalid MIDI channel number");
 	write<1>(ev.type | ev.channel);
 	if (ev.type != Event::SPECIAL || ev.channel >= 8) write<1>(ev.arg1);  // Everything except System Common takes one argument
 	switch (ev.type) {
