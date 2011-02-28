@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Composer
+Comment=Note creator for pitch-detecting karaoke games
+Exec=composer
+Icon=composer.png
+Terminal=false
+Type=Application
+Categories=Application;AudioVideo;Music;Qt;
+
