@@ -65,6 +65,10 @@ void FoFMIDIWriter::writeMIDI() const {
 		ev.arg2 = 0;
 		writer.writeEvent(ev);
 	}
+	ev.type = Event::SPECIAL;
+	ev.channel = 0x0F;
+	ev.arg1 = Event::META_ENDOFTRACK;
+	writer.writeEvent(ev);
 	// Write to file
 	QByteArray name = (path + "/notes.mid").toLocal8Bit();
 	writer.save(std::string(name.data(), name.size()).c_str());
