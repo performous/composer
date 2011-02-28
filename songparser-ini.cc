@@ -70,18 +70,22 @@ void SongParser::midParse() {
 	while (++track, reader.startTrack()) {
 		VocalTrack vt("");
 		unsigned timecode = 0;
+		bool newSentence = true;
 		std::string trackName, lyric;
 		for (Event ev; reader.parseEvent(ev); ) {
+			ev.print();
 			timecode += ev.timecode;
 			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
 			// Process any interesting events
 			if (ev.type == Event::NOTE_ON) {
+				if (ev.arg1 == 105) newSentence = true;  // New sentence begins at next note
 				if (ev.arg1 >= 100) continue;  // Skip control signals
 				vt.notes.push_back(Note(strConv(lyric)));
 				lyric.clear();
 				Note& n = vt.notes.back();
 				n.begin = n.end = tsTime(timecode);
 				n.note = ev.arg1;
+				n.lineBreak = newSentence; newSentence = false;
 				vt.noteMin = std::min(vt.noteMin, n.note);
 				vt.noteMax = std::max(vt.noteMax, n.note);
 				continue;
