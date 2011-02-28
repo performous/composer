@@ -8,7 +8,7 @@ void FoFMIDIWriter::writeMIDI() const {
 	Notes const& notes = s.getVocalTrack().notes;
 	if (notes.empty()) throw std::runtime_error("No notes");
 	double tempo = s.bpm > 0 ? s.bpm : 120.0;
-	unsigned division = 64;  // Allow for very precise timing
+	unsigned division = 256;  // Allow for very precise timing
 	unsigned endtc = round(tempo / 60.0 * division * notes.back().end);
 	midifile::Writer writer(1, 2, division);
 	using midifile::Event;
@@ -28,7 +28,6 @@ void FoFMIDIWriter::writeMIDI() const {
 	writer.writeEvent(ev);
 	// TODO: write Performous Composer and Title= & Artist= like FoF lyric converter does (note: it does on PART VOCALS but timing track seems more appropriate)
 	// End the timing track
-	ev.timecode = endtc;
 	ev.arg1 = Event::META_ENDOFTRACK;
 	writer.writeEvent(ev);
 	// Vocals track begins
@@ -39,34 +38,40 @@ void FoFMIDIWriter::writeMIDI() const {
 	std::copy(partvocals.begin(), partvocals.end(), buf);
 	ev.end = ev.begin + partvocals.size();
 	writer.writeEvent(ev);
+	ev.begin = ev.end = NULL;
 	// Write notes
 	bool sentenceOn = false;  // Sentence note 105 not playing
 	unsigned timecode = 0;
 	for (Notes::const_iterator it = notes.begin(), itend = notes.end(); it != itend; ++it) {
-		// Lyric
-		QByteArray bytes = it->syllable.toUtf8();
 		ev.timecode = round(tempo / 60.0 * division * it->begin) - timecode;
 		timecode += ev.timecode;
+		if (it->lineBreak) {
+			ev.type = Event::NOTE_ON;
+			ev.channel = 0;
+			ev.arg1 = 105;   // Special note value for starting a new sentence
+			// End the previous sentence (if not at the beginning)
+			if (sentenceOn) { ev.arg2 = 0; writer.writeEvent(ev); }  // Note OFF
+			sentenceOn = true;
+			// The same timecode for the rest
+			ev.timecode = 0;
+			// Begin a new one
+			ev.arg2 = 127; writer.writeEvent(ev);  // Note ON
+		}
+		// Write lyric
+		QByteArray bytes = it->syllable.toUtf8();
 		ev.type = Event::SPECIAL;
 		ev.channel = 0x0F;
 		ev.arg1 = Event::META_LYRIC;
 		ev.begin = reinterpret_cast<unsigned char*>(bytes.data());
 		ev.end = ev.begin + bytes.size();
 		writer.writeEvent(ev);
+		ev.end = ev.begin = NULL;
 		// Prepare for writing note on/off events
 		ev.timecode = 0;  // Same timecode as the lyric
 		ev.type = Event::NOTE_ON;
 		ev.channel = 0;
-		if (it->lineBreak) {
-			ev.arg1 = 105;   // Special note value for starting a new sentence
-			// End the previous sentence (if not at the beginning)
-			if (sentenceOn) { ev.arg2 = 0; writer.writeEvent(ev); }  // Note OFF
-			sentenceOn = true;
-			// Begin a new one
-			ev.arg2 = 0; writer.writeEvent(ev);  // Note OFF
-		}
 		// Note begin
-		ev.arg1 = it->note;
+		ev.arg1 = 36 + it->note;  // FoF format uses offset for note values :(
 		ev.arg2 = 127;  // Note ON
 		writer.writeEvent(ev);
 		// Note end
