@@ -831,7 +831,8 @@ void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstat
 			if (player) errst += " " + player->errorString();
 			QMessageBox::critical(this, tr("Playback error"), errst);
 		}
-	}
+	} else if (!noteGraph->selectedNote() && !noteGraph->noteLabels().isEmpty())
+		noteGraph->selectNote(noteGraph->noteLabels().front());
 }
 
 void EditorApp::playBuffer(const QByteArray& buffer)
