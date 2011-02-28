@@ -18,16 +18,17 @@ void FoFMIDIWriter::writeMIDI() const {
 	ev.channel = 0x0F;
 	unsigned char buf[16];
 	ev.begin = ev.end = buf;
-	if (tempo != 120.0) {   // MIDI defaults to 120 BPM
-		ev.arg1 = Event::META_TEMPO;
-		ev.end = ev.begin + 3;
-		unsigned val = 6e+7 / tempo;  // Microseconds per beat
-		buf[0] = val >> 16;
-		buf[1] = val >> 8;
-		buf[2] = val;
-		writer.writeEvent(ev);
-	}
-	// TODO: write Performous Composer and title= & artist= like EoF does
+	// Write tempo info
+	ev.arg1 = Event::META_TEMPO;
+	ev.end = ev.begin + 3;
+	unsigned val = 6e+7 / tempo;  // Microseconds per beat
+	buf[0] = val >> 16;
+	buf[1] = val >> 8;
+	buf[2] = val;
+	writer.writeEvent(ev);
+	// TODO: write Performous Composer and Title= & Artist= like FoF lyric converter does (note: it does on PART VOCALS but timing track seems more appropriate)
+	// End the timing track
+	ev.timecode = endtc;
 	ev.arg1 = Event::META_ENDOFTRACK;
 	writer.writeEvent(ev);
 	// Vocals track begins
@@ -39,6 +40,7 @@ void FoFMIDIWriter::writeMIDI() const {
 	ev.end = ev.begin + partvocals.size();
 	writer.writeEvent(ev);
 	// Write notes
+	bool sentenceOn = false;  // Sentence note 105 not playing
 	unsigned timecode = 0;
 	for (Notes::const_iterator it = notes.begin(), itend = notes.end(); it != itend; ++it) {
 		// Lyric
@@ -51,20 +53,37 @@ void FoFMIDIWriter::writeMIDI() const {
 		ev.begin = reinterpret_cast<unsigned char*>(bytes.data());
 		ev.end = ev.begin + bytes.size();
 		writer.writeEvent(ev);
-		// Note begin
-		ev.channel = 0;
+		// Prepare for writing note on/off events
 		ev.timecode = 0;  // Same timecode as the lyric
 		ev.type = Event::NOTE_ON;
+		ev.channel = 0;
+		if (it->lineBreak) {
+			ev.arg1 = 105;   // Special note value for starting a new sentence
+			// End the previous sentence (if not at the beginning)
+			if (sentenceOn) { ev.arg2 = 0; writer.writeEvent(ev); }  // Note OFF
+			sentenceOn = true;
+			// Begin a new one
+			ev.arg2 = 0; writer.writeEvent(ev);  // Note OFF
+		}
+		// Note begin
 		ev.arg1 = it->note;
-		ev.arg2 = 64;
+		ev.arg2 = 127;  // Note ON
 		writer.writeEvent(ev);
 		// Note end
 		ev.timecode = round(tempo / 60.0 * division * it->end) - timecode;
 		timecode += ev.timecode;
-		ev.type = Event::NOTE_OFF;
-		ev.arg2 = 0;
+		ev.arg2 = 0;  // Note OFF
 		writer.writeEvent(ev);
 	}
+	ev.timecode = 0;
+	// Terminate the sentence note
+	if (sentenceOn) {
+		ev.type = Event::NOTE_ON;
+		ev.channel = 0;
+		ev.arg1 = 105;
+		ev.arg2 = 0; writer.writeEvent(ev);  // Note OFF
+	}
+	// Terminate the vocal track
 	ev.type = Event::SPECIAL;
 	ev.channel = 0x0F;
 	ev.arg1 = Event::META_ENDOFTRACK;
