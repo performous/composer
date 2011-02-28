@@ -17,6 +17,8 @@ endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+include(platform/packaging.cmake)
+
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
 if(NOT CMAKE_BUILD_TYPE)
 	message("WARNING: CMAKE_BUILD_TYPE is not defined!\n         Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo. Use ccmake to set a proper value.")
