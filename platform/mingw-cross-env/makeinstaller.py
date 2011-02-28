@@ -30,7 +30,7 @@ if not os.path.isdir('dist'):
 os.chdir('stage')
 
 app = 'Composer'
-version = '1.0rc1+'
+version = '1.0'
 
 
 makensis.stdin.write(r'''!include "MUI2.nsh"
