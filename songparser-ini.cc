@@ -73,7 +73,6 @@ void SongParser::midParse() {
 		bool newSentence = true;
 		std::string trackName, lyric;
 		for (Event ev; reader.parseEvent(ev); ) {
-			ev.print();
 			timecode += ev.timecode;
 			if (ev.type == Event::NOTE_ON && ev.arg2 == 0) ev.type = Event::NOTE_OFF;  // Note on with velocity 0 actually means off.
 			// Process any interesting events
