@@ -136,7 +136,7 @@ public slots:
 	void updatePitch();
 	void abortPitch() { if (m_pitch) m_pitch->cancel(); }
 	void scrollToFirstNote();
-	void startNotePixmapUpdates();
+	void startNotePixmapUpdates(); ///< Starts creating pixmaps for NoteLabels
 
 signals:
 	void analyzeProgress(int, int);

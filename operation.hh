@@ -35,7 +35,7 @@ struct Operation
 	template<typename T>
 	T param(int index) const { validate(index); m_params[index].value<T>(); }
 
-	/// Get Operation parameter at certain index (1-based)
+	// Get Operation parameter at certain index (1-based)
 
 	QString s(int index) const { validate(index); return m_params[index].toString(); }
 	char c(int index) const { validate(index); return m_params[index].toChar().toAscii(); }
@@ -46,7 +46,7 @@ struct Operation
 	double d(int index) const { validate(index); return m_params[index].toDouble(); }
 	QVariant q(int index) const { validate(index); return m_params[index]; }
 
-	// Array access for modifying param
+	/// Array access for modifying param
 	QVariant& operator[](int index) { validate(index); return m_params[index]; }
 
 	std::string dump() const {

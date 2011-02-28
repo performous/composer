@@ -30,7 +30,11 @@ struct SynthNote {
 
 typedef QList<SynthNote> SynthNotes;
 
-
+/**
+ * @brief Threaded WAV buffer creator.
+ *
+ * Synthesizes and schedules notes in a thread and sends them to the main thread when its time to play them.
+ */
 class Synth: public QThread
 {
 	Q_OBJECT
@@ -170,14 +174,19 @@ private:
 	double m_delay; ///< How many seconds until the next sound must be played
 	double m_pos; ///< Position where we are now
 	double m_noteBegin; ///< Position of the next note
-	QByteArray m_soundData[2];
-	int m_curBuffer;
-	bool m_quit;
-	QMutex m_mutex;
-	QWaitCondition m_condition;
+	QByteArray m_soundData[2]; ///< The WAV buffers
+	int m_curBuffer; ///< Which buffer we are currently using
+	bool m_quit; ///< Flag to signal the thread should quit
+	QMutex m_mutex; ///< Mutex for protecting resource access
+	QWaitCondition m_condition; ///< For signaling the thread
 };
 
 
+/**
+ * @brief Class for playing a WAV buffer from memory.
+ *
+ * Designed to be reused, but won't play the buffer if the previous hasn't finished.
+ */
 class BufferPlayer: public QObject
 {
 	Q_OBJECT

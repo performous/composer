@@ -27,6 +27,7 @@ public:
 	AboutDialog(QWidget* parent = 0);
 };
 
+
 class Piano: public QLabel
 {
 	Q_OBJECT

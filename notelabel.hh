@@ -6,6 +6,21 @@
 #include "notes.hh"
 #include "operation.hh"
 
+/**
+ * @brief Widget representing a single note.
+ *
+ * Notes:
+ * - Is rather useless without a parent NoteGraphWidget-object
+ * - Widget is initially hidden and without a pixmap to allow quick creation
+ * - Pixmap updates are generally delayed a little
+ *   - The idea is to allow some time to apply the base operation to every note
+ *     and then do the gfx updates asynchronously
+ * - NoteLabel has its own mouse handling for moving, resizing, cursors, tooltips etc,
+	 but requires the parent NoteGraphWidget to update some internal states
+ * - Geometry & position is calculated from the underlying Note attributes (i.e. time and pitch)
+ *   - Setting size or pos manually will be overridden so the Note must be manipulated instead
+ * - NoteLabel can be serialized to Operation-class
+ */
 class NoteLabel: public QLabel
 {
 	Q_OBJECT
@@ -45,7 +60,10 @@ public:
 	bool operator<(const NoteLabel &rhs) const { return m_note.begin < rhs.note().begin; }
 
 public slots:
+	/// Shows the widget and creates the pixmap; if already visible, do nothing
+	/// @return true if pixmap was actually created, false if the widget was already visible
 	bool createPixmap() { if (isVisible()) return false; show(); updatePixmap(); return true; }
+	/// Updates the pixmap but only if the widget is visible (i.e. createPixmap has been called)
 	void updatePixmap();
 
 protected:

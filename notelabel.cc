@@ -22,6 +22,10 @@ NoteLabel::NoteLabel(const Note &note, QWidget *parent, bool floating)
 	updateLabel();
 	setMouseTracking(true);
 	hide();
+	// We don't want to show the widget and create the pixmap as that is slow.
+	// Since the undo-framework relies on rapidly creating and deleting NoteLabels,
+	// this is a necessity to get adequete performance. NoteGraphWidget creates the
+	// pixmaps later on once the final NoteLabels have been found.
 }
 
 void NoteLabel::updatePixmap()

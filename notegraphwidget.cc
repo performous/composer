@@ -173,6 +173,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 			killTimer(m_analyzeTimer);
 			updatePitch();
 		}
+
 	} else if (event->timerId() == m_notePixmapTimer) {
 		// Here we create a pixmap for a NoteLabel
 		if (m_nextNotePixmap >= m_notes.size()) {
@@ -181,7 +182,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 			m_nextNotePixmap = 0;
 			return;
 		}
-		// Loop until a pixmap-to-create is found
+		// Loop until a pixmap-to-create is found - we only create one at a time to not block the UI
 		while (m_nextNotePixmap < m_notes.size() && !m_notes[m_nextNotePixmap]->createPixmap())
 			++m_nextNotePixmap;
 		++m_nextNotePixmap;
@@ -191,6 +192,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 void NoteGraphWidget::startNotePixmapUpdates()
 {
 	// With 0-delay, note pixmaps are created whenever there is not events to process
+	// This means fast performance while keeping snappy interface
 	if (!m_notePixmapTimer) m_notePixmapTimer = startTimer(0);
 	m_nextNotePixmap = 0;
 }
