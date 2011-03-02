@@ -334,9 +334,11 @@ void NoteGraphWidget::timeCurrent()
 {
 	if (selectedNote()) {
 		Operation op("MOVE");
-		op << getNoteLabelId(selectedNote())
-			<< px2s(m_seekHandle.curx()) << px2s(m_seekHandle.curx() + selectedNote()->width())
-			<< selectedNote()->note().note;
+		double begin = px2s(m_seekHandle.curx());
+		double end = px2s(m_seekHandle.curx() + selectedNote()->width());
+		int n = selectedNote()->note().note;
+		if (m_pitch) n = m_pitch->guessNote(begin, end, n);
+		op << getNoteLabelId(selectedNote()) << begin << end << n;
 		doOperation(op);
 	}
 }
