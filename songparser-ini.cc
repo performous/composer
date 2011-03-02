@@ -14,6 +14,11 @@ bool SongParser::iniCheck(QString const& data) {
 	return data.startsWith("[song]");
 }
 
+/// 'Magick' to check if this file looks like correct format
+bool SongParser::midiCheck(QString const& data) {
+	return data.startsWith("MThd");
+}
+
 /// Parser
 void SongParser::iniParse() {
 	// Some defaults

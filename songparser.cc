@@ -28,7 +28,7 @@ SongParser::SongParser(Song& s):
   m_tsPerBeat(),
   m_tsEnd()
 {
-	enum { NONE, TXT, XML, INI, SM } type = NONE;
+	enum { NONE, TXT, XML, INI, MIDI, SM } type = NONE;
 	// Read the file, determine the type and do some initial validation checks
 	QFile file(m_song.path + m_song.filename);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -45,6 +45,7 @@ SongParser::SongParser(Song& s):
 	else if (txtCheck(data)) type = TXT;
 	else if (xmlCheck(data)) type = XML;
 	else if (iniCheck(data)) type = INI;
+	else if (midiCheck(data)) type = MIDI;
 	else throw SongParserException("Does not look like a song file (wrong header)", 1, true);
 
 	m_stream.setString(&data);
@@ -54,6 +55,7 @@ SongParser::SongParser(Song& s):
 		if (type == TXT) txtParse();
 		else if (type == XML) xmlParse();
 		else if (type == INI) iniParse();
+		else if (type == MIDI) midParse();
 		else if (type == SM) smParse();
 	} catch (std::runtime_error& e) {
 		throw SongParserException(e.what(), m_linenum);

@@ -38,7 +38,9 @@ class SongParser {
 	static bool xmlCheck(QString const& data);
 	void xmlParse();
 
+	// Frets on Fire MIDI
 	static bool iniCheck(QString const& data);
+	static bool midiCheck(QString const& data);
 	void iniParse();
 	void iniParseField(QString const& line);
 	void midParse();
