@@ -67,7 +67,11 @@ bool SongParser::txtParseField(QString const& line) {
 
 bool SongParser::txtParseNote(QString line, VocalTrack &vocal) {
 	if (line.isEmpty() || line == "\r") return true;
-	line = line.trimmed();
+	// Trim leading whitespace (after is preserved for word breaking purposes)
+	while (line[0].isSpace()) {
+		line = line.mid(1);
+		if (line.isEmpty()) return true;
+	}
 	if (line[0] == '#') throw std::runtime_error("Key found in the middle of notes");
 	if (line[0] == 'E') return false;
 	QTextStream iss(&line);
