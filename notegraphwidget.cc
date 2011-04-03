@@ -73,7 +73,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			QString word;
 			ts2 >> word;
 			if (!word.isEmpty()) {
-				Note note(word); note.end = NoteLabel::default_length; note.note = 24;
+				Note note(word + " "); note.end = NoteLabel::default_length; note.note = 24;
 				if (sentenceStart) note.lineBreak = true;
 				doOperation(opFromNote(note, m_notes.size(), !firstNote), Operation::NO_UPDATE);
 				firstNote = false;
