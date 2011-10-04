@@ -11,8 +11,9 @@
 #include <QLabel>
 #include <QSettings>
 
-PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(), cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), condition()
+PitchVis::PitchVis(QString const& filename, QWidget *parent, int visId)
+	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(),
+	  cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), m_visId(visId), condition()
 {
 	start(); // Launch the thread
 }
@@ -175,7 +176,7 @@ void PitchVis::renderer() {
 
 		// Send the image
 		// This is actually delivered by the reciever's event loop thread, and not called directly from here
-		emit renderedImage(image, QPoint(x1, y1));
+		emit renderedImage(image, QPoint(x1, y1), m_visId);
 
 		mutex.lock();
 		// If nothing to do, sleep here

@@ -31,7 +31,7 @@ namespace {
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_mouseHotSpot(), m_seeking(), m_actionHappened(),
-	m_pitch(), m_seekHandle(this), m_nextNotePixmap(), m_notePixmapTimer(), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
+	m_seekHandle(this), m_nextNotePixmap(), m_notePixmapTimer(), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: " + BGColor + "; }");
@@ -144,10 +144,10 @@ void NoteGraphWidget::scrollToFirstNote()
 	}
 }
 
-void NoteGraphWidget::analyzeMusic(QString filepath)
+void NoteGraphWidget::analyzeMusic(QString filepath, int visId)
 {
-	m_pitch.reset(new PitchVis(filepath, this));
-	connect(m_pitch.data(), SIGNAL(renderedImage(QImage,QPoint)), this, SLOT(updatePixmap(QImage,QPoint)));
+	m_pitch[visId].reset(new PitchVis(filepath, this));
+	connect(m_pitch[visId].data(), SIGNAL(renderedImage(QImage,QPoint,int)), this, SLOT(updatePixmap(QImage,QPoint,int)));
 	m_analyzeTimer = startTimer(100);
 }
 
@@ -158,13 +158,14 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 		m_playbackPos += m_playbackInterval.restart();
 		updateMusicPos(m_playbackPos);
 
-	} else if (event->timerId() == m_analyzeTimer && m_pitch) {
+	// FIXME: Only considers first pitchvis
+	} else if (event->timerId() == m_analyzeTimer && m_pitch[0]) {
 		// PitchVis stuff
 		double progress, duration;
 		{
-			QMutexLocker locker(&m_pitch->mutex);
-			progress = m_pitch->getProgress();
-			duration = m_pitch->getDuration();
+			QMutexLocker locker(&m_pitch[0]->mutex);
+			progress = m_pitch[0]->getProgress();
+			duration = m_pitch[0]->getDuration();
 		}
 		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
 		m_duration = std::max(m_duration, duration);
@@ -208,8 +209,10 @@ void NoteGraphWidget::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 
 	// PitchVis pixmap
-	if (!m_pixmap.isNull())
-		painter.drawPixmap(m_pixmapPos, m_pixmap);
+	for (int i = 0; i < MaxPitchVis; ++i) {
+		if (!m_pixmap[i].isNull())
+			painter.drawPixmap(m_pixmapPos[i], m_pixmap[i]);
+	}
 
 	// Octave lines
 	QPen pen; pen.setWidth(1); pen.setColor(QColor("#666"));
@@ -226,12 +229,12 @@ void NoteGraphWidget::paintEvent(QPaintEvent*)
 	}
 }
 
-void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position)
+void NoteGraphWidget::updatePixmap(const QImage &image, const QPoint &position, int visId)
 {
 	// PitchVis sends its renderings here, let's save & draw them
 	// This gets actually called in our own thread by our own event loop (queued connection)
-	m_pixmap = QPixmap::fromImage(image);
-	m_pixmapPos = position;
+	m_pixmap[visId] = QPixmap::fromImage(image);
+	m_pixmapPos[visId] = position;
 	update();
 }
 
@@ -239,12 +242,13 @@ void NoteGraphWidget::updatePitch()
 {
 	// Called whenever pitch needs updating
 	// Note that the scrollbar change signals are connected here, so no need to call this from everywhere
-	if (!m_pitch) return;
+	if (!m_pitch[0]) return;
 	// Find out the viewport
 	int x1, y1, x2, y2;
 	calcViewport(x1, y1, x2, y2);
 	// Ask for a new render
-	m_pitch->paint(x1, 0, x2, height());
+	for (int i = 0; i < MaxPitchVis; ++i)
+		if (m_pitch[i]) m_pitch[i]->paint(x1, 0, x2, height());
 }
 
 void NoteGraphWidget::updateNotes(bool leftToRight)
@@ -287,7 +291,8 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 					n2.begin = pos;
 					n2.end = pos + len;
 					// Try to find optimal pitch
-					if (m_pitch) n2.note = m_pitch->guessNote(pos, pos + len + step, 24);
+					// TODO: Use info also from other pitchvis
+					if (m_pitch[0]) n2.note = m_pitch[0]->guessNote(pos, pos + len + step, 24);
 					// Calculate starting time for the next note
 					pos += (len + step) * (leftToRight ? 1 : -1);
 					// Update NoteLabel geometry
@@ -337,7 +342,8 @@ void NoteGraphWidget::timeCurrent()
 		double begin = px2s(m_seekHandle.curx());
 		double end = px2s(m_seekHandle.curx() + selectedNote()->width());
 		int n = selectedNote()->note().note;
-		if (m_pitch) n = m_pitch->guessNote(begin, end, n);
+		// TODO: Use info also from other pitchvis
+		if (m_pitch[0]) n = m_pitch[0]->guessNote(begin, end, n);
 		op << getNoteLabelId(selectedNote()) << begin << end << n;
 		doOperation(op);
 	}

@@ -102,6 +102,7 @@ protected:
 };
 
 
+const int MaxPitchVis = 2;
 
 class NoteGraphWidget: public NoteLabelManager
 {
@@ -115,7 +116,7 @@ public:
 
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
-	void analyzeMusic(QString filepath);
+	void analyzeMusic(QString filepath, int visId = 0);
 
 	void updateNotes(bool leftToRight = true);
 	void updateMusicPos(qint64 time, bool smoothing = true);
@@ -132,9 +133,9 @@ public slots:
 	void timeSyllable();
 	void timeSentence();
 	void setSeekHandleWrapToViewport(bool state) { m_seekHandle.wrapToViewport = state; }
-	void updatePixmap(const QImage &image, const QPoint &position);
+	void updatePixmap(const QImage &image, const QPoint &position, int visId);
 	void updatePitch();
-	void abortPitch() { if (m_pitch) m_pitch->cancel(); }
+	void abortPitch() { for (int i = 0; i < MaxPitchVis; ++i) if (m_pitch[i]) m_pitch[i]->cancel(); }
 	void scrollToFirstNote();
 	void startNotePixmapUpdates(); ///< Starts creating pixmaps for NoteLabels
 
@@ -162,7 +163,7 @@ private:
 	QPoint m_mouseHotSpot;
 	bool m_seeking;
 	bool m_actionHappened;
-	QScopedPointer<PitchVis> m_pitch;
+	QScopedPointer<PitchVis> m_pitch[MaxPitchVis];
 	SeekHandle m_seekHandle;
 	int m_nextNotePixmap;
 	int m_notePixmapTimer;
@@ -170,8 +171,8 @@ private:
 	int m_playbackTimer;
 	QElapsedTimer m_playbackInterval;
 	qint64 m_playbackPos;
-	QPixmap m_pixmap;
-	QPoint m_pixmapPos;
+	QPixmap m_pixmap[MaxPitchVis];
+	QPoint m_pixmapPos[MaxPitchVis];
 };
 
 
