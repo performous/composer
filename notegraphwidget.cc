@@ -158,14 +158,14 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 		m_playbackPos += m_playbackInterval.restart();
 		updateMusicPos(m_playbackPos);
 
-	// FIXME: Only considers first pitchvis
 	} else if (event->timerId() == m_analyzeTimer && m_pitch[0]) {
 		// PitchVis stuff
-		double progress, duration;
-		{
-			QMutexLocker locker(&m_pitch[0]->mutex);
-			progress = m_pitch[0]->getProgress();
-			duration = m_pitch[0]->getDuration();
+		double progress = 1.0, duration;
+		for (int i = 0; i < MaxPitchVis; ++i) {
+			if (!m_pitch[i]) continue;
+			QMutexLocker locker(&m_pitch[i]->mutex);
+			progress = std::min(progress, m_pitch[i]->getProgress());
+			if (i == 0) duration = m_pitch[i]->getDuration();
 		}
 		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
 		m_duration = std::max(m_duration, duration);
