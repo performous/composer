@@ -146,7 +146,7 @@ void NoteGraphWidget::scrollToFirstNote()
 
 void NoteGraphWidget::analyzeMusic(QString filepath, int visId)
 {
-	m_pitch[visId].reset(new PitchVis(filepath, this));
+	m_pitch[visId].reset(new PitchVis(filepath, this, visId));
 	connect(m_pitch[visId].data(), SIGNAL(renderedImage(QImage,QPoint,int)), this, SLOT(updatePixmap(QImage,QPoint,int)));
 	m_analyzeTimer = startTimer(100);
 }
