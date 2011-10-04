@@ -59,7 +59,7 @@ public:
 
 private:
 	void setupNoteGraph();
-	void setMusic(QString filepath);
+	void setMusic(QString filepath, bool primary = true);
 	bool promptSaving();
 	void saveProject(QString fileName);
 	void exportSong(QString format, QString dialogTitle);
@@ -107,6 +107,7 @@ public slots:
 
 	// Insert menu
 	void on_actionMusicFile_triggered();
+	void on_actionAdditionalMusicFile_triggered();
 	void on_actionLyricsFromFile_triggered();
 	void on_actionLyricsFromClipboard_triggered();
 

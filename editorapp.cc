@@ -69,6 +69,7 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	ui.menuPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
+	ui.actionAdditionalMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionZoomIn->setIcon(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")));
@@ -590,17 +591,19 @@ void EditorApp::on_actionAntiAliasing_toggled(bool checked)
 // Insert menu
 
 
-void EditorApp::setMusic(QString filepath)
+void EditorApp::setMusic(QString filepath, bool primary)
 {
 	ui.valMusicFile->setText(filepath);
-	song->music["EDITOR"] = filepath;
+	song->music[primary ? "EDITOR" : "ADDITIONAL"] = filepath;
 	setWindowModified(true);
 	updateMenuStates();
-	// Metadata is updated when it becomes available (signal)
-	player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
-	noteGraph->updateMusicPos(0, false);
-	// Fire up analyzer
-	noteGraph->analyzeMusic(filepath);
+	if (primary) {
+		// Metadata is updated when it becomes available (signal)
+		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
+		noteGraph->updateMusicPos(0, false);
+		// Fire up analyzer
+		noteGraph->analyzeMusic(filepath);
+	} else noteGraph->analyzeMusic(filepath, 1);
 }
 
 void EditorApp::on_actionMusicFile_triggered()
@@ -612,6 +615,19 @@ void EditorApp::on_actionMusicFile_triggered()
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName); latestPath = finfo.path();
 		setMusic(fileName);
+	}
+}
+
+void EditorApp::on_actionAdditionalMusicFile_triggered()
+{
+	// FIXME: Duplication with on_actionMusicFile_triggered()
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+			latestPath,
+			tr("Music files") + " (*.mp3 *.ogg *.wav *.wma *.flac)");
+
+	if (!fileName.isNull()) {
+		QFileInfo finfo(fileName); latestPath = finfo.path();
+		setMusic(fileName, false);
 	}
 }
 
