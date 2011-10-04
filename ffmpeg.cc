@@ -57,6 +57,12 @@ double FFmpeg::duration() const {
 	return d >= 0.0 ? d : getInf();
 }
 
+// FFMPEG has fluctuating API
+#if LIBAVCODEC_VERSION_INT < ((52<<16)+(64<<8)+0)
+#define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
+#define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
+#endif
+
 void FFmpeg::open() {
 	QMutexLocker l(&s_avcodec_mutex);
 	av_register_all();
@@ -69,7 +75,7 @@ void FFmpeg::open() {
 	for (unsigned int i=0; i<pFormatCtx->nb_streams; i++) {
 		AVCodecContext* cc = pFormatCtx->streams[i]->codec;
 		cc->workaround_bugs = FF_BUG_AUTODETECT;
-		if (audioStream == -1 && cc->codec_type==CODEC_TYPE_AUDIO) audioStream = i;
+		if (audioStream == -1 && cc->codec_type==AVMEDIA_TYPE_AUDIO) audioStream = i;
 	}
 	if (audioStream == -1) throw std::runtime_error("No audio stream found");
 	AVCodecContext* cc = pFormatCtx->streams[audioStream]->codec;
