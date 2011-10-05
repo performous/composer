@@ -21,7 +21,7 @@ Import and export. All tags are not preserved.
 
 Frets on Fire MIDI/INI
 ----------------------
-No support, but both import and export are planned.
+Vocal track import and export.
 
 
 Plain text lyrics
