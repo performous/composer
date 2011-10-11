@@ -11,8 +11,9 @@
 #include <QLabel>
 #include <QSettings>
 
-PitchVis::PitchVis(QString const& filename, QWidget *parent)
-	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(), cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), condition()
+PitchVis::PitchVis(QString const& filename, QWidget *parent, int visId)
+	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(),
+	  cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), m_visId(visId), condition()
 {
 	start(); // Launch the thread
 }
@@ -138,7 +139,7 @@ void PitchVis::renderer() {
 
 		// Rendering
 		// QImage allows drawing in non-main/non-GUI thread
-		QImage image(x2-x1, y2-y1, QImage::Format_RGB32);
+		QImage image(x2-x1, y2-y1, QImage::Format_ARGB32_Premultiplied);
 		NoteGraphWidget *widget = qobject_cast<NoteGraphWidget*>(parent());
 		if (!widget) continue;
 		QSettings settings; // Default QSettings parameters given in main()
@@ -146,8 +147,10 @@ void PitchVis::renderer() {
 
 		{
 			QPainter painter(&image);
+			painter.setCompositionMode(QPainter::CompositionMode_Source);
 			if (aa) painter.setRenderHint(QPainter::Antialiasing);
-			painter.fillRect(image.rect(), QColor(NoteGraphWidget::BGColor)); // Otherwise the image will have all kinds of carbage
+			// Fill the background, otherwise the image will have all kinds of carbage
+			painter.fillRect(image.rect(), QColor(0,0,0,0));
 
 			QPen pen;
 			pen.setWidth(8);
@@ -165,7 +168,10 @@ void PitchVis::renderer() {
 					// TODO: Take y-size into account (change also the paint calls in NoteGraphWidget)
 					int x = widget->s2px(it2->time) - x1;
 					int y = widget->n2px(it2->note);
-					pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
+					if (m_visId == 0)
+						pen.setColor(QColor(32 + 64 * it->channel, clamp<int>(127 + it2->level, 32, 255), 32, 128));
+					else
+						pen.setColor(QColor(clamp<int>(127 + it2->level, 32, 255), 32, 32 + 32 * it->channel, 100));
 					painter.setPen(pen);
 					if (it2 != fragments.begin()) painter.drawLine(oldx, oldy, x, y);
 					oldx = x; oldy = y;
@@ -175,7 +181,7 @@ void PitchVis::renderer() {
 
 		// Send the image
 		// This is actually delivered by the reciever's event loop thread, and not called directly from here
-		emit renderedImage(image, QPoint(x1, y1));
+		emit renderedImage(image, QPoint(x1, y1), m_visId);
 
 		mutex.lock();
 		// If nothing to do, sleep here

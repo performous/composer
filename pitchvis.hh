@@ -32,7 +32,7 @@ public:
 	typedef std::vector<PitchPath> Paths;
 	QMutex mutex;
 
-	PitchVis(QString const& filename, QWidget *parent = NULL);
+	PitchVis(QString const& filename, QWidget *parent = NULL, int visId = 0);
 	~PitchVis() { stop(); wait(); }
 
 	void stop();
@@ -44,7 +44,7 @@ public:
 	int guessNote(double begin, double end, int initial);
 
 signals:
-	void renderedImage(const QImage &image, const QPoint &position);
+	void renderedImage(const QImage &image, const QPoint &position, int visId);
 
 protected:
 	void run(); // Thread runs here
@@ -64,5 +64,6 @@ private:
 	bool restart;  ///< Should we start the rendering again?
 	QWaitCondition condition;
 	int m_x1, m_y1, m_x2, m_y2;
+	int m_visId;
 };
 

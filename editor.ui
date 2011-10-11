@@ -448,6 +448,7 @@
      <string>&amp;Insert</string>
     </property>
     <addaction name="actionMusicFile"/>
+    <addaction name="actionAdditionalMusicFile"/>
     <addaction name="separator"/>
     <addaction name="actionLyricsFromFile"/>
     <addaction name="actionLyricsFromClipboard"/>
@@ -702,6 +703,11 @@
   <action name="actionAboutQt">
    <property name="text">
     <string>About Qt...</string>
+   </property>
+  </action>
+  <action name="actionAdditionalMusicFile">
+   <property name="text">
+    <string>&amp;Additional music file...</string>
    </property>
   </action>
  </widget>
