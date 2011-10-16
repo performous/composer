@@ -50,10 +50,12 @@ void FoFMIDIWriter::writeMIDI() const {
 			ev.channel = 0;
 			ev.arg1 = 105;   // Special note value for starting a new sentence
 			// End the previous sentence (if not at the beginning)
-			if (sentenceOn) { ev.arg2 = 0; writer.writeEvent(ev); }  // Note OFF
+			if (sentenceOn) {
+				ev.arg2 = 0;
+				writer.writeEvent(ev);
+				ev.timecode = 0;  // Reset time for the next event
+			}  // Note OFF
 			sentenceOn = true;
-			// The same timecode for the rest
-			ev.timecode = 0;
 			// Begin a new one
 			ev.arg2 = 127; writer.writeEvent(ev);  // Note ON
 		}
