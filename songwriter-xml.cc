@@ -100,6 +100,7 @@ void SingStarXMLWriter::writeXML() {
 			ts += pauseLen;
 		}
 	}
+	root.appendChild(sentenceElem);
 
 	// Get the xml data
 	QString xml = doc.toString(4);
