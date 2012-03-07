@@ -52,12 +52,14 @@ void FoFMIDIWriter::writeMIDI() const {
 			// End the previous sentence (if not at the beginning)
 			if (sentenceOn) {
 				ev.arg2 = 0;
-				writer.writeEvent(ev);
+				writer.writeEvent(ev);  // Note OFF
 				ev.timecode = 0;  // Reset time for the next event
-			}  // Note OFF
+			}
 			sentenceOn = true;
 			// Begin a new one
-			ev.arg2 = 127; writer.writeEvent(ev);  // Note ON
+			ev.arg2 = 127;
+			writer.writeEvent(ev);  // Note ON
+			ev.timecode = 0;  // Reset time for the next event
 		}
 		// Write lyric
 		QByteArray bytes = it->syllable.toUtf8();
