@@ -16,7 +16,7 @@ void LRCWriter::writeLRC() const {
 	out << "[ti:" << (s.title.isEmpty() ? "Unknown" : s.title) << "]\n";
 	out << "[ar:" << (s.artist.isEmpty() ? "Unknown" : s.artist) << "]\n";
 	out << "[re:" << PACKAGE << "]\n";
-	if (!s.creator.isEmpty()) out << s.creator << "]\n";
+	if (!s.creator.isEmpty()) out << "[by:" << s.creator << "]\n";
 
 	// Loop through the notes
 	const Notes& notes = s.getVocalTrack().notes;
