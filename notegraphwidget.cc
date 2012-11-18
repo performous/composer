@@ -335,6 +335,14 @@ void NoteGraphWidget::seek(int x)
 	emit seeked(1000 * px2s(x));
 }
 
+void NoteGraphWidget::zoom(float steps, double focalSecs)
+{
+	NoteLabelManager::zoom(steps, focalSecs);
+	// Update seek handle position
+	int x = s2px(m_playbackPos / 1000.0) - m_seekHandle.width() / 2;
+	m_seekHandle.move(x, 0);
+}
+
 void NoteGraphWidget::timeCurrent()
 {
 	if (selectedNote()) {

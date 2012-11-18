@@ -62,7 +62,7 @@ public:
 
 	void doOperation(const Operation& op, int flags = Operation::NORMAL);
 
-	void zoom(float steps, double focalSecs = -1);
+	virtual void zoom(float steps, double focalSecs = -1);
 	int getZoomLevel() const;
 
 	int s2px(double sec) const;
@@ -122,6 +122,7 @@ public:
 	void updateMusicPos(qint64 time, bool smoothing = true);
 	void stopMusic();
 	void seek(int x);
+	void zoom(float steps, double focalSecs = -1);
 
 	VocalTrack getVocalTrack() const;
 	QString getCurrentSentence() const;
