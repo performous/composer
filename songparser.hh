@@ -45,6 +45,11 @@ class SongParser {
 	void iniParseField(QString const& line);
 	void midParse();
 
+    //SoramimiTXT
+    void smmParse();
+    bool smmNoteParse(QString line);
+    int convertTimeToBpm(int bpm,QString time);
+
 	// FIXME: Dummy funcs
 	static bool smCheck(QString const& data) { (void)data; return false; }
 	void smParse() { }

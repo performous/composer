@@ -346,7 +346,7 @@ void EditorApp::on_actionOpen_triggered()
 			tr("UltraStar TXT") + " (*.txt);;" +
 			tr("All files") + " (*)");
 
-	if (!fileName.isNull()) openFile(fileName);
+    if (!fileName.isNull()) openFile(fileName);
 }
 
 void EditorApp::openFile(QString fileName)
@@ -606,6 +606,7 @@ void EditorApp::setMusic(QString filepath, bool primary)
 	} else noteGraph->analyzeMusic(filepath, 1);
 }
 
+
 void EditorApp::on_actionMusicFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
@@ -684,6 +685,13 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 	}
 }
 
+void EditorApp::on_actionLyrics_from_soramimifile_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+            latestPath,
+            tr("SoramimiTxtFiles") + " (*.txt)");
+    openFile(fileName);
+}
 
 
 // View menu
@@ -1071,3 +1079,4 @@ void Piano::mouseMoveEvent(QMouseEvent *event)
 {
 	updatePixmap(NULL);
 }
+
