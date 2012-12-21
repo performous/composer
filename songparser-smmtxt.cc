@@ -62,6 +62,16 @@ bool SongParser::smmNoteParse(QString line)
                     nextChar = line.at(linecounter).toLatin1();
                     //now we've got the starttime as string seperated by :
                 }
+                if(line.at(linecounter+1) == '\0') //see if we' re at the end of the line
+                {
+                    Note e;
+                    e.type = Note::SLEEP; //add sleep note to mark end of line
+                    e.note = 0;
+                    e.begin = convertSMMTimestampToDouble(noteTimeBegin);
+                    e.end = e.begin;
+                    notes.push_back(e);
+                    return false;
+                }
             }
              else if(line[linecounter] == ']') //confirm end of time indication
             {
