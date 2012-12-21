@@ -30,7 +30,7 @@ bool SongParser::smmNoteParse(QString line)
 {
     if (line.isEmpty())
     {
-        return true;
+        return false;
     }
 
     int j = 0;
