@@ -3,7 +3,6 @@
 #include <iostream>
 
 
-const int bpm = 6000; //this way we'll have 100 bpm every second, so 1bpm every milisecond!
 VocalTrack vocal(TrackName::LEAD_VOCAL);
 Notes& notes = vocal.notes;
 
@@ -11,7 +10,6 @@ void SongParser::smmParse()
 {
     QString line;
     while (getline(line) && smmNoteParse(line)) {}
-    m_song.bpm = bpm;
     m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
 
     if (!notes.empty()) {
@@ -80,17 +78,17 @@ bool SongParser::smmNoteParse(QString line)
                                 but we start a different counter because the end time
                                 of one note is the start time of the following exept for the last note in the line*/
                    }
-                    n.begin = convertTimeToBpm(bpm,noteTimeBegin);
-                    n.end = convertTimeToBpm(bpm, noteTimeEnd);
+                    n.begin = convertSMMTimestampToDouble(noteTimeBegin);
+                    n.end = convertSMMTimestampToDouble(noteTimeEnd);
                     notes.push_back(n);
 
                     if(line.at(j+1) == '\0') //see if we' re at the end of the line
                     {
 
                         Note e;
-                        e.type = Note::SLEEP;
+                        e.type = Note::SLEEP; //add sleep note to mark end of line
                         e.note = 0;
-                        e.begin = convertTimeToBpm(bpm,noteTimeEnd);
+                        e.begin = convertSMMTimestampToDouble(noteTimeEnd);
                         e.end = e.begin;
                         notes.push_back(e);
                         return true;
@@ -106,23 +104,23 @@ bool SongParser::smmNoteParse(QString line)
 
 }
 
-int SongParser::convertTimeToBpm(int bpm, QString time)
+double  SongParser::convertSMMTimestampToDouble(QString timeStamp)
 {
-    int beats = 0;
-    char Minutes [2];
-    Minutes [0] = time.at(0).toLatin1();
-    Minutes [1] = time.at(1).toLatin1();
-    int minutes = atoi(Minutes);
-    beats += (bpm * minutes);
-    char Seconds [2];
-    Seconds [0] = time.at(3).toLatin1();
-    Seconds [1] = time.at(4).toLatin1();
-    int seconds = atoi(Seconds);
-    beats += ((bpm/60)*seconds);
-    char MiliSeconds [2];
-    MiliSeconds [0] = time.at(6).toLatin1();
-    MiliSeconds [1] = time.at(7).toLatin1();
-    int miliseconds = atoi(MiliSeconds);
-    beats += ((bpm/6000)*miliseconds);
-    return beats;
+    double append = 0;
+    char minutes [2];
+    char seconds [2];
+    char miliseconds[2];
+    minutes[0] = timeStamp.at(0).toLatin1();
+    minutes[1] = timeStamp.at(1).toLatin1();
+    seconds[0] = timeStamp.at(3).toLatin1();
+    seconds[1] = timeStamp.at(4).toLatin1();
+    miliseconds[0] = timeStamp.at(6).toLatin1();
+    miliseconds[1] = timeStamp.at(7).toLatin1();
+    int Min = atoi(minutes);
+    int Sec = atoi(seconds);
+    int Mil = atoi(miliseconds);
+    append += (Min*60);
+    append += (Sec);
+    append += (Mil/100);
+    return append;
 }
