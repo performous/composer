@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
+int linecounter = 0;
 
 VocalTrack vocal(TrackName::LEAD_VOCAL);
 Notes& notes = vocal.notes;
@@ -9,7 +10,11 @@ Notes& notes = vocal.notes;
 void SongParser::smmParse()
 {
     QString line;
-    while (getline(line) && smmNoteParse(line)) {}
+    while(getline(line))
+    {
+    linecounter = 0;
+    while (smmNoteParse(line)) {}
+    }
     m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
 
     if (!notes.empty()) {
@@ -24,9 +29,9 @@ void SongParser::smmParse()
 
 bool SongParser::smmNoteParse(QString line)
 {
-    int i = 0;
+
     int j = 0;
-    int sizeofLine = sizeof(line);
+    int sizeofLine = line.count();
     char nextChar;
     Note n;
     if (line.isEmpty()) return true;
@@ -41,38 +46,41 @@ bool SongParser::smmNoteParse(QString line)
         QString noteTimeEnd = "";
         QString noteText;
         n.type =  Note::NORMAL;
-        while(i<sizeofLine)
+        while(linecounter<sizeofLine)
         {
-            if(line[i] == '[')
+            if(line[linecounter] == '[')
             {
-                i++;
-                nextChar = line.at(i).toLatin1();
+                linecounter++;
+                nextChar = line.at(linecounter).toLatin1();
                 while(nextChar != ']')
                 {
                     noteTimeBegin+=nextChar;
-                    i++;
-                    nextChar = line.at(i).toLatin1();
+                    linecounter++;
+                    nextChar = line.at(linecounter).toLatin1();
                     //now we've got the starttime as string seperated by :
                 }
             }
-             else if(line[i] == ']') //confirm end of time indication
+             else if(line[linecounter] == ']') //confirm end of time indication
             {
-                    i++;
-                    while(nextChar != '[')
+                    linecounter++;
+                    nextChar = line.at(linecounter).toLatin1();
+                    do
                     {
                         noteText+=nextChar;
-                        i++;
-                        nextChar = line.at(i).toLatin1();
-                        //now we've got the note text as string;
-                        n.syllable = noteText;
+                        linecounter++;
+                        nextChar = line.at(linecounter).toLatin1();
+
                     }
-                    j = i;
+                    while(nextChar != '[');
+
+                    n.syllable = noteText; //now we've got the note text as string;
+                    j = linecounter;
                     j++;
                     nextChar = line.at(j).toLatin1();
                     while(nextChar != ']')
                     {
                     noteTimeEnd+=nextChar;
-                    i++;
+                    j++;
                     nextChar = line.at(j).toLatin1();
                                 /*now we've got the endtime as string seperated by :
                                 but we start a different counter because the end time
@@ -91,10 +99,10 @@ bool SongParser::smmNoteParse(QString line)
                         e.begin = convertSMMTimestampToDouble(noteTimeEnd);
                         e.end = e.begin;
                         notes.push_back(e);
-                        return true;
+                        return false;
                     }
 
-
+             return true;
             }
          }
 
