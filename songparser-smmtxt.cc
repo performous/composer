@@ -15,7 +15,6 @@ void SongParser::smmParse()
     linecounter = 0;
     while (smmNoteParse(line)) {}
     }
-    m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
 
     if (!notes.empty()) {
         vocal.beginTime = notes.front().begin;
@@ -29,12 +28,16 @@ void SongParser::smmParse()
 
 bool SongParser::smmNoteParse(QString line)
 {
+    if (line.isEmpty())
+    {
+        return true;
+    }
 
     int j = 0;
     int sizeofLine = line.count();
     char nextChar;
     Note n;
-    if (line.isEmpty()) return true;
+    n.note = 5;
     if (line[0] != '[')
     {
         throw std::runtime_error("not a soramimi file!");
@@ -127,8 +130,9 @@ double  SongParser::convertSMMTimestampToDouble(QString timeStamp)
     int Min = atoi(minutes);
     int Sec = atoi(seconds);
     int Mil = atoi(miliseconds);
+    double milisec = (double) Mil;
     append += (Min*60);
     append += (Sec);
-    append += (Mil/100);
+    append += (milisec/100);
     return append;
 }
