@@ -344,6 +344,7 @@ void EditorApp::on_actionOpen_triggered()
 			tr("SingStar XML") + " (*.xml);;" +
 			tr("Frets on Fire MIDI") + " (*.mid *.ini);;" +
 			tr("UltraStar TXT") + " (*.txt);;" +
+            tr("SoramimiTXT") + " (*.txt);;" +
 			tr("All files") + " (*)");
 
     if (!fileName.isNull()) openFile(fileName);

@@ -15,7 +15,7 @@ class SongParser {
 	SongParser(Song& s);
 
 	static bool looksLikeSongFile(QString const& data) {
-		return txtCheck(data) || xmlCheck(data) || iniCheck(data) || smCheck(data);
+        return txtCheck(data) || xmlCheck(data) || iniCheck(data) || smCheck(data) || smmTxtCheck(data);
 	}
 
   private:
@@ -49,6 +49,7 @@ class SongParser {
     void smmParse();
     bool smmNoteParse(QString line);
     double convertSMMTimestampToDouble(QString timeStamp);
+    static bool smmTxtCheck(QString const& data);
 
 
 	// FIXME: Dummy funcs

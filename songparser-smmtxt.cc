@@ -9,6 +9,7 @@ Notes& notes = vocal.notes;
 
 void SongParser::smmParse()
 {
+    notes.clear();
     QString line;
     while(getline(line))
     {
@@ -145,4 +146,8 @@ double  SongParser::convertSMMTimestampToDouble(QString timeStamp)
     append += (Sec);
     append += (milisec/100);
     return append;
+}
+bool  SongParser::smmTxtCheck(QString const& data)
+{
+    return data[0] == '[';
 }

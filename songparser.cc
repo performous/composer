@@ -46,10 +46,7 @@ SongParser::SongParser(Song& s):
 	else if (xmlCheck(data)) type = XML;
 	else if (iniCheck(data)) type = INI;
 	else if (midiCheck(data)) type = MIDI;
-    else
-    {
-        type = SMMTXT;
-    }
+    else if (smmTxtCheck(data)) type = SMMTXT;
 
 	m_stream.setString(&data);
 
