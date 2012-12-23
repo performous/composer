@@ -161,4 +161,4 @@ void SongParser::finalize() {
 		// Add song beat markers
 		for (unsigned ts = 0; ts < m_tsEnd; ts += m_tsPerBeat) m_song.beats.push_back(tsTime(ts));
 	}
-}
+}\
