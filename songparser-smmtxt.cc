@@ -17,7 +17,6 @@ void SongParser::smmParse()
     while (smmNoteParse(line)) {}
     }
 
-     while (smmNoteParse(line)) {} //fix to get the last sentence parsed even if there is no empty line after it.
 
     if (!notes.empty()) {
         vocal.beginTime = notes.front().begin;
