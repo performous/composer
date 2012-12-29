@@ -7,6 +7,11 @@ int linecounter = 0;
 VocalTrack vocal(TrackName::LEAD_VOCAL);
 Notes& notes = vocal.notes;
 
+bool  SongParser::smmTxtCheck(QString const& data)
+{
+	return data[0] == '[';
+}
+
 void SongParser::smmParse()
 {
 	notes.clear();
@@ -147,9 +152,4 @@ double  SongParser::convertSMMTimestampToDouble(QString timeStamp)
 	append += (Sec);
 	append += (milisec/100);
 	return append;
-}
-
-bool  SongParser::smmTxtCheck(QString const& data)
-{
-	return data[0] == '[';
 }
