@@ -46,7 +46,8 @@ SongParser::SongParser(Song& s):
 	else if (xmlCheck(data)) type = XML;
 	else if (iniCheck(data)) type = INI;
 	else if (midiCheck(data)) type = MIDI;
-    else if (smmTxtCheck(data)) type = SMMTXT;
+	else if (smmTxtCheck(data)) type = SMMTXT;
+	else throw SongParserException("Does not look like a song file (wrong header)", 1, true);
 
 	m_stream.setString(&data);
 
