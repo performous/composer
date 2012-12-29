@@ -110,6 +110,7 @@ public slots:
 	void on_actionAdditionalMusicFile_triggered();
 	void on_actionLyricsFromFile_triggered();
 	void on_actionLyricsFromClipboard_triggered();
+    void on_actionLyrics_from_soramimifile_triggered();
 
 	// View menu
 	void on_actionZoomIn_triggered();
@@ -135,6 +136,7 @@ public slots:
 
 protected:
 	void closeEvent(QCloseEvent *event);
+
 
 private:
 	Ui::EditorApp ui;
