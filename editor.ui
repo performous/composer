@@ -452,7 +452,7 @@
     <addaction name="separator"/>
     <addaction name="actionLyricsFromFile"/>
     <addaction name="actionLyricsFromClipboard"/>
-    <addaction name="actionLyrics_from_soramimifile"/>
+    <addaction name="actionLyricsFromSoramimiFile"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -711,9 +711,9 @@
     <string>&amp;Additional music file...</string>
    </property>
   </action>
-  <action name="actionLyrics_from_soramimifile">
+  <action name="actionLyricsFromSoramimiFile">
    <property name="text">
-    <string>Lyrics from soramimifile</string>
+    <string>Lyrics from Soramimi file</string>
    </property>
   </action>
  </widget>

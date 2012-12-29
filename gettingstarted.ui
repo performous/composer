@@ -210,7 +210,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Soramimi is old karaoke software that is mostly used at anime conventions around the Netherlands, it hasn´t been updated since 2003 and development has ceased.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Insert Soramimi Timecodes</string>
+         <string>Insert Soramimi timecodes</string>
         </property>
        </widget>
       </item>

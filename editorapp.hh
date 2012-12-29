@@ -110,7 +110,7 @@ public slots:
 	void on_actionAdditionalMusicFile_triggered();
 	void on_actionLyricsFromFile_triggered();
 	void on_actionLyricsFromClipboard_triggered();
-    void on_actionLyrics_from_soramimifile_triggered();
+	void on_actionLyricsFromSoramimiFile_triggered();
 
 	// View menu
 	void on_actionZoomIn_triggered();

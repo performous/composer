@@ -53,9 +53,9 @@ public slots:
 	void on_cmdExport_clicked(bool) {
 		m_editorApp->showExportMenu();
 	}
-    void on_cmdSoramimi_clicked(bool checked){
-      m_editorApp->on_actionLyrics_from_soramimifile_triggered();
-    }
+	void on_cmdSoramimi_clicked(bool) {
+		m_editorApp->on_actionLyricsFromSoramimiFile_triggered();
+	}
 
 protected:
 	void closeEvent(QCloseEvent*) {
