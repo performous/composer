@@ -2,10 +2,11 @@
 #include <stdexcept>
 #include <iostream>
 
-int linecounter = 0;
-
-VocalTrack vocal(TrackName::LEAD_VOCAL);
-Notes& notes = vocal.notes;
+namespace {
+	int linecounter = 0;
+	VocalTrack vocal(TrackName::LEAD_VOCAL);
+	Notes& notes = vocal.notes;
+}
 
 bool  SongParser::smmTxtCheck(QString const& data)
 {
