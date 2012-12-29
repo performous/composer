@@ -23,7 +23,6 @@ void SongParser::smmParse()
 		while (smmNoteParse(line)) {}
 	}
 
-
 	if (!notes.empty()) {
 		vocal.beginTime = notes.front().begin;
 		vocal.endTime = notes.back().end;
@@ -31,8 +30,6 @@ void SongParser::smmParse()
 		m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
 	} else throw std::runtime_error(QT_TR_NOOP("Couldn't find any notes"));
 }
-
-
 
 bool SongParser::smmNoteParse(QString line)
 {
@@ -133,7 +130,7 @@ bool SongParser::smmNoteParse(QString line)
 
 }
 
-// This function needs serious refactoring
+// FIXME: This function needs serious refactoring
 double SongParser::convertSMMTimestampToDouble(QString timeStamp)
 {
 	double append = 0;
