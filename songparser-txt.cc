@@ -10,7 +10,7 @@ using namespace SongParserUtil;
 
 /// 'Magick' to check if this file looks like correct format
 bool SongParser::txtCheck(QString const& data) {
-    return data[0] == '#' && data[1] >= 'A' && data[1] <= 'Z';
+	return data[0] == '#' && data[1] >= 'A' && data[1] <= 'Z';
 }
 
 /// Parser
