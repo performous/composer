@@ -132,21 +132,15 @@ bool SongParser::smmNoteParse(QString line)
 
 double SongParser::convertSMMTimestampToDouble(QString timeStamp)
 {
-    bool ok = false;
-    timeStamp.replace(QString(":"), QString("."));
-    QString minutes = timeStamp.mid(0,2);
-    QString seconds = timeStamp.mid(3,5);
-    double Min = minutes.toDouble(&ok);
-    if(!ok)
-    {
-        throw std::runtime_error("double conversion went wrong");
-    }
-    double Sec = seconds.toDouble(&ok);
-    if(!ok)
-    {
-        throw std::runtime_error("double conversion went wrong");
-    }
-    double append = Min*60;
-    append +=Sec;
-    return append;
+	bool ok = false;
+	timeStamp.replace(QString(":"), QString("."));
+	QString minutes = timeStamp.mid(0,2);
+	QString seconds = timeStamp.mid(3,5);
+	double min = minutes.toDouble(&ok);
+	if (!ok) throw std::runtime_error("double conversion went wrong");
+	double sec = seconds.toDouble(&ok);
+	if (!ok) throw std::runtime_error("double conversion went wrong");
+	double append = min * 60;
+	append += sec;
+	return append;
 }
