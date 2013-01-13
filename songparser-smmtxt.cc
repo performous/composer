@@ -45,7 +45,7 @@ bool SongParser::smmNoteParse(QString line)
 	n.note = 5;
 	if (line[0] != '[')
 	{
-		throw std::runtime_error("not a soramimi file!");
+		throw std::runtime_error("Unexpected character at line start");
 		return false;
 	}
 	else
@@ -137,9 +137,9 @@ double SongParser::convertSMMTimestampToDouble(QString timeStamp)
 	QString minutes = timeStamp.mid(0,2);
 	QString seconds = timeStamp.mid(3,5);
 	double min = minutes.toDouble(&ok);
-	if (!ok) throw std::runtime_error("double conversion went wrong");
+	if (!ok) throw std::runtime_error("Invalid timestamp");
 	double sec = seconds.toDouble(&ok);
-	if (!ok) throw std::runtime_error("double conversion went wrong");
+	if (!ok) throw std::runtime_error("Invalid timestamp");
 	double append = min * 60;
 	append += sec;
 	return append;
