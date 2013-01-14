@@ -24,6 +24,11 @@ Frets on Fire MIDI/INI
 Vocal track import and export.
 
 
+Timecoded LRC / Soramimi lyrics
+-------------------------------
+LRC is a popular karaoke format, which has many variations. Soramimi is an old karaoke software, which uses a similar format. Composer can import the timing data but the format has no way of expressing pitch. We attempt to support reading the timecodes in many different syntaxes, including per-word timing. For maximum compatibility, exporting LRC will use the simple format, which has one time per sentence - thus import-export is a lossy operation. Some "ID Tags" are supported.
+
+
 Plain text lyrics
 -----------------
 Raw lyrics without any timing data can be read from a file or copied from clipboard. A note is created for each word and a line break indicates sentence end.

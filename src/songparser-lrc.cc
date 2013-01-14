@@ -3,7 +3,11 @@
 #include <iostream>
 #include <QRegExp>
 
-// TODO: Parse LRC header tags: http://en.wikipedia.org/wiki/LRC_(file_format)
+// LRC has many variations: http://en.wikipedia.org/wiki/LRC_(file_format)
+// We also support Soramimi format, which differs as follows:
+//   * Per word timing, [] instead of <> (in contrast to "Enhanced LRC")
+//   * Centisecond separator is ':' instead of '.'
+
 
 namespace {
 	int linecounter = 0;
@@ -11,13 +15,11 @@ namespace {
 	Notes& notes = vocal.notes;
 }
 
-bool  SongParser::lrcCheck(QString const& data)
-{
+bool SongParser::lrcCheck(QString const& data) {
 	return data[0] == '[';
 }
 
-void SongParser::lrcParse()
-{
+void SongParser::lrcParse() {
 	notes.clear();
 	QString line;
 	while(getline(line)) {
@@ -45,12 +47,8 @@ void SongParser::lrcParse()
 	} else throw std::runtime_error(QT_TR_NOOP("Couldn't find any notes"));
 }
 
-bool SongParser::lrcNoteParse(QString line)
-{
-	if (line.isEmpty())
-	{
-		return false;
-	}
+bool SongParser::lrcNoteParse(QString line) {
+	if (line.isEmpty()) return false;
 
 	int j = 0;
 	int sizeofLine = line.count();
@@ -143,8 +141,7 @@ bool SongParser::lrcNoteParse(QString line)
 
 }
 
-double SongParser::convertLRCTimestampToDouble(QString timeStamp)
-{
+double SongParser::convertLRCTimestampToDouble(QString timeStamp) {
 	bool ok = false;
 	// This replacing is also LRC <-> Soramimi compatibility
 	timeStamp.replace(QString(":"), QString("."));
