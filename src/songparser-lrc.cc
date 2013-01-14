@@ -22,7 +22,7 @@ bool SongParser::lrcCheck(QString const& data) {
 void SongParser::lrcParse() {
 	notes.clear();
 	QString line;
-	while(getline(line)) {
+	while (getline(line)) {
 		linecounter = 0;
 		// LRC header tags
 		if (line.startsWith("[ar:", Qt::CaseInsensitive)) {
@@ -32,6 +32,9 @@ void SongParser::lrcParse() {
 		} else if (line.startsWith("[by:", Qt::CaseInsensitive)) {
 			m_song.creator = line.mid(4).trimmed().remove(QRegExp("\\]$"));
 		// TODO: Gap, [offset: ?
+		} else if (line.length() >= 2 && line[1].isLetter()) {
+			// Skip unknown header tags
+			continue;
 		} else { // Note parsing
 			// These replacements are compatibility between Soramimi and "enhanced" LRC
 			line.replace("<", "[").replace(">", "]");
