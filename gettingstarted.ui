@@ -205,12 +205,12 @@
        </widget>
       </item>
       <item row="2" column="5">
-       <widget class="QCommandLinkButton" name="cmdSoramimi">
+       <widget class="QCommandLinkButton" name="cmdLRC">
         <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Soramimi is old karaoke software that is mostly used at anime conventions around the Netherlands, it hasn´t been updated since 2003 and development has ceased.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>LRC is a popular karaoke format with timing information, but no pitch. Soramimi is an old abandoned karaoke software using a similar format.</string>
         </property>
         <property name="text">
-         <string>Insert Soramimi timecodes</string>
+         <string>Insert LRC/Soramimi timecodes</string>
         </property>
        </widget>
       </item>

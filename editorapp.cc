@@ -344,7 +344,7 @@ void EditorApp::on_actionOpen_triggered()
 			tr("SingStar XML") + " (*.xml);;" +
 			tr("Frets on Fire MIDI") + " (*.mid *.ini);;" +
 			tr("UltraStar TXT") + " (*.txt);;" +
-			tr("Soramimi TXT") + " (*.txt);;" +
+			tr("LRC") + " (*.lrc);;" +
 			tr("All files") + " (*)");
 
 	if (!fileName.isNull()) openFile(fileName);
@@ -686,11 +686,11 @@ void EditorApp::on_actionLyricsFromClipboard_triggered()
 	}
 }
 
-void EditorApp::on_actionLyricsFromSoramimiFile_triggered()
+void EditorApp::on_actionLyricsFromLRCFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
 		latestPath,
-		tr("Soramimi TXT files") + " (*.txt)");
+		tr("LRC/Soramimi timecodes") + " (*.lrc *.txt)");
 	openFile(fileName);
 }
 

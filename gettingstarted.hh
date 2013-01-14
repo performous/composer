@@ -53,8 +53,8 @@ public slots:
 	void on_cmdExport_clicked(bool) {
 		m_editorApp->showExportMenu();
 	}
-	void on_cmdSoramimi_clicked(bool) {
-		m_editorApp->on_actionLyricsFromSoramimiFile_triggered();
+	void on_cmdLRC_clicked(bool) {
+		m_editorApp->on_actionLyricsFromLRCFile_triggered();
 	}
 
 protected:
