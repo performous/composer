@@ -19,9 +19,10 @@ void SongParser::lrcParse()
 {
 	notes.clear();
 	QString line;
-	while(getline(line))
-	{
+	while(getline(line)) {
 		linecounter = 0;
+		// These replacements are compatibility between Soramimi and "enhanced" LRC
+		line.replace("<", "[").replace(">", "]");
 		while (lrcNoteParse(line)) {}
 	}
 
