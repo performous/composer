@@ -5,19 +5,13 @@ set(PROJECT_VERSION "1.0+")
 #FIXME: Changes in version number or project name must manually also be put to:
 #       platform/mingw-cross-env/makeinstaller.py
 
-set(EXENAME ${CMAKE_PROJECT_NAME})
-if(UNIX)
-	# On UNIX, binary name is lowercase with no spaces
-	string(TOLOWER ${EXENAME} EXENAME)
-	string(REPLACE " " "-" EXENAME ${EXENAME})
-endif()
-
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 include(platform/packaging.cmake)
 
@@ -48,29 +42,8 @@ else(Phonon_FOUND)
 	list(APPEND LIBS ${QT_LIBRARIES})
 endif(Phonon_FOUND)
 
-# Headers that need MOC need to be defined separately
-file(GLOB MOC_HEADER_FILES src/editorapp.hh src/notelabel.hh src/notegraphwidget.hh src/textcodecselector.hh src/gettingstarted.hh src/pitchvis.hh src/synth.hh)
-
-file(GLOB SOURCE_FILES "src/*.cc")
-file(GLOB HEADER_FILES "src/*.hh")
-file(GLOB RESOURCE_FILES "*.qrc")
-file(GLOB UI_FILES "ui/*.ui")
-file(GLOB LANG_FILES "lang/*.ts")
-
-QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
-QT4_ADD_TRANSLATION(TRANSLATIONS ${LANG_FILES})
-QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
-QT4_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
-
-# Generate config.hh
-configure_file("${CMAKE_SOURCE_DIR}/src/config.cmake.hh" "${CMAKE_BINARY_DIR}/config.hh" @ONLY)
-
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_SOURCE_DIR})
-
-
-add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
-target_link_libraries(${EXENAME} ${LIBS})
+# Sources
+add_subdirectory(src)
 
 # We don't currently have any assets, so on Windows, we just install to the root installation folder
 if(UNIX)
