@@ -148,9 +148,9 @@ double SongParser::convertLRCTimestampToDouble(QString timeStamp) {
 	QString minutes = timeStamp.mid(0,2);
 	QString seconds = timeStamp.mid(3,5);
 	double min = minutes.toDouble(&ok);
-	if (!ok) throw std::runtime_error("Invalid timestamp");
+	if (!ok) throw std::runtime_error("Invalid minutes in timestamp " + timeStamp.toStdString());
 	double sec = seconds.toDouble(&ok);
-	if (!ok) throw std::runtime_error("Invalid timestamp");
+	if (!ok) throw std::runtime_error("Invalid seconds in timestamp " + timeStamp.toStdString());
 	double append = min * 60;
 	append += sec;
 	return append;
