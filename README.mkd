@@ -1,0 +1,19 @@
+Composer
+========
+
+Composer is a song editor for creating (and converting) notes for music games in various formats. It attempts to make the process easy by automating as much as possible while providing a simple and attractive interface to do the remaining manual work.
+
+Homepage: http://performous.org/composer
+
+Features
+--------
+
+* Song pitch analysis based on the esteemed algorithms from Perfomous.
+* Zoomable interface to quickly get an overview or doing very precise timing.
+* Possibility to synthesize the notes to get a feel of their "sound".
+* Import/export in various formats including:
+	- SingStar XML
+	- UltraStar TXT
+	- Frets on Fire MIDI
+	- LRC
+
