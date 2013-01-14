@@ -9,10 +9,6 @@
 //   * Centisecond separator is ':' instead of '.'
 
 
-namespace {
-	int linecounter = 0;
-}
-
 bool SongParser::lrcCheck(QString const& data) {
 	return data[0] == '[';
 }
@@ -23,7 +19,6 @@ void SongParser::lrcParse() {
 	QString line;
 
 	while (getline(line)) {
-		linecounter = 0;
 		// LRC header tags
 		if (line.startsWith("[ar:", Qt::CaseInsensitive)) {
 			m_song.artist = line.mid(4).trimmed().remove(QRegExp("\\]$"));
@@ -38,7 +33,7 @@ void SongParser::lrcParse() {
 		} else { // Note parsing
 			// These replacements are compatibility between Soramimi and "enhanced" LRC
 			line.replace("<", "[").replace(">", "]");
-			while (lrcNoteParse(line, vocal)) {}
+			lrcNoteParse(line, vocal);
 		}
 	}
 
@@ -52,82 +47,56 @@ void SongParser::lrcParse() {
 
 bool SongParser::lrcNoteParse(QString line, VocalTrack& vocal) {
 	if (line.isEmpty()) return false;
+	if (line[0] != '[') throw std::runtime_error("Unexpected character at line start");
 
 	Notes& notes = vocal.notes;
-	int j = 0;
-	int sizeofLine = line.count();
-	char nextChar;
-	Note n;
-	n.note = 5;
-	if (line[0] != '[') {
-		throw std::runtime_error("Unexpected character at line start");
-		return false;
-	} else {
-		QString noteTimeBegin = "";
-		QString noteTimeEnd = "";
-		QString noteText;
-		n.type =  Note::NORMAL;
-		while (linecounter<sizeofLine) {
-			if (line[linecounter] == '[') {
-				linecounter++;
-				nextChar = line.at(linecounter).toLatin1();
-				while (nextChar != ']') {
-					noteTimeBegin+=nextChar;
-					linecounter++;
-					nextChar = line.at(linecounter).toLatin1();
-					//now we've got the starttime as string seperated by :
+	bool parsingTime = true, createNote = false;
+	QString timeStr = "", lyric = "";
+	double time = 0, prevTime = 0;
+	// Start traversing from 1 because we already know 0 is '['
+	for (int i = 1; i < line.length(); ++i) {
+		// Two state parser: either parsing timestamp or lyrics
+		if (parsingTime) {
+			if (line[i].toAscii() == ']') { // Timestamp end
+				parsingTime = false;
+				prevTime = time;
+				time = convertLRCTimestampToDouble(timeStr);
+				timeStr.clear();
+				if (!lyric.isEmpty()) {
+					createNote = true;
+				} else if (!notes.empty()) {
+					// Adjust last sentence's end to fix possible overlaps if there is no line end timestamp
+					notes.back().end = std::min(notes.back().end, time);
 				}
-				if (line.at(linecounter+1) == '\0') { //see if we' re at the end of the line
-					Note e;
-					e.type = Note::SLEEP; //add sleep note to mark end of line
-					e.note = 0;
-					e.begin = convertLRCTimestampToDouble(noteTimeBegin);
-					e.end = e.begin;
-					notes.push_back(e);
-					return false;
-				}
-
-			} else if (line[linecounter] == ']') { // confirm end of time indication
-				linecounter++;
-				nextChar = line.at(linecounter).toLatin1();
-				do {
-					noteText+=nextChar;
-					linecounter++;
-					nextChar = line.at(linecounter).toLatin1();
-				} while (nextChar != '[');
-
-				n.syllable = noteText; //now we've got the note text as string;
-				j = linecounter;
-				j++;
-				nextChar = line.at(j).toLatin1();
-				while (nextChar != ']') {
-					noteTimeEnd+=nextChar;
-					j++;
-					nextChar = line.at(j).toLatin1();
-					/*now we've got the endtime as string seperated by :
-					but we start a different counter because the end time
-					of one note is the start time of the following exept for the last note in the line*/
-				}
-				n.begin = convertLRCTimestampToDouble(noteTimeBegin);
-				n.end = convertLRCTimestampToDouble(noteTimeEnd);
-				notes.push_back(n);
-
-				if (line.at(j+1) == '\0') { //see if we' re at the end of the line
-					Note e;
-					e.type = Note::SLEEP; //add sleep note to mark end of line
-					e.note = 0;
-					e.begin = convertLRCTimestampToDouble(noteTimeEnd);
-					e.end = e.begin;
-					notes.push_back(e);
-					return false;
-				}
-
-				return true;
+			} else { // Accumulate timestamp string
+				timeStr += line[i];
 			}
+		} else { // Lyrics parsing mode
+			if (line[i].toAscii() == '[') parsingTime = true; // Lyric end
+			else lyric += line[i]; // Accumulate lyric string
 		}
 
-		return true;
+		// Create the note
+		if (createNote || i == line.length() - 1) {
+			Note n(lyric);
+			n.begin = prevTime;
+			n.end = time;
+			n.note = 33;
+			notes.push_back(n);
+			lyric.clear();
+			createNote = false;
+		}
 	}
+
+	// Add SLEEP to line end
+	Note n;
+	n.type = Note::SLEEP;
+	n.begin = time;
+	n.end = time;
+	n.note = 33;
+	notes.push_back(n);
+
+	return true;
 }
 
 double SongParser::convertLRCTimestampToDouble(QString timeStamp) {
