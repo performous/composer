@@ -58,32 +58,25 @@ bool SongParser::lrcNoteParse(QString line) {
 	char nextChar;
 	Note n;
 	n.note = 5;
-	if (line[0] != '[')
-	{
+	if (line[0] != '[') {
 		throw std::runtime_error("Unexpected character at line start");
 		return false;
-	}
-	else
-	{
+	} else {
 		QString noteTimeBegin = "";
 		QString noteTimeEnd = "";
 		QString noteText;
 		n.type =  Note::NORMAL;
-		while(linecounter<sizeofLine)
-		{
-			if(line[linecounter] == '[')
-			{
+		while (linecounter<sizeofLine) {
+			if (line[linecounter] == '[') {
 				linecounter++;
 				nextChar = line.at(linecounter).toLatin1();
-				while(nextChar != ']')
-				{
+				while (nextChar != ']') {
 					noteTimeBegin+=nextChar;
 					linecounter++;
 					nextChar = line.at(linecounter).toLatin1();
 					//now we've got the starttime as string seperated by :
 				}
-				if(line.at(linecounter+1) == '\0') //see if we' re at the end of the line
-				{
+				if (line.at(linecounter+1) == '\0') { //see if we' re at the end of the line
 					Note e;
 					e.type = Note::SLEEP; //add sleep note to mark end of line
 					e.note = 0;
@@ -92,26 +85,21 @@ bool SongParser::lrcNoteParse(QString line) {
 					notes.push_back(e);
 					return false;
 				}
-			}
-			else if(line[linecounter] == ']') //confirm end of time indication
-			{
+
+			} else if (line[linecounter] == ']') { // confirm end of time indication
 				linecounter++;
 				nextChar = line.at(linecounter).toLatin1();
-				do
-				{
+				do {
 					noteText+=nextChar;
 					linecounter++;
 					nextChar = line.at(linecounter).toLatin1();
-
-				}
-				while(nextChar != '[');
+				} while (nextChar != '[');
 
 				n.syllable = noteText; //now we've got the note text as string;
 				j = linecounter;
 				j++;
 				nextChar = line.at(j).toLatin1();
-				while(nextChar != ']')
-				{
+				while (nextChar != ']') {
 					noteTimeEnd+=nextChar;
 					j++;
 					nextChar = line.at(j).toLatin1();
@@ -123,8 +111,7 @@ bool SongParser::lrcNoteParse(QString line) {
 				n.end = convertLRCTimestampToDouble(noteTimeEnd);
 				notes.push_back(n);
 
-				if(line.at(j+1) == '\0') //see if we' re at the end of the line
-				{
+				if (line.at(j+1) == '\0') { //see if we' re at the end of the line
 					Note e;
 					e.type = Note::SLEEP; //add sleep note to mark end of line
 					e.note = 0;
@@ -139,9 +126,7 @@ bool SongParser::lrcNoteParse(QString line) {
 		}
 
 		return true;
-
 	}
-
 }
 
 double SongParser::convertLRCTimestampToDouble(QString timeStamp) {
@@ -154,7 +139,5 @@ double SongParser::convertLRCTimestampToDouble(QString timeStamp) {
 	if (!ok) throw std::runtime_error("Invalid minutes in timestamp " + timeStamp.toStdString());
 	double sec = seconds.toDouble(&ok);
 	if (!ok) throw std::runtime_error("Invalid seconds in timestamp " + timeStamp.toStdString());
-	double append = min * 60;
-	append += sec;
-	return append;
+	return min * 60 + sec;
 }
