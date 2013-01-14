@@ -1,6 +1,7 @@
 #include "songwriter.hh"
 #include "config.hh"
 #include "util.hh"
+#include <cmath>
 #include <QTextStream>
 
 
@@ -37,7 +38,9 @@ void LRCWriter::writeLRC() const {
 
 
 QString LRCWriter::sec2timestamp(double sec) const {
-	return QString("[%1:%2]")
+	double modsec = std::fmod(sec, 60.0);
+	return QString("[%1:%2.%3]")
 			.arg(int(sec/60), 2, 10, QChar('0'))
-			.arg(int(sec) % 60, 5, 'f', 2, QChar('0'));
+			.arg(int(modsec), 2, 10, QChar('0'))
+			.arg(int(100 * (modsec - int(modsec))), 2, 10, QChar('0'));
 }
