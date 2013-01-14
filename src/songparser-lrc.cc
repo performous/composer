@@ -11,8 +11,6 @@
 
 namespace {
 	int linecounter = 0;
-	VocalTrack vocal(TrackName::LEAD_VOCAL);
-	Notes& notes = vocal.notes;
 }
 
 bool SongParser::lrcCheck(QString const& data) {
@@ -20,8 +18,10 @@ bool SongParser::lrcCheck(QString const& data) {
 }
 
 void SongParser::lrcParse() {
-	notes.clear();
+	VocalTrack vocal(TrackName::LEAD_VOCAL);
+	Notes& notes = vocal.notes;
 	QString line;
+
 	while (getline(line)) {
 		linecounter = 0;
 		// LRC header tags
@@ -38,7 +38,7 @@ void SongParser::lrcParse() {
 		} else { // Note parsing
 			// These replacements are compatibility between Soramimi and "enhanced" LRC
 			line.replace("<", "[").replace(">", "]");
-			while (lrcNoteParse(line)) {}
+			while (lrcNoteParse(line, vocal)) {}
 		}
 	}
 
@@ -50,9 +50,10 @@ void SongParser::lrcParse() {
 	} else throw std::runtime_error(QT_TR_NOOP("Couldn't find any notes"));
 }
 
-bool SongParser::lrcNoteParse(QString line) {
+bool SongParser::lrcNoteParse(QString line, VocalTrack& vocal) {
 	if (line.isEmpty()) return false;
 
+	Notes& notes = vocal.notes;
 	int j = 0;
 	int sizeofLine = line.count();
 	char nextChar;

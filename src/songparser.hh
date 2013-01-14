@@ -48,7 +48,7 @@ class SongParser {
 	// LRC / Soramimi
 	static bool lrcCheck(QString const& data);
 	void lrcParse();
-	bool lrcNoteParse(QString line);
+	bool lrcNoteParse(QString line, VocalTrack &vocal);
 	double convertLRCTimestampToDouble(QString timeStamp);
 
 	// FIXME: Dummy funcs
