@@ -1,6 +1,7 @@
 #include "songparser.hh"
 #include <stdexcept>
 #include <iostream>
+#include <QRegExp>
 
 // TODO: Parse LRC header tags: http://en.wikipedia.org/wiki/LRC_(file_format)
 
@@ -21,9 +22,19 @@ void SongParser::lrcParse()
 	QString line;
 	while(getline(line)) {
 		linecounter = 0;
-		// These replacements are compatibility between Soramimi and "enhanced" LRC
-		line.replace("<", "[").replace(">", "]");
-		while (lrcNoteParse(line)) {}
+		// LRC header tags
+		if (line.startsWith("[ar:", Qt::CaseInsensitive)) {
+			m_song.artist = line.mid(4).trimmed().remove(QRegExp("\\]$"));
+		} else if (line.startsWith("[ti:", Qt::CaseInsensitive)) {
+			m_song.title = line.mid(4).trimmed().remove(QRegExp("\\]$"));
+		} else if (line.startsWith("[by:", Qt::CaseInsensitive)) {
+			m_song.creator = line.mid(4).trimmed().remove(QRegExp("\\]$"));
+		// TODO: Gap, [offset: ?
+		} else { // Note parsing
+			// These replacements are compatibility between Soramimi and "enhanced" LRC
+			line.replace("<", "[").replace(">", "]");
+			while (lrcNoteParse(line)) {}
+		}
 	}
 
 	if (!notes.empty()) {
