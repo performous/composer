@@ -16,6 +16,7 @@ void LRCWriter::writeLRC() const {
 	out << "[ti:" << (s.title.isEmpty() ? "Unknown" : s.title) << "]\n";
 	out << "[ar:" << (s.artist.isEmpty() ? "Unknown" : s.artist) << "]\n";
 	out << "[re:" << PACKAGE << "]\n";
+	out << "[ve:" << VERSION << "]\n";
 	if (!s.creator.isEmpty()) out << "[by:" << s.creator << "]\n";
 
 	// Loop through the notes
