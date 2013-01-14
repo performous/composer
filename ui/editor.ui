@@ -713,7 +713,7 @@
   </action>
   <action name="actionLyricsFromLRCFile">
    <property name="text">
-    <string>Lyrics from LRC/Soramimi file</string>
+    <string>Timed lyrics from LRC/Soramimi file...</string>
    </property>
   </action>
  </widget>
