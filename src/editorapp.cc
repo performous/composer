@@ -72,6 +72,7 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionAdditionalMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionLyricsFromFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionLyricsFromClipboard->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
+	ui.actionLyricsFromLRCFile->setIcon(QIcon::fromTheme("insert-text", QIcon(":/icons/insert-text.png")));
 	ui.actionZoomIn->setIcon(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")));
 	ui.actionZoomOut->setIcon(QIcon::fromTheme("zoom-out", QIcon(":/icons/zoom-out.png")));
 	ui.actionResetZoom->setIcon(QIcon::fromTheme("zoom-original", QIcon(":/icons/zoom-original.png")));
