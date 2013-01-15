@@ -77,7 +77,7 @@ bool SongParser::lrcNoteParse(QString line, VocalTrack& vocal) {
 		}
 
 		// Create the note
-		if (createNote || i == line.length() - 1) {
+		if ((createNote || i == line.length() - 1) && !lyric.isEmpty()) {
 			Note n(lyric);
 			n.begin = prevTime;
 			n.end = time;
