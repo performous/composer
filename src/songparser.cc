@@ -40,6 +40,8 @@ SongParser::SongParser(Song& s):
 	// Determine encoding
 	QString data = TextCodecSelector::readAllAndHandleEncoding(file);
 	file.close();
+	// Add a newline to the end to make sure our parsing doesn't skip the last line
+	data += "\n";
 
 	if (smCheck(data)) type = SM;
 	else if (txtCheck(data)) type = TXT;

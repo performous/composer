@@ -1,6 +1,5 @@
 #include "songparser.hh"
 #include <stdexcept>
-#include <iostream>
 #include <QRegExp>
 
 // LRC has many variations: http://en.wikipedia.org/wiki/LRC_(file_format)
