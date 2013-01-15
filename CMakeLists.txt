@@ -45,12 +45,3 @@ endif(Phonon_FOUND)
 # Sources
 add_subdirectory(src)
 
-# We don't currently have any assets, so on Windows, we just install to the root installation folder
-if(UNIX)
-	install(TARGETS ${EXENAME} DESTINATION bin)
-	install(FILES "platform/composer.desktop" DESTINATION "share/applications/")
-	install(FILES "icons/composer.png" DESTINATION "share/pixmaps")
-else()
-	install(TARGETS ${EXENAME} DESTINATION .)
-endif()
-

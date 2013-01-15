@@ -32,3 +32,12 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # Final binary
 add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
 target_link_libraries(${EXENAME} ${LIBS})
+
+# We don't currently have any assets, so on Windows, we just install to the root installation folder
+if(UNIX)
+	install(TARGETS ${EXENAME} DESTINATION bin)
+	install(FILES "platform/composer.desktop" DESTINATION "share/applications/")
+	install(FILES "icons/composer.png" DESTINATION "share/pixmaps")
+else()
+	install(TARGETS ${EXENAME} DESTINATION .)
+endif() 
