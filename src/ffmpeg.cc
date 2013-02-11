@@ -22,7 +22,7 @@ public:
 		if (!ptr) throw std::bad_alloc();
 		return ptr;
 	}
-    void deallocate(pointer ptr, size_type) { f(ptr); }*/
+	void deallocate(pointer ptr, size_type) { f(ptr); }*/
 private:
 	void* m(size_t n) { return av_malloc(n); }
 	void f(void* ptr) { av_free(ptr); }
@@ -49,7 +49,7 @@ FFmpeg::~FFmpeg() {
 	// TODO: use RAII for freeing resources (to prevent memory leaks)
 	QMutexLocker l(&s_avcodec_mutex); // avcodec_close is not thread-safe
 	if (pAudioCodecCtx) avcodec_close(pAudioCodecCtx);
-	if (pFormatCtx) av_close_input_file(pFormatCtx);
+	if (pFormatCtx) avformat_close_input(&pFormatCtx);
 }
 
 double FFmpeg::duration() const {
@@ -67,8 +67,8 @@ void FFmpeg::open() {
 	QMutexLocker l(&s_avcodec_mutex);
 	av_register_all();
 	av_log_set_level(AV_LOG_ERROR);
-	if (av_open_input_file(&pFormatCtx, m_filename.c_str(), NULL, 0, NULL)) throw std::runtime_error("Cannot open input file");
-	if (av_find_stream_info(pFormatCtx) < 0) throw std::runtime_error("Cannot find stream information");
+	if (avformat_open_input(&pFormatCtx, m_filename.c_str(), NULL, NULL)) throw std::runtime_error("Cannot open input file");
+	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) throw std::runtime_error("Cannot find stream information");
 	pFormatCtx->flags |= AVFMT_FLAG_GENPTS;
 	audioStream = -1;
 	// Take the first video/audio streams
@@ -82,7 +82,7 @@ void FFmpeg::open() {
 	pAudioCodec = avcodec_find_decoder(cc->codec_id);
 	audioQueue.setRateChannels(cc->sample_rate, cc->channels);
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
-	if (avcodec_open(cc, pAudioCodec) < 0) throw std::runtime_error("Cannot open audio codec");
+	if (avcodec_open2(cc, pAudioCodec, NULL) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;
 }
 
@@ -182,10 +182,10 @@ void FFmpeg::decodeNextFrame() {
 		audioQueue.input(samples, samples + outsize, 1.0 / MAX_VALUE);\
 	}
 				switch (pAudioCodecCtx->sample_fmt) {
-					case SAMPLE_FMT_S16: OUTPUT_SAMPLES(short, 32767.0); break;
-					case SAMPLE_FMT_S32: OUTPUT_SAMPLES(int, 8388607.0); break; // 24 bit samples padded to 32 bits
-					case SAMPLE_FMT_FLT: OUTPUT_SAMPLES(float, 1.0); break;
-					case SAMPLE_FMT_DBL: OUTPUT_SAMPLES(double, 1.0); break;
+					case AV_SAMPLE_FMT_S16: OUTPUT_SAMPLES(short, 32767.0); break;
+					case AV_SAMPLE_FMT_S32: OUTPUT_SAMPLES(int, 8388607.0); break; // 24 bit samples padded to 32 bits
+					case AV_SAMPLE_FMT_FLT: OUTPUT_SAMPLES(float, 1.0); break;
+					case AV_SAMPLE_FMT_DBL: OUTPUT_SAMPLES(double, 1.0); break;
 					default: throw std::runtime_error("Unsupported sample format");
 				}
 #undef OUTPUT_SAMPLES
