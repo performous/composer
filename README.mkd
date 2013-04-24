@@ -8,7 +8,7 @@ Homepage: http://performous.org/composer
 Features
 --------
 
-* Song pitch analysis based on the esteemed algorithms from Perfomous.
+* Song pitch analysis based on the esteemed algorithms from Performous.
 * Zoomable interface to quickly get an overview or doing very precise timing.
 * Possibility to synthesize the notes to get a feel of their "sound".
 * Import/export in various formats including:
