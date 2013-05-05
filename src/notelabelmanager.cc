@@ -62,6 +62,17 @@ void NoteLabelManager::selectAll()
 		selectNote(m_notes[i], false);
 }
 
+void NoteLabelManager::selectAllAfter()
+{
+	if (m_selectedNotes.empty()) return;
+	NoteLabel* first = m_selectedNotes.back();
+	selectNote(NULL); // Clear previous
+	for (int i = m_notes.size()-1; i >= 0; --i) { // Traverse in reverse order to get the first note first
+		selectNote(m_notes[i], false);
+		if (m_notes[i] == first) break;
+	}
+}
+
 void NoteLabelManager::shiftSelect(NoteLabel* note)
 {
 	if (!note || note == selectedNote()) return;

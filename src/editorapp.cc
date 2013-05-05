@@ -67,6 +67,7 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionPaste->setIcon(QIcon::fromTheme("edit-paste", QIcon(":/icons/edit-paste.png")));
 	ui.actionDelete->setIcon(QIcon::fromTheme("edit-delete", QIcon(":/icons/edit-delete.png")));
 	ui.actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
+	ui.actionSelectAllAfter->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	ui.menuPreferences->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
 	ui.actionMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
 	ui.actionAdditionalMusicFile->setIcon(QIcon::fromTheme("insert-object", QIcon(":/icons/insert-object.png")));
@@ -241,6 +242,7 @@ void EditorApp::updateMenuStates()
 	ui.actionDelete->setEnabled(hasSelectedNotes);
 	bool hasNotes = (noteGraph && !noteGraph->noteLabels().isEmpty());
 	ui.actionSelectAll->setEnabled(hasNotes);
+	ui.actionSelectAllAfter->setEnabled(hasSelectedNotes);
 	bool zoom = (noteGraph && noteGraph->getZoomLevel() != 100);
 	ui.actionResetZoom->setEnabled(zoom);
 	// Window title
@@ -580,6 +582,11 @@ void EditorApp::on_actionDelete_triggered()
 void EditorApp::on_actionSelectAll_triggered()
 {
 	if (noteGraph) noteGraph->selectAll();
+}
+
+void EditorApp::on_actionSelectAllAfter_triggered()
+{
+	if (noteGraph) noteGraph->selectAllAfter();
 }
 
 void EditorApp::on_actionAntiAliasing_toggled(bool checked)

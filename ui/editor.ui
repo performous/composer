@@ -429,6 +429,7 @@
     <addaction name="actionDelete"/>
     <addaction name="separator"/>
     <addaction name="actionSelectAll"/>
+    <addaction name="actionSelectAllAfter"/>
     <addaction name="separator"/>
     <addaction name="menuPreferences"/>
    </widget>
@@ -714,6 +715,14 @@
   <action name="actionLyricsFromLRCFile">
    <property name="text">
     <string>Timed lyrics from LRC/Soramimi file...</string>
+   </property>
+  </action>
+  <action name="actionSelectAllAfter">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select all a&amp;fter</string>
    </property>
   </action>
  </widget>

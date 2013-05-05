@@ -103,6 +103,7 @@ public slots:
 	void on_actionRedo_triggered();
 	void on_actionDelete_triggered();
 	void on_actionSelectAll_triggered();
+	void on_actionSelectAllAfter_triggered();
 	void on_actionAntiAliasing_toggled(bool checked);
 
 	// Insert menu

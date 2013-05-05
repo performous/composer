@@ -642,6 +642,9 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 	QAction *actionSelectAll = menuContext.addAction(tr("Select all"));
 	actionSelectAll->setEnabled(!m_notes.isEmpty());
 	actionSelectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
+	QAction *actionSelectAllAfter = menuContext.addAction(tr("Select all after"));
+	actionSelectAllAfter->setEnabled(!m_selectedNotes.isEmpty());
+	actionSelectAllAfter->setIcon(QIcon::fromTheme("edit-select-all", QIcon(":/icons/edit-select-all.png")));
 	QAction *actionDeselect = menuContext.addAction(tr("Deselect"));
 	actionDeselect->setEnabled(!m_selectedNotes.isEmpty());
 
@@ -661,6 +664,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 		else if (sel == actionPaste) paste();
 		else if (sel == actionDelete) del(nl);
 		else if (sel == actionSelectAll) selectAll();
+		else if (sel == actionSelectAllAfter) selectAllAfter();
 		else if (sel == actionDeselect) selectNote(NULL);
 	}
 	menuType.clear();

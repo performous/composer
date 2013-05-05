@@ -41,6 +41,7 @@ public:
 	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	void selectAll();
+	void selectAllAfter();
 	void shiftSelect(NoteLabel *note);
 	void boxSelect(QPoint p1, QPoint p2);
 	NoteLabel* selectedNote() const { return m_selectedNotes.isEmpty() ? NULL : m_selectedNotes.front(); }
