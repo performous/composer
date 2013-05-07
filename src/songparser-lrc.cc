@@ -56,7 +56,7 @@ bool SongParser::lrcNoteParse(QString line, VocalTrack& vocal) {
 	for (int i = 1; i < line.length(); ++i) {
 		// Two state parser: either parsing timestamp or lyrics
 		if (parsingTime) {
-			if (line[i].toAscii() == ']') { // Timestamp end
+			if (line[i].toLatin1() == ']') { // Timestamp end
 				parsingTime = false;
 				prevTime = time;
 				time = convertLRCTimestampToDouble(timeStr);
@@ -71,7 +71,7 @@ bool SongParser::lrcNoteParse(QString line, VocalTrack& vocal) {
 				timeStr += line[i];
 			}
 		} else { // Lyrics parsing mode
-			if (line[i].toAscii() == '[') parsingTime = true; // Lyric end
+			if (line[i].toLatin1() == '[') parsingTime = true; // Lyric end
 			else lyric += line[i]; // Accumulate lyric string
 		}
 

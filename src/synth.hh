@@ -9,7 +9,7 @@
 #include <QWaitCondition>
 #include <QBuffer>
 #include <QFile>
-#include <phonon/MediaObject>
+#include <QMediaPlayer>
 #include "notes.hh"
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
@@ -193,18 +193,17 @@ class BufferPlayer: public QObject
 	Q_DISABLE_COPY(BufferPlayer);
 public:
 	BufferPlayer(QObject *parent): QObject(parent) {
-		m_player = Phonon::createPlayer(Phonon::MusicCategory);
-		m_player->setParent(this);
+		m_player = new QMediaPlayer(this);
 		m_buffer = new QBuffer(this);
 		connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
 	}
 
 	bool play(const QByteArray& ba) {
-		if (m_player->state() != Phonon::PlayingState) {
-			m_player->clear();
-			m_buffer->close();
-			m_buffer->setData(ba);
-			m_player->setCurrentSource(m_buffer);
+		if (m_player->state() != QMediaPlayer::PlayingState) {
+			m_player->stop();
+			//m_buffer->close();
+			//m_buffer->setData(ba);
+			//m_player->setMedia(m_buffer);
 			m_player->play();
 			return true;
 		}
@@ -213,10 +212,10 @@ public:
 
 public slots:
 	void finished() {
-		m_player->clear();
+		m_player->stop();
 	}
 
 private:
 	QBuffer *m_buffer;
-	Phonon::MediaObject *m_player;
+	QMediaPlayer *m_player;
 };

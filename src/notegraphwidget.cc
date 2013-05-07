@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QToolTip>
 #include <QMessageBox>
+#include <QMimeData>
 #include <iostream>
 #include <algorithm>
 #include <cmath>

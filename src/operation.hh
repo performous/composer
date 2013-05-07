@@ -38,7 +38,7 @@ struct Operation
 	// Get Operation parameter at certain index (1-based)
 
 	QString s(int index) const { validate(index); return m_params[index].toString(); }
-	char c(int index) const { validate(index); return m_params[index].toChar().toAscii(); }
+	char c(int index) const { validate(index); return m_params[index].toChar().toLatin1(); }
 	int i(int index) const { validate(index); return m_params[index].toInt(); }
 	unsigned u(int index) const { validate(index); return m_params[index].toUInt(); }
 	bool b(int index) const { validate(index); return m_params[index].toBool(); }

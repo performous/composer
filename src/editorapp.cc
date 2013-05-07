@@ -12,8 +12,8 @@
 #include <QPainter>
 #include <QSettings>
 #include <QTimer>
-#include <phonon/AudioOutput>
-#include <phonon/VideoPlayer>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include <iostream>
 #include "config.hh"
 #include "editorapp.hh"
@@ -45,7 +45,7 @@ namespace {
 }
 
 EditorApp::EditorApp(QWidget *parent)
-	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), video(), synth(), statusbarProgress(),
+	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), synth(), statusbarProgress(),
 	projectFileName(), latestPath(QDir::homePath()), currentBufferPlayer()
 {
 	ui.setupUi(this);
@@ -95,10 +95,9 @@ EditorApp::EditorApp(QWidget *parent)
 	updateMenuStates();
 
 	// Audio stuff
-	player = new Phonon::MediaObject(this);
-	audioOutput = new Phonon::AudioOutput(this);
-	player->setTickInterval(100);
-	Phonon::createPath(player, audioOutput);
+	player = new QMediaPlayer(this);
+	//audioOutput = new QAudioOutput(this);
+	//player->setTickInterval(100);
 	bufferPlayers[0] = new BufferPlayer(this);
 	bufferPlayers[1] = new BufferPlayer(this);
 
@@ -321,7 +320,7 @@ void EditorApp::analyzeProgress(int value, int maximum)
 void EditorApp::on_actionNew_triggered()
 {
 	if (promptSaving()) {
-		player->clear();
+		//player->clear();
 		song.reset(new Song);
 		setupNoteGraph();
 		projectFileName = "";
@@ -608,7 +607,7 @@ void EditorApp::setMusic(QString filepath, bool primary)
 	updateMenuStates();
 	if (primary) {
 		// Metadata is updated when it becomes available (signal)
-		player->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(filepath)));
+		player->setMedia(QMediaContent(QUrl::fromLocalFile(filepath)));
 		noteGraph->updateMusicPos(0, false);
 		// Fire up analyzer
 		noteGraph->analyzeMusic(filepath);
@@ -781,21 +780,21 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 void EditorApp::metaDataChanged()
 {
 	if (player) {
-		if (!player->metaData(Phonon::TitleMetaData).isEmpty())
+		/*if (!player->metaData(Phonon::TitleMetaData).isEmpty())
 			song->title = player->metaData(Phonon::TitleMetaData).join(", ");
 		if (!player->metaData(Phonon::ArtistMetaData).isEmpty())
 			song->artist = player->metaData(Phonon::ArtistMetaData).join(", ");
 		if (!player->metaData(Phonon::GenreMetaData).isEmpty())
 			song->genre = player->metaData(Phonon::GenreMetaData).join(", ");
 		if (!player->metaData("DATE").isEmpty())
-			song->year = player->metaData("DATE").join(", ");
+			song->year = player->metaData("DATE").join(", ");*/
 		updateSongMeta(true);
 	}
 }
 
 void EditorApp::playButton()
 {
-	if (player && player->state() == Phonon::PlayingState) {
+	if (player && player->state() == QMediaPlayer::PlayingState) {
 		ui.cmdPlay->setText(tr("Pause"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause", QIcon(":/icons/media-playback-pause.png")));
 		if (ui.chkSynth->isChecked()) on_chkSynth_clicked(true);
@@ -808,7 +807,7 @@ void EditorApp::playButton()
 
 void EditorApp::on_chkSynth_clicked(bool checked)
 {
-	if (checked && player && player->state() == Phonon::PlayingState) {
+	if (checked && player && player->state() == QMediaPlayer::PlayingState) {
 		synth.reset(new Synth);
 		connect(synth.data(), SIGNAL(playBuffer(QByteArray)), this, SLOT(playBuffer(QByteArray)));
 		if (audioOutput) audioOutput->setVolume(0.66);
@@ -821,11 +820,10 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 void EditorApp::on_cmdPlay_clicked()
 {
 	if (player) {
-		if (player->currentSource().type() == Phonon::MediaSource::Empty
-			|| player->currentSource().type() == Phonon::MediaSource::Invalid) {
+		if (player->currentMedia().isNull()) {
 			on_actionMusicFile_triggered();
 		} else {
-			if (player && player->state() == Phonon::PlayingState) player->pause();
+			if (player && player->state() == QMediaPlayer::PlayingState) player->pause();
 			else player->play();
 		}
 	}
@@ -834,7 +832,7 @@ void EditorApp::on_cmdPlay_clicked()
 void EditorApp::audioTick(qint64 time)
 {
 	if (noteGraph && player)
-		noteGraph->updateMusicPos(time, (player->state() == Phonon::PlayingState ? true : false));
+		noteGraph->updateMusicPos(time, (player->state() == QMediaPlayer::PlayingState ? true : false));
 
 	if (noteGraph && synth) {
 		// Here we create some notes for the synthesizer to use.
@@ -853,17 +851,17 @@ void EditorApp::audioTick(qint64 time)
 	}
 }
 
-void EditorApp::playerStateChanged(Phonon::State newstate, Phonon::State oldstate)
+void EditorApp::playerStateChanged(QMediaPlayer::State newstate, QMediaPlayer::State oldstate)
 {
 	(void)oldstate;
 	playButton();
-	if (newstate != Phonon::PlayingState) {
+	if (newstate != QMediaPlayer::PlayingState) {
 		noteGraph->stopMusic();
-		if (newstate == Phonon::ErrorState) {
+		/*if (newstate == QMediaPlayer::ErrorState) {
 			QString errst(tr("Error playing audio!"));
 			if (player) errst += " " + player->errorString();
 			QMessageBox::critical(this, tr("Playback error"), errst);
-		}
+		}*/
 	} else if (!noteGraph->selectedNote() && !noteGraph->noteLabels().isEmpty())
 		noteGraph->selectNote(noteGraph->noteLabels().front());
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <phonon/MediaObject>
 #include "ui_editor.h"
 #include "ui_aboutdialog.h"
 #include "operation.hh"
@@ -13,11 +12,8 @@ class QCloseEvent;
 class NoteLabel;
 class NoteGraphWidget;
 class GettingStartedDialog;
-namespace Phonon {
-	class MediaObject;
-	class AudioOutput;
-	class VideoPlayer;
-}
+class QMediaPlayer;
+class QAudioOutput;
 
 
 class AboutDialog: public QDialog, private Ui::AboutDialog
@@ -74,7 +70,7 @@ public slots:
 	void analyzeProgress(int value, int maximum);
 	void metaDataChanged();
 	void audioTick(qint64 time);
-	void playerStateChanged(Phonon::State newstate, Phonon::State olstate);
+	void playerStateChanged(QMediaPlayer::State newstate, QMediaPlayer::State olstate);
 	void playBuffer(const QByteArray& buffer);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);
@@ -146,9 +142,8 @@ private:
 	OperationStack opStack;
 	OperationStack redoStack;
 	QScopedPointer<Song> song;
-	Phonon::MediaObject *player;
-	Phonon::AudioOutput *audioOutput;
-	Phonon::VideoPlayer *video;
+	QMediaPlayer *player;
+	QAudioOutput *audioOutput;
 	BufferPlayer *bufferPlayers[2];
 	QScopedPointer<Synth> synth;
 	Piano *piano;
