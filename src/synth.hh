@@ -9,7 +9,9 @@
 #include <QWaitCondition>
 #include <QBuffer>
 #include <QFile>
-#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QAudioFormat>
+#include <QDebug>
 #include "notes.hh"
 #include "notegraphwidget.hh"
 #include "notelabel.hh"
@@ -39,6 +41,8 @@ class Synth: public QThread
 {
 	Q_OBJECT
 public:
+	static const int SampleRate = 22050; ///< Sample rate
+
 	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_noteBegin(), m_curBuffer(), m_quit()
 	{
 		qRegisterMetaType<QByteArray>("QByteArray"); // Register type for use with queued connections
@@ -68,15 +72,16 @@ public:
 		// This is simple beep, so we use mono and lowish sample rate
 		// --> quick to create and small memory footprint
 		// Going to 8 bits seems to create weird samples on Windows though
-		std::string header = writeWavHeader(16, 1, sampleRate, length * sampleRate);
+		std::string header = writeWavHeader(16, 1, SampleRate, length * SampleRate);
 		buffer = QByteArray(header.c_str(), header.size());
+		//buffer.clear();
 		double d = (note + 1) / 13.0;
 		double freq = MusicalScale().getNoteFreq(note + 12);
 		double phase = 0;
 		// Synthesize tones
-		for (size_t i = 0; i < length * sampleRate; ++i) {
+		for (size_t i = 0; i < length * SampleRate; ++i) {
 			float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
-			phase += 2.0 * M_PI * freq / sampleRate;
+			phase += 2.0 * M_PI * freq / SampleRate;
 
 			// Convert float to 16-bit integer and push to buffer
 			qint16 svalue = fvalue * 32768;
@@ -168,8 +173,6 @@ private:
 		return out.str();
 	}
 
-	static const int sampleRate = 22050; ///< Sample rate
-
 	SynthNotes m_notes; ///< Notes to synthesize
 	double m_delay; ///< How many seconds until the next sound must be played
 	double m_pos; ///< Position where we are now
@@ -190,32 +193,61 @@ private:
 class BufferPlayer: public QObject
 {
 	Q_OBJECT
-	Q_DISABLE_COPY(BufferPlayer);
+	Q_DISABLE_COPY(BufferPlayer)
 public:
 	BufferPlayer(QObject *parent): QObject(parent) {
-		m_player = new QMediaPlayer(this);
 		m_buffer = new QBuffer(this);
-		//connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
+
+		QAudioFormat format;
+		format.setChannelCount(1);
+		format.setSampleRate(Synth::SampleRate);
+		format.setSampleSize(16);
+		format.setSampleType(QAudioFormat::UnSignedInt);
+		format.setByteOrder(QAudioFormat::BigEndian);
+		format.setCodec("audio/pcm");
+
+		QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+		if (!info.isFormatSupported(format)) {
+			qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+			return;
+		}
+		m_player = new QAudioOutput(format, this);
+		connect(m_player, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleStateChanged(QAudio::State)));
 	}
 
 	bool play(const QByteArray& ba) {
-		if (m_player->state() != QMediaPlayer::PlayingState) {
+		if (m_player->state() != QAudio::ActiveState) {
 			m_player->stop();
-			//m_buffer->close();
-			//m_buffer->setData(ba);
-			//m_player->setMedia(m_buffer);
-			m_player->play();
+			m_buffer->close();
+			m_buffer->setData(ba);
+			m_player->start(m_buffer);
+			qDebug() << "Should play synth";
 			return true;
 		}
 		return false;
 	}
 
 public slots:
-	void finished() {
-		m_player->stop();
+	void handleStateChanged(QAudio::State newState) {
+		qDebug() << "Synth" << newState;
+		switch (newState) {
+		case QAudio::IdleState: // Finished playing (no more data)
+			m_player->stop();
+			//m_buffer.close();
+			//delete m_player;
+			break;
+		case QAudio::StoppedState: // Stopped for other reasons
+			if (m_player->error() != QAudio::NoError) {
+				qWarning() << "Synth audio error code " << m_player->error();
+			}
+			break;
+		default:
+			// ... other cases as appropriate
+			break;
+		}
 	}
 
 private:
 	QBuffer *m_buffer;
-	QMediaPlayer *m_player;
+	QAudioOutput *m_player;
 };

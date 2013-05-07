@@ -5,6 +5,7 @@
 #include "operation.hh"
 #include "song.hh"
 #include "synth.hh"
+#include <QMediaPlayer>
 
 class QProgressBar;
 class QPushButton;
@@ -12,7 +13,6 @@ class QCloseEvent;
 class NoteLabel;
 class NoteGraphWidget;
 class GettingStartedDialog;
-class QMediaPlayer;
 
 
 class AboutDialog: public QDialog, private Ui::AboutDialog

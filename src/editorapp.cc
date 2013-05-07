@@ -99,6 +99,29 @@ EditorApp::EditorApp(QWidget *parent)
 	bufferPlayers[0] = new BufferPlayer(this);
 	bufferPlayers[1] = new BufferPlayer(this);
 
+	// Audio info
+	QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+	qDebug() << "QAudioDevice info";
+	qDebug() << "Supported codecs:";
+	foreach (const QString& codec, info.supportedCodecs())
+		qDebug() << codec;
+	qDebug() << "Supported sample rates:";
+	foreach (const int& num, info.supportedSampleRates())
+		qDebug() << num;
+	qDebug() << "Supported sample sizes:";
+	foreach (const int& num, info.supportedSampleSizes())
+		qDebug() << num;
+	qDebug() << "Supported sample types:";
+	foreach (const int& num, info.supportedSampleTypes())
+		qDebug() << num;
+	qDebug() << "Supported byte orders:";
+	foreach (const int& num, info.supportedByteOrders())
+		qDebug() << num;
+	qDebug() << "Supported channel counts:";
+	foreach (const int& num, info.supportedChannelCounts())
+		qDebug() << num;
+
+
 	// Audio signals
 	connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(audioTick(qint64)));
 	connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
