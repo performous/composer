@@ -15,13 +15,11 @@ file(GLOB SOURCE_FILES "*.cc")
 file(GLOB HEADER_FILES "*.hh")
 file(GLOB RESOURCE_FILES "../*.qrc")
 file(GLOB UI_FILES "../ui/*.ui")
-file(GLOB LANG_FILES "../lang/*.ts")
 
 # Qt pre-processors
-QT4_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
-QT4_ADD_TRANSLATION(TRANSLATIONS ${LANG_FILES})
-QT4_WRAP_UI(UI_SOURCES ${UI_FILES} )
-QT4_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
+QT5_ADD_RESOURCES(RESOURCE_SOURCES ${RESOURCE_FILES})
+QT5_WRAP_UI(UI_SOURCES ${UI_FILES} )
+QT5_WRAP_CPP(MOC_SOURCES ${MOC_HEADER_FILES})
 
 # Generate config.hh
 configure_file(config.cmake.hh "${CMAKE_BINARY_DIR}/src/config.hh" @ONLY)
@@ -30,7 +28,7 @@ include_directories(${CMAKE_BINARY_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 # Final binary
-add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${TRANSLATIONS})
+add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
 target_link_libraries(${EXENAME} ${LIBS})
 
 # We don't currently have any assets, so on Windows, we just install to the root installation folder

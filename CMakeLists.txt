@@ -21,26 +21,19 @@ if(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Find includes in corresponding build directories
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
+
 # Find all the libs that don't require extra parameters
-foreach(lib AVFormat)
+foreach(lib AVFormat Qt5Core Qt5Widgets Qt5Gui Qt5Xml)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
 	add_definitions(${${lib}_DEFINITIONS})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${lib}_EXECUTABLE_COMPILE_FLAGS}")
 endforeach(lib)
-
-find_package(Phonon)
-if(Phonon_FOUND)
-	include_directories(${Phonon_INCLUDE_DIRS})
-	list(APPEND LIBS ${Phonon_LIBRARIES})
-	find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-	include(${QT_USE_FILE})
-	list(APPEND LIBS ${QT_LIBRARIES})
-else(Phonon_FOUND)
-	find_package(Qt4 COMPONENTS QtCore QtGui QtXml Phonon REQUIRED)
-	include(${QT_USE_FILE})
-	list(APPEND LIBS ${QT_LIBRARIES})
-endif(Phonon_FOUND)
 
 # Sources
 add_subdirectory(src)
