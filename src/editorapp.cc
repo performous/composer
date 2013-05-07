@@ -13,7 +13,6 @@
 #include <QSettings>
 #include <QTimer>
 #include <QMediaPlayer>
-#include <QAudioOutput>
 #include <iostream>
 #include "config.hh"
 #include "editorapp.hh"
@@ -45,7 +44,7 @@ namespace {
 }
 
 EditorApp::EditorApp(QWidget *parent)
-	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), audioOutput(), synth(), statusbarProgress(),
+	: QMainWindow(parent), gettingStarted(), noteGraph(), player(), synth(), statusbarProgress(),
 	projectFileName(), latestPath(QDir::homePath()), currentBufferPlayer()
 {
 	ui.setupUi(this);
@@ -96,14 +95,14 @@ EditorApp::EditorApp(QWidget *parent)
 
 	// Audio stuff
 	player = new QMediaPlayer(this);
-	//audioOutput = new QAudioOutput(this);
-	//player->setTickInterval(100);
+	player->setNotifyInterval(100);
 	bufferPlayers[0] = new BufferPlayer(this);
 	bufferPlayers[1] = new BufferPlayer(this);
 
 	// Audio signals
-	connect(player, SIGNAL(tick(qint64)), this, SLOT(audioTick(qint64)));
-	connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
+	connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(audioTick(qint64)));
+	connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
+	connect(player, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(playerError(QMediaPlayer::Error)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
 
 	// The piano keys
@@ -156,12 +155,7 @@ void EditorApp::setupNoteGraph()
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
-	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(seek(qint64)));
-
-	//video = new Phonon::VideoPlayer(Phonon::VideoCategory, noteGraph);
-	//video->play(Phonon::MediaSource("/tmp/video.avi"));
-	//video->setVolume(0.0f);
-	//video->setFixedSize(800, 600);
+	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(setPosition(qint64)));
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -780,6 +774,7 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 void EditorApp::metaDataChanged()
 {
 	if (player) {
+		// TODO
 		/*if (!player->metaData(Phonon::TitleMetaData).isEmpty())
 			song->title = player->metaData(Phonon::TitleMetaData).join(", ");
 		if (!player->metaData(Phonon::ArtistMetaData).isEmpty())
@@ -810,10 +805,10 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 	if (checked && player && player->state() == QMediaPlayer::PlayingState) {
 		synth.reset(new Synth);
 		connect(synth.data(), SIGNAL(playBuffer(QByteArray)), this, SLOT(playBuffer(QByteArray)));
-		if (audioOutput) audioOutput->setVolume(0.66);
+		if (player) player->setVolume(66);
 	} else if (!checked) {
 		synth.reset();
-		if (audioOutput) audioOutput->setVolume(1.0);
+		if (player) player->setVolume(100);
 	}
 }
 
@@ -851,19 +846,21 @@ void EditorApp::audioTick(qint64 time)
 	}
 }
 
-void EditorApp::playerStateChanged(QMediaPlayer::State newstate, QMediaPlayer::State oldstate)
+void EditorApp::playerStateChanged(QMediaPlayer::State state)
 {
-	(void)oldstate;
 	playButton();
-	if (newstate != QMediaPlayer::PlayingState) {
+	if (state != QMediaPlayer::PlayingState) {
 		noteGraph->stopMusic();
-		/*if (newstate == QMediaPlayer::ErrorState) {
-			QString errst(tr("Error playing audio!"));
-			if (player) errst += " " + player->errorString();
-			QMessageBox::critical(this, tr("Playback error"), errst);
-		}*/
-	} else if (!noteGraph->selectedNote() && !noteGraph->noteLabels().isEmpty())
+	} else if (!noteGraph->selectedNote() && !noteGraph->noteLabels().isEmpty()) {
 		noteGraph->selectNote(noteGraph->noteLabels().front());
+	}
+}
+
+void EditorApp::playerError(QMediaPlayer::Error)
+{
+	QString errst(tr("Error playing audio!"));
+	if (player) errst += " " + player->errorString();
+	QMessageBox::critical(this, tr("Playback error"), errst);
 }
 
 void EditorApp::playBuffer(const QByteArray& buffer)

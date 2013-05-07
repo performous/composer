@@ -13,7 +13,6 @@ class NoteLabel;
 class NoteGraphWidget;
 class GettingStartedDialog;
 class QMediaPlayer;
-class QAudioOutput;
 
 
 class AboutDialog: public QDialog, private Ui::AboutDialog
@@ -70,7 +69,8 @@ public slots:
 	void analyzeProgress(int value, int maximum);
 	void metaDataChanged();
 	void audioTick(qint64 time);
-	void playerStateChanged(QMediaPlayer::State newstate, QMediaPlayer::State olstate);
+	void playerStateChanged(QMediaPlayer::State state);
+	void playerError(QMediaPlayer::Error error);
 	void playBuffer(const QByteArray& buffer);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);
@@ -143,7 +143,6 @@ private:
 	OperationStack redoStack;
 	QScopedPointer<Song> song;
 	QMediaPlayer *player;
-	QAudioOutput *audioOutput;
 	BufferPlayer *bufferPlayers[2];
 	QScopedPointer<Synth> synth;
 	Piano *piano;

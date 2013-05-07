@@ -195,7 +195,7 @@ public:
 	BufferPlayer(QObject *parent): QObject(parent) {
 		m_player = new QMediaPlayer(this);
 		m_buffer = new QBuffer(this);
-		connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
+		//connect(m_player, SIGNAL(finished()), this, SLOT(finished()));
 	}
 
 	bool play(const QByteArray& ba) {
