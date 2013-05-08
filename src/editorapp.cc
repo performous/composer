@@ -796,15 +796,16 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 void EditorApp::metaDataChanged()
 {
 	if (player) {
-		// TODO
-		/*if (!player->metaData(Phonon::TitleMetaData).isEmpty())
-			song->title = player->metaData(Phonon::TitleMetaData).join(", ");
-		if (!player->metaData(Phonon::ArtistMetaData).isEmpty())
-			song->artist = player->metaData(Phonon::ArtistMetaData).join(", ");
-		if (!player->metaData(Phonon::GenreMetaData).isEmpty())
-			song->genre = player->metaData(Phonon::GenreMetaData).join(", ");
-		if (!player->metaData("DATE").isEmpty())
-			song->year = player->metaData("DATE").join(", ");*/
+		//foreach (const QString& str, player->availableMetaData())
+		//	qDebug() << str;
+		if (!player->metaData("Title").toString().isEmpty())
+			song->title = player->metaData("Title").toString();
+		if (!player->metaData("AlbumArtist").toString().isEmpty())
+			song->artist = player->metaData("AlbumArtist").toString();
+		if (!player->metaData("Genre").toString().isEmpty())
+			song->genre = player->metaData("Genre").toString();
+		if (!player->metaData("Year").toString().isEmpty())
+			song->year = player->metaData("Year").toString();
 		updateSongMeta(true);
 	}
 }
