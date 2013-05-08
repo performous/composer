@@ -10,6 +10,7 @@
 	#define M_PI 3.141592653589793
 #endif
 
+
 void Synth::tick(qint64 pos, const SynthNotes& notes) {
 	QMutexLocker locker(&m_mutex);
 	m_pos = pos / 1000.0;
@@ -125,8 +126,8 @@ std::string Synth::writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsig
 }
 
 
-// BufferPlayer
 
+// BufferPlayer
 
 BufferPlayer::BufferPlayer(QObject *parent)
 : QObject(parent)
@@ -137,16 +138,19 @@ BufferPlayer::BufferPlayer(QObject *parent)
 	format.setChannelCount(1);
 	format.setSampleRate(Synth::SampleRate);
 	format.setSampleSize(16);
-	format.setSampleType(QAudioFormat::UnSignedInt);
-	format.setByteOrder(QAudioFormat::BigEndian);
+	format.setSampleType(QAudioFormat::SignedInt);
+	format.setByteOrder(QAudioFormat::LittleEndian);
 	format.setCodec("audio/pcm");
 
 	QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
 	if (!info.isFormatSupported(format)) {
-		qWarning() << "Raw audio format not supported by backend, cannot play audio.";
-		return;
+		qWarning() << "Synth output format not supported, trying nearest";
+		format = info.nearestFormat(format);
 	}
 	m_player = new QAudioOutput(format, this);
+	m_player->setVolume(1.0f);
+	//m_player->setNotifyInterval(100);
+	//connect(m_player, SIGNAL(notify()), this, SLOT(debugDumpStats()));
 	connect(m_player, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleStateChanged(QAudio::State)));
 }
 
@@ -156,8 +160,8 @@ bool BufferPlayer::play(const QByteArray& ba)
 		m_player->stop();
 		m_buffer->close();
 		m_buffer->setData(ba);
+		m_buffer->open(QIODevice::ReadOnly);
 		m_player->start(m_buffer);
-		qDebug() << "Should play synth";
 		return true;
 	}
 	return false;
@@ -165,12 +169,10 @@ bool BufferPlayer::play(const QByteArray& ba)
 
 void BufferPlayer::handleStateChanged(QAudio::State newState)
 {
-	qDebug() << "Synth" << newState;
+	//qDebug() << "Synth" << newState;
 	switch (newState) {
 	case QAudio::IdleState: // Finished playing (no more data)
 		m_player->stop();
-		//m_buffer.close();
-		//delete m_player;
 		break;
 	case QAudio::StoppedState: // Stopped for other reasons
 		if (m_player->error() != QAudio::NoError) {
@@ -181,4 +183,11 @@ void BufferPlayer::handleStateChanged(QAudio::State newState)
 		// ... other cases as appropriate
 		break;
 	}
+}
+
+void BufferPlayer::debugDumpStats()
+{
+	qWarning() << "bytesFree =" << m_player->bytesFree()
+		<< "- elapsedUSecs =" << m_player->elapsedUSecs()
+		<< "- processedUSecs =" << m_player->processedUSecs();
 }

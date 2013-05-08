@@ -86,6 +86,7 @@ public:
 
 public slots:
 	void handleStateChanged(QAudio::State newState);
+	void debugDumpStats();
 
 private:
 	QBuffer *m_buffer;
