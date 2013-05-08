@@ -33,12 +33,15 @@ void Synth::createBuffer(QByteArray &buffer, int note, double length) {
 	// Going to 8 bits seems to create weird samples on Windows though
 	//std::string header = writeWavHeader(16, 1, SampleRate, length * SampleRate);
 	//buffer = QByteArray(header.c_str(), header.size());
+	const int bytesPerSample = 2;
+	const quint64 samples = length * SampleRate;
 	buffer.clear();
+	buffer.reserve(samples * bytesPerSample);
 	double d = (note + 1) / 13.0;
 	double freq = MusicalScale().getNoteFreq(note + 12);
 	double phase = 0;
 	// Synthesize tones
-	for (size_t i = 0; i < length * SampleRate; ++i) {
+	for (size_t i = 0; i < samples; ++i) {
 		float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
 		phase += 2.0 * M_PI * freq / SampleRate;
 
@@ -161,6 +164,7 @@ bool BufferPlayer::play(const QByteArray& ba)
 		m_buffer->close();
 		m_buffer->setData(ba);
 		m_buffer->open(QIODevice::ReadOnly);
+		m_player->setBufferSize(ba.size());
 		m_player->start(m_buffer);
 		return true;
 	}
@@ -180,7 +184,6 @@ void BufferPlayer::handleStateChanged(QAudio::State newState)
 		}
 		break;
 	default:
-		// ... other cases as appropriate
 		break;
 	}
 }

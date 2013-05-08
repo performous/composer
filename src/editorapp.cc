@@ -1097,7 +1097,7 @@ void Piano::mousePressEvent(QMouseEvent *event)
 	if (!m_player) return;
 	QByteArray ba;
 	int n = round((NoteGraphWidget::Height - event->pos().y()) / 16.0);
-	Synth::createBuffer(ba, n % 12, 0.5);
+	Synth::createBuffer(ba, n % 12, 0.4);
 	m_player->play(ba);
 }
 
