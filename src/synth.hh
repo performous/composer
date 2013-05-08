@@ -1,9 +1,5 @@
 #pragma once
-#include <iostream>
-#include <sstream>
-#include <fstream>
 #include <string>
-#include <cmath>
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -11,15 +7,8 @@
 #include <QFile>
 #include <QAudioOutput>
 #include <QAudioFormat>
-#include <QDebug>
 #include "notes.hh"
-#include "notegraphwidget.hh"
-#include "notelabel.hh"
 
-
-#ifndef M_PI
-	#define M_PI 3.141592653589793
-#endif
 
 struct SynthNote {
 	SynthNote(): note(24), begin(), length() {}
@@ -47,131 +36,27 @@ public:
 	{
 		qRegisterMetaType<QByteArray>("QByteArray"); // Register type for use with queued connections
 	}
-
 	~Synth() { stop(); wait(); }
 
 	/// Updates the synth
-	void tick(qint64 pos, const SynthNotes& notes) {
-		QMutexLocker locker(&m_mutex);
-		m_pos = pos / 1000.0;
-		m_notes = notes;
-		if (m_notes.isEmpty()) m_quit = true;
-
-		if (isRunning()) m_condition.wakeOne();
-		else start();
-	}
-
-	void stop() {
-		QMutexLocker locker(&m_mutex);
-		m_quit = true;
-		m_condition.wakeOne();
-	}
-
+	void tick(qint64 pos, const SynthNotes& notes);
+	/// Stop synthesizing
+	void stop();
 	/// Creates the sound
-	static void createBuffer(QByteArray &buffer, int note, double length) {
-		// This is simple beep, so we use mono and lowish sample rate
-		// --> quick to create and small memory footprint
-		// Going to 8 bits seems to create weird samples on Windows though
-		std::string header = writeWavHeader(16, 1, SampleRate, length * SampleRate);
-		buffer = QByteArray(header.c_str(), header.size());
-		//buffer.clear();
-		double d = (note + 1) / 13.0;
-		double freq = MusicalScale().getNoteFreq(note + 12);
-		double phase = 0;
-		// Synthesize tones
-		for (size_t i = 0; i < length * SampleRate; ++i) {
-			float fvalue = d * 0.2 * std::sin(phase) + 0.2 * std::sin(2 * phase) + (1.0 - d) * 0.2 * std::sin(4 * phase);
-			phase += 2.0 * M_PI * freq / SampleRate;
-
-			// Convert float to 16-bit integer and push to buffer
-			qint16 svalue = fvalue * 32768;
-			char* value = reinterpret_cast<char*>(&svalue);
-			buffer.push_back(value[0]);
-			buffer.push_back(value[1]);
-		}
-
-		//std::ofstream of("/tmp/wavdump.wav");
-		//of.write(buf.data(), buf.size());
-	}
+	static void createBuffer(QByteArray &buffer, int note, double length);
 
 signals:
 	void playBuffer(const QByteArray&);
 
 protected:
 	/// Thread runs here
-	void run() {
-		calcNext();
-		while (!m_quit) {
-			m_mutex.lock();
-			// Wait here until wake up or time out
-			if (m_condition.wait(&m_mutex, m_delay * 1000)) {
-				// We were woken up, so let's see if an update is in order
-				m_mutex.unlock();
-				if (m_quit) break;
-				calcNext();
-
-			} else {
-				// Time-out: time to play the music
-				m_mutex.unlock();
-				if (m_quit) break;
-				emit playBuffer(m_soundData[m_curBuffer]);
-				m_curBuffer = (m_curBuffer+1) % 2;
-				// Slightly hacky stuff follows:
-				// We advance the time a bit to make sure we are over the note beginning.
-				// Then cache the next note, but put longer delay (which will be corrected
-				// with the next tick) so that we don't accidentally play wrong note(
-				// in case we advanced the time too much).
-				m_pos += 0.2;
-				calcNext();
-				m_delay = std::max(m_delay, 1.0);
-			}
-		}
-	}
+	void run();
 
 private:
 	/// Calculates the next values
-	void calcNext() {
-		QElapsedTimer timer; timer.start();
-		SynthNote n;
-		{
-			QMutexLocker locker(&m_mutex);
-			SynthNotes::const_iterator it = m_notes.begin();
-			while (it != m_notes.end() && it->begin < m_pos) ++it;
-			if (it == m_notes.end()) { m_delay = 1000.0; return; }
-			n = *it;
-		}
-
-		m_delay = n.begin - m_pos;
-		if (n.begin != m_noteBegin) {
-			// Need to create a new buffer
-			m_noteBegin = n.begin;
-			createBuffer(m_soundData[m_curBuffer], n.note % 12, n.length);
-		}
-		// Compensate for the time spent in this function
-		m_delay -= timer.elapsed() / 1000.0;
-		if (m_delay <= 0.001) m_delay = 0.001;
-	}
-
+	void calcNext();
 	/// WAV header writer
-	static std::string writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsigned samples) {
-		std::ostringstream out;
-		unsigned bps = ch * bits / 8; // Bytes per sample
-		unsigned datasize = bps * samples;
-		unsigned size = datasize + 0x2C;
-		out.write("RIFF" ,4); // RIFF chunk
-		{ unsigned int tmp=size-0x8 ; out.write((char*)(&tmp),4); } // RIFF chunk size
-		out.write("WAVEfmt ",8); // WAVEfmt header
-		{ int   tmp=0x00000010 ; out.write((char*)(&tmp),4); } // Always 0x10
-		{ short tmp=0x0001     ; out.write((char*)(&tmp),2); } // Always 1
-		{ short tmp = ch; out.write((char*)(&tmp),2); } // Number of channels
-		{ int   tmp = sr; out.write((char*)(&tmp),4); } // Sample rate
-		{ int   tmp = bps * sr; out.write((char*)(&tmp),4); } // Bytes per second
-		{ short tmp = bps; out.write((char*)(&tmp),2); } // Bytes per frame
-		{ short tmp = bits; out.write((char*)(&tmp),2); } // Bits per sample
-		out.write("data",4); // data chunk
-		{ int   tmp = datasize; out.write((char*)(&tmp),4); }
-		return out.str();
-	}
+	static std::string writeWavHeader(unsigned bits, unsigned ch, unsigned sr, unsigned samples);
 
 	SynthNotes m_notes; ///< Notes to synthesize
 	double m_delay; ///< How many seconds until the next sound must be played
@@ -195,57 +80,12 @@ class BufferPlayer: public QObject
 	Q_OBJECT
 	Q_DISABLE_COPY(BufferPlayer)
 public:
-	BufferPlayer(QObject *parent): QObject(parent) {
-		m_buffer = new QBuffer(this);
+	BufferPlayer(QObject *parent);
 
-		QAudioFormat format;
-		format.setChannelCount(1);
-		format.setSampleRate(Synth::SampleRate);
-		format.setSampleSize(16);
-		format.setSampleType(QAudioFormat::UnSignedInt);
-		format.setByteOrder(QAudioFormat::BigEndian);
-		format.setCodec("audio/pcm");
-
-		QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-		if (!info.isFormatSupported(format)) {
-			qWarning() << "Raw audio format not supported by backend, cannot play audio.";
-			return;
-		}
-		m_player = new QAudioOutput(format, this);
-		connect(m_player, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleStateChanged(QAudio::State)));
-	}
-
-	bool play(const QByteArray& ba) {
-		if (m_player->state() != QAudio::ActiveState) {
-			m_player->stop();
-			m_buffer->close();
-			m_buffer->setData(ba);
-			m_player->start(m_buffer);
-			qDebug() << "Should play synth";
-			return true;
-		}
-		return false;
-	}
+	bool play(const QByteArray& ba);
 
 public slots:
-	void handleStateChanged(QAudio::State newState) {
-		qDebug() << "Synth" << newState;
-		switch (newState) {
-		case QAudio::IdleState: // Finished playing (no more data)
-			m_player->stop();
-			//m_buffer.close();
-			//delete m_player;
-			break;
-		case QAudio::StoppedState: // Stopped for other reasons
-			if (m_player->error() != QAudio::NoError) {
-				qWarning() << "Synth audio error code " << m_player->error();
-			}
-			break;
-		default:
-			// ... other cases as appropriate
-			break;
-		}
-	}
+	void handleStateChanged(QAudio::State newState);
 
 private:
 	QBuffer *m_buffer;

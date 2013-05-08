@@ -5,6 +5,7 @@
 #include "operation.hh"
 #include "song.hh"
 #include "synth.hh"
+#include "notegraphwidget.hh"
 #include <QMediaPlayer>
 
 class QProgressBar;

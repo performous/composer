@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QTranslator>
+#include <iostream>
 #include "config.hh"
 #include "editorapp.hh"
 

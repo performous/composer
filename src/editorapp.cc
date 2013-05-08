@@ -17,7 +17,6 @@
 #include "config.hh"
 #include "editorapp.hh"
 #include "notelabel.hh"
-#include "notegraphwidget.hh"
 #include "songparser.hh"
 #include "songwriter.hh"
 #include "textcodecselector.hh"
