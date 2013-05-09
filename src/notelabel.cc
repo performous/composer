@@ -69,6 +69,7 @@ void NoteLabel::updatePixmap()
 		painter.drawRoundedRect(QRectF(0.5, 0.5, image.width()-1, image.height()-1), 8, 8);
 
 		painter.setFont(font);
+		painter.setPen(isSelected() ? Qt::red : Qt::white);
 		painter.drawText(QRect(QPoint(text_margin, text_margin), QSize(size.width()-text_margin, size.height()-text_margin)), Qt::AlignCenter, lyric());
 
 		// Render sentence end indicator
