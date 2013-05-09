@@ -11,7 +11,7 @@
 #include <QLabel>
 #include <QSettings>
 #include <QAudioFormat>
-#include <QAudioDecoder>
+#include <QDebug>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent, int visId)
 	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(),
@@ -28,6 +28,9 @@ PitchVis::PitchVis(QString const& filename, QWidget *parent, int visId)
 	decoder->setAudioFormat(desiredFormat);
 	decoder->setSourceFilename(fileName);
 	connect(decoder, SIGNAL(bufferReady()), this, SLOT(bufferReady()));
+	connect(decoder, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
+	connect(decoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(error(QAudioDecoder::Error)));
+	connect(decoder, SIGNAL(finished()), this, SLOT(finished()));
 	decoder->start();
 }
 
@@ -44,6 +47,40 @@ void PitchVis::cancel()
 	cancelled = true;
 }
 
+void PitchVis::bufferReady()
+{
+	QAudioBuffer buf = decoder->read();
+	int bufSize = buf.sampleCount();
+	unsigned oldSize = data.size();
+	//qDebug() << "Decoder: Got buffer with" << bufSize << "samples";
+	data.resize(oldSize + bufSize);
+	const float* dataPtr = buf.constData<float>();
+	std::copy(dataPtr, dataPtr + buf.sampleCount(), &data[oldSize]);
+}
+
+void PitchVis::durationChanged(qint64 duration)
+{
+	qDebug() << "Decoder: Duration changed to" << duration / 1000.0;
+	QMutexLocker locker(&mutex);
+	this->duration = duration / 1000.0;
+	QAudioFormat format = decoder->audioFormat();
+	data.reserve((this->duration + 1.0) * format.sampleRate() * format.channelCount());
+}
+
+void PitchVis::error(QAudioDecoder::Error error)
+{
+	QMutexLocker locker(&mutex);
+	qCritical() << "Decoder error:" << decoder->errorString() << "(" << error << ")";
+	locker.unlock();
+	stop();
+}
+
+void PitchVis::finished()
+{
+	qDebug() << "Decoder: Finished!";
+	start();
+}
+
 void PitchVis::run()
 {
 	bool analyzingSuccess = false;
@@ -57,33 +94,27 @@ void PitchVis::run()
 		QAudioFormat format = decoder->audioFormat();
 		const unsigned rate = format.sampleRate();
 		const unsigned channels = format.channelCount();
+		qDebug() << "PitchVis analyzing" << data.size() << "samples with rate" << rate << "and" << channels << "channels";
 		if (channels == 0) throw std::runtime_error("No audio channels found");
 		std::vector<Analyzer> analyzers(channels, Analyzer(rate, ""));
 		// Process the entire song
-		std::vector<float> data;
-		data.reserve((duration + 1.0) * rate * channels);
 		unsigned x = 0;
-		while (decoder->state() != QAudioDecoder::StoppedState) {
-			while (!decoder->bufferAvailable()) ;
-			QAudioBuffer buf = decoder->read();
-			const float* dataPtr = buf.constData<float>();
-			std::copy(dataPtr, dataPtr + buf.sampleCount(), &data.back()+1);
-			// Process as much as can be processed at this point
-			while (data.size() / channels - x >= analyzers[0].processSize()) {
-				// Pitch detection
-				for (unsigned ch = 0; ch < channels; ++ch) {
-					analyzers[ch].process(da::step_iterator<float>(&data[x * channels + ch], channels));
-				}
-				x += analyzers[0].processStep();
-				// Update progress and check for quit flag
-				QMutexLocker locker(&mutex);
-				if (quit) return;
-				else if (cancelled) break;
-				double t = analyzers[0].getTime();
-				position = t;
-				duration = std::max(duration, t + 0.01);
+		// Process as much as can be processed at this point
+		while (data.size() / channels - x >= analyzers[0].processSize()) {
+			// Pitch detection
+			for (unsigned ch = 0; ch < channels; ++ch) {
+				analyzers[ch].process(da::step_iterator<float>(&data[x * channels + ch], channels));
 			}
+			x += analyzers[0].processStep();
+			// Update progress and check for quit flag
+			QMutexLocker locker(&mutex);
+			if (quit) return;
+			else if (cancelled) break;
+			double t = analyzers[0].getTime();
+			position = t;
+			duration = std::max(duration, t + 0.01);
 		}
+		qDebug() << "PitchVis done analyzing, extracting tones...";
 		// DEBUG: std::ofstream("audio.raw", std::ios::binary).write(reinterpret_cast<char*>(&data[0]), data.size() * sizeof(float));
 		// Filter the analyzer output data into QPainterPaths.
 		std::vector<Analyzer::Moments::const_iterator> mit(channels), mend(channels);
@@ -91,6 +122,7 @@ void PitchVis::run()
 			Analyzer::Moments const& moments = analyzers[ch].getMoments();
 			mit[ch] = moments.begin();
 			mend[ch] = moments.end();
+			qDebug() << "PitchVis found" << moments.size() << "moments for channel" << ch;
 		}
 		while (mit[0] != mend[0]) {
 			for (unsigned ch = 0; ch < channels; ++mit[ch++]) {
@@ -118,7 +150,7 @@ void PitchVis::run()
 			}
 		}
 		analyzingSuccess = true;
-
+		qDebug() << "PitchVis found" << paths.size() << "paths";
 	} catch (std::exception& e) {
 		std::cerr << std::string("Error loading audio: ") + e.what() + '\n' << std::flush;
 	}
@@ -127,7 +159,7 @@ void PitchVis::run()
 		moreAvailable = true;
 		position = duration;
 	}
-
+	qDebug() << "PitchVis ready to start renderer";
 	// Start the renderer loop
 	if (analyzingSuccess) renderer();
 }

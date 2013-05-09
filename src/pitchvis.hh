@@ -7,11 +7,11 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QPainterPath>
+#include <QAudioDecoder>
 #include <cmath>
 #include <string>
 #include <vector>
 
-class QAudioDecoder;
 
 struct PitchFragment {
 	float time, note, level;  // seconds, MIDI note, dB
@@ -49,7 +49,10 @@ signals:
 	void renderedImage(const QImage &image, const QPoint &position, int visId);
 
 public slots:
-	void bufferReady() { start(); }
+	void bufferReady();
+	void durationChanged(qint64 duration);
+	void error(QAudioDecoder::Error error);
+	void finished();
 
 protected:
 	void run(); // Thread runs here
@@ -62,6 +65,7 @@ private:
 	MusicalScale scale;
 	QString fileName;
 	Paths paths;
+	std::vector<float> data;
 	double position;  ///< Position while analyzing
 	double duration;  ///< Song duration (or estimation while analyzing)
 	bool moreAvailable;
