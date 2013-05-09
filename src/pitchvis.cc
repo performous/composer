@@ -2,7 +2,7 @@
 #include "notegraphwidget.hh"
 #include "pitchvis.hh"
 #include "pitch.hh"
-#include "ffmpeg.hh"
+#include "libda/sample.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -10,12 +10,25 @@
 #include <QProgressDialog>
 #include <QLabel>
 #include <QSettings>
+#include <QAudioFormat>
+#include <QAudioDecoder>
 
 PitchVis::PitchVis(QString const& filename, QWidget *parent, int visId)
 	: QThread(parent), mutex(), fileName(filename), duration(), moreAvailable(), quit(),
 	  cancelled(), restart(), m_x1(), m_y1(), m_x2(), m_y2(), m_visId(visId), condition()
 {
-	start(); // Launch the thread
+	QAudioFormat desiredFormat;
+	desiredFormat.setChannelCount(2);
+	desiredFormat.setCodec("audio/x-raw");
+	desiredFormat.setSampleType(QAudioFormat::Float);
+	desiredFormat.setSampleRate(48000);
+	desiredFormat.setSampleSize(32);
+
+	decoder = new QAudioDecoder(this);
+	decoder->setAudioFormat(desiredFormat);
+	decoder->setSourceFilename(fileName);
+	connect(decoder, SIGNAL(bufferReady()), this, SLOT(bufferReady()));
+	decoder->start();
 }
 
 void PitchVis::stop()
@@ -35,24 +48,26 @@ void PitchVis::run()
 {
 	bool analyzingSuccess = false;
 	try {
-		// Initialize FFmpeg decoding
-		std::string file(fileName.toLocal8Bit().data(), fileName.toLocal8Bit().size());
-		FFmpeg mpeg(file);
 		{
 			QMutexLocker locker(&mutex);
 			paths.clear();
 			position = 0.0;
-			duration = mpeg.duration(); // Estimation
+			duration = decoder->duration() / 1000.0;
 		}
-		unsigned rate = mpeg.audioQueue.getRate();
-		unsigned channels = mpeg.audioQueue.getChannels();
+		QAudioFormat format = decoder->audioFormat();
+		const unsigned rate = format.sampleRate();
+		const unsigned channels = format.channelCount();
 		if (channels == 0) throw std::runtime_error("No audio channels found");
 		std::vector<Analyzer> analyzers(channels, Analyzer(rate, ""));
 		// Process the entire song
 		std::vector<float> data;
 		data.reserve((duration + 1.0) * rate * channels);
 		unsigned x = 0;
-		while (mpeg.audioQueue.output(data)) {
+		while (decoder->state() != QAudioDecoder::StoppedState) {
+			while (!decoder->bufferAvailable()) ;
+			QAudioBuffer buf = decoder->read();
+			const float* dataPtr = buf.constData<float>();
+			std::copy(dataPtr, dataPtr + buf.sampleCount(), &data.back()+1);
 			// Process as much as can be processed at this point
 			while (data.size() / channels - x >= analyzers[0].processSize()) {
 				// Pitch detection

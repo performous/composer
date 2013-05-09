@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+class QAudioDecoder;
+
 struct PitchFragment {
 	float time, note, level;  // seconds, MIDI note, dB
 	PitchFragment(float time, float note, float level): time(time), note(note), level(level) {}
@@ -46,6 +48,9 @@ public:
 signals:
 	void renderedImage(const QImage &image, const QPoint &position, int visId);
 
+public slots:
+	void bufferReady() { start(); }
+
 protected:
 	void run(); // Thread runs here
 
@@ -53,6 +58,7 @@ private:
 	void renderer();
 	Paths const& getPaths() { moreAvailable = false; return paths; }
 
+	QAudioDecoder* decoder;
 	MusicalScale scale;
 	QString fileName;
 	Paths paths;

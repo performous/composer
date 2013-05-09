@@ -27,7 +27,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
 # Find all the libs that don't require extra parameters
-foreach(lib AVFormat Qt5Core Qt5Widgets Qt5Gui Qt5Xml Qt5Multimedia)
+foreach(lib Qt5Core Qt5Widgets Qt5Gui Qt5Xml Qt5Multimedia)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
