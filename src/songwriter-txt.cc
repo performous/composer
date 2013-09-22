@@ -51,7 +51,7 @@ void UltraStarTXTWriter::writeTXT() const {
 
 		// Put sleeps before new phrases
 		if (i > 0 && n.lineBreak)
-			out << "- " << sec2dur(notes[i-1].end) << ' ' << sec2dur(notes[i-1].end)+1 << '\n';
+			out << "- " << sec2dur(notes[i-1].end) << '\n';
 
 		// Output the note
 		out << (char)n.type << ' '<< sec2dur(n.begin) << ' ' << sec2dur(n.length()) << ' ' << n.note << ' ' << n.syllable << '\n';
