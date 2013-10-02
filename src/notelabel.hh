@@ -16,7 +16,7 @@
  *   - The idea is to allow some time to apply the base operation to every note
  *     and then do the gfx updates asynchronously
  * - NoteLabel has its own mouse handling for moving, resizing, cursors, tooltips etc,
-	 but requires the parent NoteGraphWidget to update some internal states
+ *   but requires the parent NoteGraphWidget to update some internal states
  * - Geometry & position is calculated from the underlying Note attributes (i.e. time and pitch)
  *   - Setting size or pos manually will be overridden so the Note must be manipulated instead
  * - NoteLabel can be serialized to Operation-class
