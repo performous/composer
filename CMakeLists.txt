@@ -1,7 +1,8 @@
 project("Composer" CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
-set(PROJECT_VERSION "1.1")
+set(PROJECT_VERSION "2.0")
+set(BUILD_SHARED_LIBS OFF)
 #FIXME: Changes in version number or project name must manually also be put to:
 #       platform/mingw-cross-env/makeinstaller.py
 
