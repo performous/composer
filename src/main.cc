@@ -4,6 +4,11 @@
 #include "config.hh"
 #include "editorapp.hh"
 
+#ifdef STATIC_PLUGINS
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#endif
+
 int main(int argc, char *argv[])
 {
 	Q_INIT_RESOURCE(editor);
