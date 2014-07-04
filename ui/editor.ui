@@ -122,7 +122,10 @@
            <string>Play/pause the music file</string>
           </property>
           <property name="text">
-           <string>Play</string>
+           <string>Play (P)</string>
+          </property>
+          <property name="shortcut">
+           <string>P</string>
           </property>
          </widget>
         </item>
@@ -380,7 +383,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -813,12 +813,14 @@ void EditorApp::metaDataChanged()
 void EditorApp::playButton()
 {
 	if (player && player->state() == QMediaPlayer::PlayingState) {
-		ui.cmdPlay->setText(tr("Pause"));
+		ui.cmdPlay->setText(tr("Pause (P)"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-pause", QIcon(":/icons/media-playback-pause.png")));
+		ui.cmdPlay->setShortcut(QKeySequence("P"));
 		if (ui.chkSynth->isChecked()) on_chkSynth_clicked(true);
 	} else {
-		ui.cmdPlay->setText(tr("Play"));
+		ui.cmdPlay->setText(tr("Play (P)"));
 		ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
+		ui.cmdPlay->setShortcut(QKeySequence("P"));
 		on_chkSynth_clicked(false);
 	}
 }

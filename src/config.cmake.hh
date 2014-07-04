@@ -7,6 +7,8 @@
 #define PACKAGE "@CMAKE_PROJECT_NAME@"
 #define VERSION "@PROJECT_VERSION@"
 
+#cmakedefine STATIC_PLUGINS
+
 //#define SHARED_DATA_DIR "@SHARE_INSTALL@"
 
 // FFMPEG libraries use changing include file names... Get them from CMake.

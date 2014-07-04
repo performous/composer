@@ -195,7 +195,7 @@ void NoteGraphWidget::startNotePixmapUpdates()
 {
 	// With 0-delay, note pixmaps are created whenever there is not events to process
 	// This means fast performance while keeping snappy interface
-	if (!m_notePixmapTimer) m_notePixmapTimer = startTimer(0);
+	if (!m_notePixmapTimer) m_notePixmapTimer = startTimer(1);
 	m_nextNotePixmap = 0;
 }
 
