@@ -191,7 +191,7 @@ void NoteLabelManager::createNote(double time)
 				++id;
 			}
 		}
-		startNotePixmapUpdates();
+		forcedNotePixmapUpdate();
 	}
 }
 
@@ -218,7 +218,7 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	doOperation(new2, Operation::NO_UPDATE);
 	doOperation(Operation("DEL", id+2), Operation::NO_UPDATE);
 	doOperation(Operation("COMBINER", 3)); // This will combine the previous ones to one undo action
-	startNotePixmapUpdates();
+	forcedNotePixmapUpdate();
 }
 
 void NoteLabelManager::del(NoteLabel *note)
