@@ -37,6 +37,7 @@ public:
 
 	virtual void updateNotes(bool leftToRight = true) {}
 	virtual void startNotePixmapUpdates() {}
+	virtual void forcedNotePixmapUpdate() {}
 
 	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
@@ -140,6 +141,7 @@ public slots:
 	void abortPitch() { for (int i = 0; i < MaxPitchVis; ++i) if (m_pitch[i]) m_pitch[i]->cancel(); }
 	void scrollToFirstNote();
 	void startNotePixmapUpdates(); ///< Starts creating pixmaps for NoteLabels
+	void forcedNotePixmapUpdate();
 
 signals:
 	void analyzeProgress(int, int);

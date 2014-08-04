@@ -199,6 +199,14 @@ void NoteGraphWidget::startNotePixmapUpdates()
 	m_nextNotePixmap = 0;
 }
 
+void NoteGraphWidget::forcedNotePixmapUpdate() { //things like split and open often don't trigger the timer event, do a forced update of the pixmaps here
+	m_nextNotePixmap = 0;
+	while (m_nextNotePixmap < m_notes.size()) {
+		m_notes[m_nextNotePixmap]->createPixmap();
+		++m_nextNotePixmap;
+	}
+}
+
 void NoteGraphWidget::paintEvent(QPaintEvent*)
 {
 	setFixedSize(s2px(m_duration), height());
