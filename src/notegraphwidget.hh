@@ -90,10 +90,10 @@ protected:
 	void calcViewport(int &x1, int &y1, int &x2, int &y2) const;
 
 	// Zoom settings
-	static const double zoomStep = 0.5;  ///< Mouse wheel steps * zoomStep => double/half zoom factor
+	static const double zoomStep;  ///< Mouse wheel steps * zoomStep => double/half zoom factor
 	static const int zoomMin = -12;  ///< Number of steps to minimum zoom
 	static const int zoomMax = 6;  ///< Number of steps to maximum zoom
-	static const double ppsNormal = 200.0;  ///< Pixels per second with default zoom
+	static const double ppsNormal;  ///< Pixels per second with default zoom
 	double m_pixelsPerSecond;
 
 	NoteLabels m_notes;

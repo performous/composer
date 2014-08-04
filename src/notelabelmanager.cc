@@ -14,6 +14,10 @@
 
 
 /*static*/ const QString NoteLabelManager::MimeType = "application/x-notelabels";
+//to silence the MSVC compiler
+/*static*/ const double NoteLabelManager::zoomStep = 0.5;
+/*static*/ const double NoteLabelManager::ppsNormal = 200.0;
+
 
 NoteLabelManager::NoteLabelManager(QWidget *parent)
 	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal), m_duration(10.0)

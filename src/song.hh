@@ -63,7 +63,7 @@ class Song {
 	int randomIdx; ///< sorting index used for random order
 	void insertVocalTrack(QString vocalTrack, VocalTrack track) {
 		vocalTracks.erase(vocalTrack);
-		vocalTracks.insert(std::make_pair<QString, VocalTrack>(vocalTrack, track));
+		vocalTracks.insert(std::make_pair(vocalTrack, track)); //remove type specification to remove compile error
 	}
 	// Get a selected track, or LEAD_VOCAL if not found or the first one if not found
 	VocalTrack& getVocalTrack(QString vocalTrack = TrackName::LEAD_VOCAL) {
