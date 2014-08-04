@@ -142,16 +142,6 @@ void FFmpeg::decodeNextFrame() {
 		}
 	};
 
-	struct AVFrameWrapper {
-		AVFrame* m_frame;
-		AVFrameWrapper(): m_frame(avcodec_alloc_frame()) {
-			if (!m_frame) throw std::runtime_error("Unable to allocate AVFrame");
-		}
-		~AVFrameWrapper() { av_free(m_frame); }
-		operator AVFrame*() { return m_frame; }
-		AVFrame* operator->() { return m_frame; }
-	} videoFrame;
-
 	int frameFinished=0;
 	std::vector<char, AvMalloc<char> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 	while (!frameFinished) {
@@ -163,12 +153,8 @@ void FFmpeg::decodeNextFrame() {
 				int outsize = decodedBuffer.size();  // In bytes
 				int bytesUsed;
 				{
-					short* decodedPtr = reinterpret_cast<short*>(&decodedBuffer[0]);
-#if LIBAVCODEC_VERSION_INT > ((52<<16)+(25<<8)+0)
-					bytesUsed = avcodec_decode_audio3(pAudioCodecCtx, decodedPtr, &outsize, &packet);
-#else
-					bytesUsed = avcodec_decode_audio2(pAudioCodecCtx, decodedPtr, &outsize, packet.data + packetPos, packet.size - packetPos);
-#endif
+					AVFrame* m_frame = avcodec_alloc_frame();
+					bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&outsize, &packet);
 				}
 				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
 				packetPos += bytesUsed;
