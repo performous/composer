@@ -136,6 +136,9 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 
+private slots:
+	void on_actionSoramimi_TXT_triggered();
+
 private:
 	Ui::EditorApp ui;
 	GettingStartedDialog *gettingStarted;
