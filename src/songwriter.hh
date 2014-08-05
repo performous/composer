@@ -50,3 +50,12 @@ private:
 	void writeLRC() const;
 	QString sec2timestamp(double sec) const;
 };
+
+struct SMMWriter: public SongWriter
+{
+	SMMWriter(const Song& s_, const QString& path_)
+		: SongWriter(s_,path_) { writeSMM(); }
+private:
+	void writeSMM() const;
+	QString sec2timestamp(double sec) const;
+};
