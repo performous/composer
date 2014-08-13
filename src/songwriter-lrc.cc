@@ -1,8 +1,10 @@
 #include "songwriter.hh"
-#include "config.hh"
 #include "util.hh"
 #include <cmath>
 #include <QTextStream>
+
+#define PACKAGE "composer"
+#define VERSION 2
 
 
 void LRCWriter::writeLRC() const {
