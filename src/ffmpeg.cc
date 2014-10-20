@@ -12,6 +12,11 @@
 extern "C" {
 #include AVCODEC_INCLUDE
 #include AVFORMAT_INCLUDE
+#include SWSCALE_INCLUDE
+#include AVRESAMPLE_INCLUDE
+#include AVUTIL_INCLUDE
+#include AVUTIL_OPT_INCLUDE
+#include AVUTIL_MATH_INCLUDE
 }
 
 /// A custom allocator that uses av_malloc for aligned buffers
@@ -50,7 +55,7 @@ FFmpeg::~FFmpeg() {
 	QMutexLocker l(&s_avcodec_mutex); // avcodec_close is not thread-safe
 	if (pAudioCodecCtx) avcodec_close(pAudioCodecCtx);
 	if (pFormatCtx) avformat_close_input(&pFormatCtx);
-}
+	}
 
 double FFmpeg::duration() const {
 	double d = m_running ? pFormatCtx->duration / double(AV_TIME_BASE) : getNaN();
@@ -84,6 +89,16 @@ void FFmpeg::open() {
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
 	if (avcodec_open2(cc, pAudioCodec, NULL) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;
+	m_resampleContext = avresample_alloc_context();
+	av_opt_set_int(m_resampleContext, "in_channel_layout", pAudioCodecCtx->channel_layout ? pAudioCodecCtx->channel_layout : av_get_default_channel_layout(pAudioCodecCtx->channels), 0);
+	av_opt_set_int(m_resampleContext, "out_channel_layout", av_get_default_channel_layout(2), 0);
+	av_opt_set_int(m_resampleContext, "in_sample_rate", pAudioCodecCtx->sample_rate, 0);
+	av_opt_set_int(m_resampleContext, "out_sample_rate", m_rate, 0);
+	av_opt_set_int(m_resampleContext, "in_sample_fmt", pAudioCodecCtx->sample_fmt, 0);
+	av_opt_set_int(m_resampleContext, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+	avresample_open(m_resampleContext);
+	if (!m_resampleContext) throw std::runtime_error("Cannot create resampling context");
+
 }
 
 void FFmpeg::run() {
@@ -160,20 +175,25 @@ void FFmpeg::decodeNextFrame() {
 				packetPos += bytesUsed;
 				// Update position if timecode is available
 				if (packet.time() == packet.time()) m_position = packet.time();
+				//resample here!
+				uint8_t * ptr = (uint8_t *)&decodedBuffer[0]; //FIXME:UGLY UGLY c-style casts!
+				uint8_t ** inPointer = &ptr;
+				int16_t * output;
+				int out_linesize;
+				int out_samples = avresample_available(m_resampleContext) +
+					av_rescale_rnd(avresample_get_delay(m_resampleContext) +
+					outsize, pAudioCodecCtx->sample_rate, m_rate, AV_ROUND_UP);
+				av_samples_alloc((uint8_t**)&output, &out_linesize, 2, out_samples,AV_SAMPLE_FMT_S16, 0);
+				out_samples = avresample_convert(m_resampleContext, (uint8_t**)&output, 0, out_samples, inPointer, 0, decodedBuffer.size());
+				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
 #define OUTPUT_SAMPLES(TYPE, MAX_VALUE) \
 	{\
 		outsize /= sizeof(TYPE); /* Convert bytes into samples */ \
-		TYPE* samples = reinterpret_cast<TYPE*>(&decodedBuffer[0]);\
+		TYPE* samples = reinterpret_cast<TYPE*>(&m_output[0]);\
 		audioQueue.input(samples, samples + outsize, 1.0 / MAX_VALUE);\
 	}
-				switch (pAudioCodecCtx->sample_fmt) {
-					case AV_SAMPLE_FMT_S16: OUTPUT_SAMPLES(short, 32767.0); break;
-					case AV_SAMPLE_FMT_S32: OUTPUT_SAMPLES(int, 8388607.0); break; // 24 bit samples padded to 32 bits
-					case AV_SAMPLE_FMT_FLT: OUTPUT_SAMPLES(float, 1.0); break;
-					case AV_SAMPLE_FMT_DBL: OUTPUT_SAMPLES(double, 1.0); break;
-					default: throw std::runtime_error("Unsupported sample format");
-				}
+	OUTPUT_SAMPLES(short, 32767.0); break; //we only have S16 now!
 #undef OUTPUT_SAMPLES
 				m_position += outsize / audioQueue.samplesPerSecond();  // New position in case the next packet doesn't have packet.time()
 			}
