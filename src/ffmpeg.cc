@@ -8,7 +8,7 @@
 // Somehow ffmpeg headers give errors that these are not defined...
 #define INT64_C Q_INT64_C
 #define UINT64_C Q_UINT64_C
-
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 extern "C" {
 #include AVCODEC_INCLUDE
 #include AVFORMAT_INCLUDE
