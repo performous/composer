@@ -19,6 +19,8 @@ extern "C" {
 #include AVUTIL_MATH_INCLUDE
 }
 
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 24000
+
 /// A custom allocator that uses av_malloc for aligned buffers
 template <typename T> class AvMalloc: public std::allocator<T> {
 public:
@@ -38,7 +40,7 @@ private:
 
 FFmpeg::FFmpeg(std::string const& _filename):
   m_filename(_filename), m_quit(), m_running(), m_eof(),
-  pFormatCtx(), pAudioCodecCtx(), pAudioCodec(),
+  pFormatCtx(), pAudioCodecCtx(), pAudioCodec(), m_rate(48000),
   audioStream(-1), m_position()
 {
 	open(); // Throws on error
@@ -168,7 +170,7 @@ void FFmpeg::decodeNextFrame() {
 				int outsize = decodedBuffer.size();  // In bytes
 				int bytesUsed;
 				{
-					AVFrame* m_frame = avcodec_alloc_frame();
+					AVFrame* m_frame = av_frame_alloc();
 					bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&outsize, &packet);
 				}
 				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
