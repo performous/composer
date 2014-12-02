@@ -179,7 +179,7 @@ void FFmpeg::decodeNextFrame() {
 				if (packet.time() == packet.time()) m_position = packet.time();
 				//resample here!
 				uint8_t * ptr = (uint8_t *)&decodedBuffer[0]; //FIXME:UGLY UGLY c-style casts!
-				uint8_t ** inPointer = &ptr;
+				uint8_t ** inPointer = &ptr; //looks silly, because it IS, but it works..	.
 				int16_t * output;
 				int out_linesize;
 				int out_samples = avresample_available(m_resampleContext) +
@@ -189,14 +189,9 @@ void FFmpeg::decodeNextFrame() {
 				out_samples = avresample_convert(m_resampleContext, (uint8_t**)&output, 0, out_samples, inPointer, 0, decodedBuffer.size());
 				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
-#define OUTPUT_SAMPLES(TYPE, MAX_VALUE) \
-	{\
-		outsize /= sizeof(TYPE); /* Convert bytes into samples */ \
-		TYPE* samples = reinterpret_cast<TYPE*>(&m_output[0]);\
-		audioQueue.input(samples, samples + outsize, 1.0 / MAX_VALUE);\
-	}
-	OUTPUT_SAMPLES(short, 32767.0); break; //we only have S16 now!
-#undef OUTPUT_SAMPLES
+				outsize = sizeof(short); /* Convert bytes into samples */ \
+				short* samples = reinterpret_cast<short*>(&m_output[0]);\
+				audioQueue.input(samples, samples + outsize, 1.0 / 32767.0);\
 				m_position += outsize / audioQueue.samplesPerSecond();  // New position in case the next packet doesn't have packet.time()
 			}
 			// Audio frames are always finished
