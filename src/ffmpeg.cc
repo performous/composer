@@ -160,39 +160,34 @@ void FFmpeg::decodeNextFrame() {
 	};
 
 	int frameFinished=0;
-	std::vector<char, AvMalloc<char> > decodedBuffer(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 	while (!frameFinished) {
 		ReadFramePacket packet(pFormatCtx);
 		unsigned packetPos = 0;
 		if (packet.stream_index==audioStream) {
 			while (packetPos < packet.size) {
 				if (m_quit || m_seekTarget == m_seekTarget) return;
-				int outsize = decodedBuffer.size();  // In bytes
 				int bytesUsed;
-				{
-					AVFrame* m_frame = av_frame_alloc();
-					bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&outsize, &packet);
-				}
+				AVFrame* m_frame = av_frame_alloc();
+				int gotFramePointer = 0;
+				bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&gotFramePointer, &packet);
 				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
 				packetPos += bytesUsed;
 				// Update position if timecode is available
 				if (packet.time() == packet.time()) m_position = packet.time();
 				//resample here!
-				uint8_t * ptr = (uint8_t *)&decodedBuffer[0]; //FIXME:UGLY UGLY c-style casts!
-				uint8_t ** inPointer = &ptr; //looks silly, because it IS, but it works..	.
 				int16_t * output;
 				int out_linesize;
 				int out_samples = avresample_available(m_resampleContext) +
 					av_rescale_rnd(avresample_get_delay(m_resampleContext) +
-					outsize, pAudioCodecCtx->sample_rate, m_rate, AV_ROUND_UP);
+					m_frame->nb_samples, m_frame->sample_rate, m_rate, AV_ROUND_UP);
 				av_samples_alloc((uint8_t**)&output, &out_linesize, 2, out_samples,AV_SAMPLE_FMT_S16, 0);
-				out_samples = avresample_convert(m_resampleContext, (uint8_t**)&output, 0, out_samples, inPointer, 0, decodedBuffer.size());
+				out_samples = avresample_convert(m_resampleContext, (uint8_t**)&output, 0, out_samples, &m_frame->data[0], 0, m_frame->nb_samples);
 				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
-				outsize = sizeof(short); /* Convert bytes into samples */ \
+				int outsize = m_output.size(); /* Convert bytes into samples */ \
 				short* samples = reinterpret_cast<short*>(&m_output[0]);\
 				audioQueue.input(samples, samples + outsize, 1.0 / 32767.0);\
-				m_position += outsize / audioQueue.samplesPerSecond();  // New position in case the next packet doesn't have packet.time()
+				m_position += double(out_samples)/m_rate;  // New position in case the next packet doesn't have packet.time()
 			}
 			// Audio frames are always finished
 			frameFinished = 1;
