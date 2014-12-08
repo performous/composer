@@ -76,11 +76,13 @@ private:
 };
 
 // ffmpeg forward declarations
+// ffmpeg forward declarations
 extern "C" {
   struct AVCodec;
   struct AVCodecContext;
   struct AVFormatContext;
-  struct ReSampleContext;
+  struct AVFrame;
+  struct AVAudioResampleContext;
   struct SwsContext;
 }
 
@@ -112,7 +114,7 @@ class FFmpeg: public QThread {
 	volatile bool m_eof;
 	volatile double m_seekTarget;
 	AVFormatContext* pFormatCtx;
-
+	AVAudioResampleContext* m_resampleContext;
 	AVCodecContext* pAudioCodecCtx;
 	AVCodec* pAudioCodec;
 
