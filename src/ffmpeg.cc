@@ -167,7 +167,11 @@ void FFmpeg::decodeNextFrame() {
 			while (packetPos < packet.size) {
 				if (m_quit || m_seekTarget == m_seekTarget) return;
 				int bytesUsed;
+				#if (LIBAVCODEC_VERSION_INT) > (AV_VERSION_INT(55,0,0))
 				AVFrame* m_frame = av_frame_alloc();
+				#else
+				AVFrame* m_frame = avcodec_alloc_frame();
+				#endif
 				int gotFramePointer = 0;
 				bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&gotFramePointer, &packet);
 				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
