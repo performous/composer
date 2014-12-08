@@ -139,6 +139,10 @@ protected:
 private slots:
 	void on_actionSoramimi_TXT_triggered();
 
+	void on_SliderPlaybackRate_sliderMoved(int position);
+
+	void on_labelPlayBackRate_linkActivated(const QString &link);
+
 private:
 	Ui::EditorApp ui;
 	GettingStartedDialog *gettingStarted;
