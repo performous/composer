@@ -19,8 +19,6 @@ extern "C" {
 #include AVUTIL_MATH_INCLUDE
 }
 
-#define AVCODEC_MAX_AUDIO_FRAME_SIZE 24000
-
 /// A custom allocator that uses av_malloc for aligned buffers
 template <typename T> class AvMalloc: public std::allocator<T> {
 public:
