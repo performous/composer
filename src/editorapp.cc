@@ -1113,11 +1113,9 @@ void Piano::mouseMoveEvent(QMouseEvent *event)
 	updatePixmap(NULL);
 }
 
-
-
-void EditorApp::on_SliderPlaybackRate_sliderMoved(int position)
+void EditorApp::on_SliderPlaybackRate_valueChanged(int value)
 {
-	double pos(position);
+	double pos(value);
 	qreal playbackRate(pos/100); //qreal is actually a double
 	player->setPlaybackRate(playbackRate);
 	QLabel * label = this->findChild<QLabel*>("labelPlayBackRate");
