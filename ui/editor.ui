@@ -306,7 +306,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>playback rate: 1</string>
+           <string>Playback rate: 1</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
