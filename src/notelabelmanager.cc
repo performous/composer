@@ -534,4 +534,5 @@ void NoteLabelManager::paste()
 		}
 	}
 	emit updateNoteInfo(selectedNote());
+	forcedNotePixmapUpdate();
 }

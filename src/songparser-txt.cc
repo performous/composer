@@ -57,7 +57,7 @@ bool SongParser::txtParseField(QString const& line) {
 	else if (key == "PREVIEWSTART") m_song.preview_start = value.toDouble(&ok);
 	else if (key == "RELATIVE") assign(m_relative, value);
 	else if (key == "GAP") { m_gap = value.toDouble(&ok); m_gap *= 1e-3; }
-	else if (key == "BPM") m_song.bpm = value.toDouble(&ok);
+	else if (key == "BPM") m_song.bpm = value.replace(',','.').toDouble(&ok);
 	else if (key == "LANGUAGE") m_song.language= value;
 	else if (key == "YEAR") m_song.year = value;
 

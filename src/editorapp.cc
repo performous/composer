@@ -1115,4 +1115,9 @@ void Piano::mouseMoveEvent(QMouseEvent *event)
 	updatePixmap(NULL);
 }
 
-
+void EditorApp::on_SliderPlaybackRate_valueChanged(int value)
+{
+	qreal playbackRate = value / 100.0; //qreal is actually a double
+	player->setPlaybackRate(playbackRate);
+	ui.labelPlayBackRate->setText(tr("Playback rate: ") + QString::number(playbackRate));
+}

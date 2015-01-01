@@ -139,6 +139,8 @@ protected:
 private slots:
 	void on_actionSoramimi_TXT_triggered();
 
+	void on_SliderPlaybackRate_valueChanged(int value);
+
 private:
 	Ui::EditorApp ui;
 	GettingStartedDialog *gettingStarted;

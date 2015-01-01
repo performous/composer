@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
+    <width>531</width>
     <height>320</height>
    </rect>
   </property>
@@ -73,19 +73,6 @@
          </property>
          <property name="textFormat">
           <enum>Qt::RichText</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="openExternalLinks">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblWikiLink">
-         <property name="text">
-          <string>Online documentation: &lt;a href=&quot;http://wiki.performous.org/index.php/Composer&quot;&gt;http://wiki.performous.org/index.php/Composer&lt;/a&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
