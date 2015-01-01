@@ -1,8 +1,7 @@
 #include "songwriter.hh"
+#include "config.hh"
 #include "util.hh"
 #include <QTextStream>
-#define PACKAGE "composer"
-#define VERSION 2
 
 
 void UltraStarTXTWriter::writeTXT() const {

@@ -14,6 +14,7 @@
 #include <QTimer>
 #include <QMediaPlayer>
 #include <iostream>
+#include "config.hh"
 #include "editorapp.hh"
 #include "notelabel.hh"
 #include "songparser.hh"
@@ -21,9 +22,6 @@
 #include "textcodecselector.hh"
 #include "gettingstarted.hh"
 #include "busydialog.hh"
-
-#define PACKAGE "composer"
-#define VERSION 2.0
 
 namespace {
 	static const QString PROJECT_SAVE_FILE_EXTENSION = "songproject"; // FIXME: Nice extension here

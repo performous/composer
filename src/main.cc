@@ -1,11 +1,8 @@
 #include <QApplication>
 #include <QTranslator>
 #include <iostream>
+#include "config.hh"
 #include "editorapp.hh"
-
-#define APPNAME "Composer"
-#define PACKAGE "composer"
-#define VERSION 2
 
 #ifdef STATIC_PLUGINS
 #include <QtPlugin>
@@ -19,7 +16,7 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 	// These values are used by e.g. Phonon and QSettings
 	app.setApplicationName(PACKAGE);
-	app.setApplicationVersion(QString(VERSION));
+	app.setApplicationVersion(VERSION);
 	app.setOrganizationName("Performous Team");
 	app.setOrganizationDomain("performous.org");
 
