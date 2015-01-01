@@ -96,8 +96,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimum">
+           <number>50</number>
+          </property>
           <property name="maximum">
-           <number>200</number>
+           <number>150</number>
           </property>
           <property name="value">
            <number>100</number>
@@ -303,7 +306,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>playback rate: 1</string>
+           <string>Playback rate: 1</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -769,7 +772,7 @@
   </action>
   <action name="actionSoramimi_TXT">
    <property name="text">
-    <string>Soramimi-TXT</string>
+    <string>Sora&amp;mimi-TXT...</string>
    </property>
   </action>
  </widget>
