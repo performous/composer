@@ -52,13 +52,13 @@ bool SongParser::txtParseField(QString const& line) {
 	else if (key == "VOCALS") m_song.music["vocals"] = m_song.path + value;
 	else if (key == "VIDEO") m_song.video = value;
 	else if (key == "BACKGROUND") m_song.background = value;
-	else if (key == "START") m_song.start = value.toDouble(&ok);
-	else if (key == "VIDEOGAP") m_song.videoGap = value.toDouble(&ok);
-	else if (key == "PREVIEWSTART") m_song.preview_start = value.toDouble(&ok);
+	else if (key == "START") m_song.start = value.replace(',','.').toDouble(&ok);
+	else if (key == "VIDEOGAP") m_song.videoGap = value.replace(',','.').toDouble(&ok);
+	else if (key == "PREVIEWSTART") m_song.preview_start = value.replace(',','.').toDouble(&ok);
 	else if (key == "RELATIVE") assign(m_relative, value);
-	else if (key == "GAP") { m_gap = value.toDouble(&ok); m_gap *= 1e-3; }
+	else if (key == "GAP") { m_gap = value.replace(',','.').toDouble(&ok); m_gap *= 1e-3; }
 	else if (key == "BPM") m_song.bpm = value.replace(',','.').toDouble(&ok);
-	else if (key == "LANGUAGE") m_song.language= value;
+	else if (key == "LANGUAGE") m_song.language = value;
 	else if (key == "YEAR") m_song.year = value;
 
 	if (!ok) throw std::runtime_error(QString("Invalid value for %1: %2").arg(key).arg(value).toStdString());
