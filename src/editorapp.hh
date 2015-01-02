@@ -72,6 +72,7 @@ public slots:
 	void audioTick(qint64 time);
 	void playerStateChanged(QMediaPlayer::State state);
 	void playerError(QMediaPlayer::Error error);
+	void playbackRateChanged(qreal rate);
 	void playBuffer(const QByteArray& buffer);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);

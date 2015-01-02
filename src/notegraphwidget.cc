@@ -32,7 +32,8 @@ namespace {
 
 NoteGraphWidget::NoteGraphWidget(QWidget *parent)
 	: NoteLabelManager(parent), m_mouseHotSpot(), m_seeking(), m_actionHappened(),
-	m_seekHandle(this), m_nextNotePixmap(), m_notePixmapTimer(), m_analyzeTimer(), m_playbackTimer(), m_playbackPos(), m_pixmap(), m_pixmapPos()
+	m_seekHandle(this), m_nextNotePixmap(), m_notePixmapTimer(), m_analyzeTimer(),
+	m_playbackTimer(), m_playbackPos(), m_playbackRate(1.0), m_pixmap(), m_pixmapPos()
 {
 	setProperty("darkBackground", true);
 	setStyleSheet("QLabel[darkBackground=\"true\"] { background: " + BGColor + "; }");
@@ -156,7 +157,8 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 {
 	if (event->timerId() == m_playbackTimer) {
 		// Playback position update
-		m_playbackPos += m_playbackInterval.restart();
+		m_playbackPos += m_playbackInterval.restart() * m_playbackRate;
+		std::cout << m_playbackPos << "    " << m_playbackRate << std::endl;
 		updateMusicPos(m_playbackPos);
 
 	} else if (event->timerId() == m_analyzeTimer && m_pitch[0]) {
@@ -199,12 +201,19 @@ void NoteGraphWidget::startNotePixmapUpdates()
 	m_nextNotePixmap = 0;
 }
 
-void NoteGraphWidget::forcedNotePixmapUpdate() { //things like split and open often don't trigger the timer event, do a forced update of the pixmaps here
+void NoteGraphWidget::forcedNotePixmapUpdate()
+{
+	// Things like split and open often don't trigger the timer event, do a forced update of the pixmaps here
 	m_nextNotePixmap = 0;
 	while (m_nextNotePixmap < m_notes.size()) {
 		m_notes[m_nextNotePixmap]->createPixmap();
 		++m_nextNotePixmap;
 	}
+}
+
+void NoteGraphWidget::playbackRateChanged(qreal rate)
+{
+	m_playbackRate = rate;
 }
 
 void NoteGraphWidget::paintEvent(QPaintEvent*)

@@ -126,6 +126,7 @@ EditorApp::EditorApp(QWidget *parent)
 	connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
 	connect(player, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(playerError(QMediaPlayer::Error)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
+	connect(player, SIGNAL(playbackRateChanged(qreal)), this, SLOT(playbackRateChanged(qreal)));
 
 	// The piano keys
 	piano = new Piano(ui.topFrame);
@@ -890,6 +891,12 @@ void EditorApp::playerError(QMediaPlayer::Error)
 	QString errst(tr("Error playing audio!"));
 	if (player) errst += " " + player->errorString();
 	QMessageBox::critical(this, tr("Playback error"), errst);
+}
+
+void EditorApp::playbackRateChanged(qreal rate)
+{
+	if (noteGraph)
+		noteGraph->playbackRateChanged(rate);
 }
 
 void EditorApp::playBuffer(const QByteArray& buffer)
