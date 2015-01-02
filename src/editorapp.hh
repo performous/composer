@@ -92,6 +92,7 @@ public slots:
 	void on_actionUltraStarTXT_triggered();
 	void on_actionFoFMIDI_triggered();
 	void on_actionLRC_triggered();
+	void on_actionSoramimiTXT_triggered();
 	void on_actionLyricsToFile_triggered();
 	void on_actionLyricsToClipboard_triggered();
 	void on_actionExit_triggered();
@@ -132,15 +133,10 @@ public slots:
 	void on_cmbNoteType_activated(int state);
 	void on_chkFloating_clicked(bool checked);
 	void on_chkLineBreak_clicked(bool checked);
+	void on_sliderPlaybackRate_valueChanged(int value);
 
 protected:
 	void closeEvent(QCloseEvent *event);
-
-
-private slots:
-	void on_actionSoramimi_TXT_triggered();
-
-	void on_SliderPlaybackRate_valueChanged(int value);
 
 private:
 	Ui::EditorApp ui;

@@ -516,7 +516,7 @@ void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Fret
 
 void EditorApp::on_actionLRC_triggered() { exportSong("LRC", tr("Export LRC")); }
 
-void EditorApp::on_actionSoramimi_TXT_triggered() {exportSong("SMM", tr("Export Soramimi-TXT")); }
+void EditorApp::on_actionSoramimiTXT_triggered() { exportSong("SMM", tr("Export Soramimi TXT")); }
 
 
 void EditorApp::on_actionLyricsToFile_triggered()
@@ -1121,7 +1121,7 @@ void Piano::mouseMoveEvent(QMouseEvent *event)
 	updatePixmap(NULL);
 }
 
-void EditorApp::on_SliderPlaybackRate_valueChanged(int value)
+void EditorApp::on_sliderPlaybackRate_valueChanged(int value)
 {
 	qreal playbackRate = value / 100.0; //qreal is actually a double
 	player->setPlaybackRate(playbackRate);

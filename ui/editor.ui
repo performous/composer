@@ -89,7 +89,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="3" column="2">
-         <widget class="QSlider" name="SliderPlaybackRate">
+         <widget class="QSlider" name="sliderPlaybackRate">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -440,7 +440,7 @@
      <addaction name="actionFoFMIDI"/>
      <addaction name="separator"/>
      <addaction name="actionLRC"/>
-     <addaction name="actionSoramimi_TXT"/>
+     <addaction name="actionSoramimiTXT"/>
      <addaction name="separator"/>
      <addaction name="actionLyricsToFile"/>
      <addaction name="actionLyricsToClipboard"/>
@@ -770,9 +770,9 @@
     <string>Select all a&amp;fter</string>
    </property>
   </action>
-  <action name="actionSoramimi_TXT">
+  <action name="actionSoramimiTXT">
    <property name="text">
-    <string>Sora&amp;mimi-TXT...</string>
+    <string>Sora&amp;mimi TXT...</string>
    </property>
   </action>
  </widget>
