@@ -140,6 +140,8 @@ EditorApp::EditorApp(QWidget *parent)
 	setupNoteGraph();
 	updateNoteInfo(NULL);
 
+	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
+
 	piano->updatePixmap(noteGraph);
 
 	song.reset(new Song);
@@ -156,7 +158,7 @@ EditorApp::EditorApp(QWidget *parent)
 void EditorApp::setupNoteGraph()
 {
 	noteGraph = new NoteGraphWidget(NULL);
-	ui.noteGraphScroller->setWidget(noteGraph);
+	ui.noteGraphScroller->setWidget(noteGraph); // Deletes previous widget
 
 	// Splitter sizes cannot be set through designer :(
 	//QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
@@ -175,7 +177,6 @@ void EditorApp::setupNoteGraph()
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
-	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(setPosition(qint64)));
@@ -337,7 +338,7 @@ void EditorApp::analyzeProgress(int value, int maximum)
 void EditorApp::on_actionNew_triggered()
 {
 	if (promptSaving()) {
-		//player->clear();
+		player->setMedia(NULL);
 		song.reset(new Song);
 		setupNoteGraph();
 		projectFileName = "";
@@ -845,10 +846,11 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 void EditorApp::on_cmdPlay_clicked()
 {
 	if (player) {
-		if (player->currentMedia().isNull()) {
+		// Can't use currentMedia().isNull() because it will always return false after first set
+		if (player->currentMedia().canonicalUrl().isEmpty()) {
 			on_actionMusicFile_triggered();
 		} else {
-			if (player && player->state() == QMediaPlayer::PlayingState) player->pause();
+			if (player->state() == QMediaPlayer::PlayingState) player->pause();
 			else player->play();
 		}
 	}
@@ -895,8 +897,7 @@ void EditorApp::playerError(QMediaPlayer::Error)
 
 void EditorApp::playbackRateChanged(qreal rate)
 {
-	if (noteGraph)
-		noteGraph->playbackRateChanged(rate);
+	if (noteGraph) noteGraph->playbackRateChanged(rate);
 }
 
 void EditorApp::playBuffer(const QByteArray& buffer)
@@ -974,7 +975,7 @@ void EditorApp::closeEvent(QCloseEvent *event)
 }
 
 void EditorApp::readSettings()
- {
+{
 	QSettings settings; // Default QSettings parameters given in main()
 	// Read values
 	QPoint pos = settings.value("pos", QPoint()).toPoint();
