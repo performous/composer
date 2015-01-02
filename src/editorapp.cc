@@ -874,7 +874,7 @@ void EditorApp::audioTick(qint64 time)
 				--numberOfNotesToPass;
 			}
 		}
-		synth->tick(time, notes);
+		synth->tick(time, player ? player->playbackRate() : 1.0, notes);
 	}
 }
 
