@@ -158,7 +158,6 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 	if (event->timerId() == m_playbackTimer) {
 		// Playback position update
 		m_playbackPos += m_playbackInterval.restart() * m_playbackRate;
-		std::cout << m_playbackPos << "    " << m_playbackRate << std::endl;
 		updateMusicPos(m_playbackPos);
 
 	} else if (event->timerId() == m_analyzeTimer && m_pitch[0]) {
