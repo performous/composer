@@ -346,6 +346,7 @@ void EditorApp::on_actionNew_triggered()
 		redoStack.clear();
 		updateNoteInfo(NULL);
 		statusbarProgress->hide();
+		statusbarButton->hide();
 		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
 		ui.valMusicFile->clear();
 		setWindowModified(false);
