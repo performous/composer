@@ -126,6 +126,7 @@ EditorApp::EditorApp(QWidget *parent)
 	connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
 	connect(player, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(playerError(QMediaPlayer::Error)));
 	connect(player, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
+	connect(player, SIGNAL(playbackRateChanged(qreal)), this, SLOT(playbackRateChanged(qreal)));
 
 	// The piano keys
 	piano = new Piano(ui.topFrame);
@@ -138,6 +139,8 @@ EditorApp::EditorApp(QWidget *parent)
 	// NoteGraph setup down here so that the objects we setup signals are already created
 	setupNoteGraph();
 	updateNoteInfo(NULL);
+
+	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 
 	piano->updatePixmap(noteGraph);
 
@@ -155,7 +158,7 @@ EditorApp::EditorApp(QWidget *parent)
 void EditorApp::setupNoteGraph()
 {
 	noteGraph = new NoteGraphWidget(NULL);
-	ui.noteGraphScroller->setWidget(noteGraph);
+	ui.noteGraphScroller->setWidget(noteGraph); // Deletes previous widget
 
 	// Splitter sizes cannot be set through designer :(
 	//QList<int> ss; ss.push_back(700); ss.push_back(300); // Proportions, not pixels
@@ -174,7 +177,6 @@ void EditorApp::setupNoteGraph()
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
-	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(setPosition(qint64)));
@@ -336,7 +338,7 @@ void EditorApp::analyzeProgress(int value, int maximum)
 void EditorApp::on_actionNew_triggered()
 {
 	if (promptSaving()) {
-		//player->clear();
+		player->setMedia(NULL);
 		song.reset(new Song);
 		setupNoteGraph();
 		projectFileName = "";
@@ -344,6 +346,7 @@ void EditorApp::on_actionNew_triggered()
 		redoStack.clear();
 		updateNoteInfo(NULL);
 		statusbarProgress->hide();
+		statusbarButton->hide();
 		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
 		ui.valMusicFile->clear();
 		setWindowModified(false);
@@ -514,7 +517,7 @@ void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Fret
 
 void EditorApp::on_actionLRC_triggered() { exportSong("LRC", tr("Export LRC")); }
 
-void EditorApp::on_actionSoramimi_TXT_triggered() {exportSong("SMM", tr("Export Soramimi-TXT")); }
+void EditorApp::on_actionSoramimiTXT_triggered() { exportSong("SMM", tr("Export Soramimi TXT")); }
 
 
 void EditorApp::on_actionLyricsToFile_triggered()
@@ -844,10 +847,11 @@ void EditorApp::on_chkSynth_clicked(bool checked)
 void EditorApp::on_cmdPlay_clicked()
 {
 	if (player) {
-		if (player->currentMedia().isNull()) {
+		// Can't use currentMedia().isNull() because it will always return false after first set
+		if (player->currentMedia().canonicalUrl().isEmpty()) {
 			on_actionMusicFile_triggered();
 		} else {
-			if (player && player->state() == QMediaPlayer::PlayingState) player->pause();
+			if (player->state() == QMediaPlayer::PlayingState) player->pause();
 			else player->play();
 		}
 	}
@@ -871,7 +875,7 @@ void EditorApp::audioTick(qint64 time)
 				--numberOfNotesToPass;
 			}
 		}
-		synth->tick(time, notes);
+		synth->tick(time, player ? player->playbackRate() : 1.0, notes);
 	}
 }
 
@@ -890,6 +894,11 @@ void EditorApp::playerError(QMediaPlayer::Error)
 	QString errst(tr("Error playing audio!"));
 	if (player) errst += " " + player->errorString();
 	QMessageBox::critical(this, tr("Playback error"), errst);
+}
+
+void EditorApp::playbackRateChanged(qreal rate)
+{
+	if (noteGraph) noteGraph->playbackRateChanged(rate);
 }
 
 void EditorApp::playBuffer(const QByteArray& buffer)
@@ -967,7 +976,7 @@ void EditorApp::closeEvent(QCloseEvent *event)
 }
 
 void EditorApp::readSettings()
- {
+{
 	QSettings settings; // Default QSettings parameters given in main()
 	// Read values
 	QPoint pos = settings.value("pos", QPoint()).toPoint();
@@ -1113,7 +1122,7 @@ void Piano::mouseMoveEvent(QMouseEvent *event)
 	updatePixmap(NULL);
 }
 
-void EditorApp::on_SliderPlaybackRate_valueChanged(int value)
+void EditorApp::on_sliderPlaybackRate_valueChanged(int value)
 {
 	qreal playbackRate = value / 100.0; //qreal is actually a double
 	player->setPlaybackRate(playbackRate);

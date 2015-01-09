@@ -11,9 +11,10 @@
 #endif
 
 
-void Synth::tick(qint64 pos, const SynthNotes& notes) {
+void Synth::tick(qint64 pos, qreal playbackRate, const SynthNotes& notes) {
 	QMutexLocker locker(&m_mutex);
 	m_pos = pos / 1000.0;
+	m_rate = playbackRate;
 	m_notes = notes;
 	if (m_notes.isEmpty()) m_quit = true;
 
@@ -100,7 +101,7 @@ void Synth::calcNext() {
 	if (n.begin != m_noteBegin) {
 		// Need to create a new buffer
 		m_noteBegin = n.begin;
-		createBuffer(m_soundData[m_curBuffer], n.note % 12, n.length);
+		createBuffer(m_soundData[m_curBuffer], n.note % 12, n.length / m_rate);
 	}
 	// Compensate for the time spent in this function
 	m_delay -= timer.elapsed() / 1000.0;

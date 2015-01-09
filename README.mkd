@@ -17,3 +17,23 @@ Features
 	- Frets on Fire MIDI
 	- LRC
 
+
+Build & Install
+--------
+
+For building the master branch you will need:
+Qt5:
+Core, Gui, Widgets, Network, XML, Multimedia, Multimedia-widgets, Multimedia-plugins and Platform files
+
+FFmpeg/Libav:
+LibAVCodec, LibAVUtil, LibAVFormat, LibAVResample and/or LibSWResample (when cross-compiling with ffmpeg)
+
+Other:
+Zlib, Xvid, ssleay, libxml, libx264, libvorbis, libtheora, libspeex, libpng, libstdc++, libpcre,
+libopus, libopencore, libogg, libnettle, libmp3lame, liblzma, libintl, libiconv, libhogweed, libharfbuzz, libgnutls, libgmp, glib, libgcc, libfreetype, libeay32, libbz2, libbluray, icuuc, icuin, icudt.
+
+Build for linux:
+To build for linux simply install the required libraries through your distribution's package manager along with CMake. Then create a build folder and use cmake (or cmake-gui) to generate your makefiles. Then make && make install (last command might require root privileges).
+
+Build for Windows:
+todo

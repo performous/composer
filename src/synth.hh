@@ -32,14 +32,14 @@ class Synth: public QThread
 public:
 	static const int SampleRate = 22050; ///< Sample rate
 
-	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_noteBegin(), m_curBuffer(), m_quit()
+	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_rate(1.0), m_noteBegin(), m_curBuffer(), m_quit()
 	{
 		qRegisterMetaType<QByteArray>("QByteArray"); // Register type for use with queued connections
 	}
 	~Synth() { stop(); wait(); }
 
 	/// Updates the synth
-	void tick(qint64 pos, const SynthNotes& notes);
+	void tick(qint64 pos, qreal playbackRate, const SynthNotes& notes);
 	/// Stop synthesizing
 	void stop();
 	/// Creates the sound
@@ -61,6 +61,7 @@ private:
 	SynthNotes m_notes; ///< Notes to synthesize
 	double m_delay; ///< How many seconds until the next sound must be played
 	double m_pos; ///< Position where we are now
+	double m_rate; ///< Music playback speed multiplier
 	double m_noteBegin; ///< Position of the next note
 	QByteArray m_soundData[2]; ///< The WAV buffers
 	int m_curBuffer; ///< Which buffer we are currently using
