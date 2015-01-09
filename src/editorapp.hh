@@ -72,6 +72,7 @@ public slots:
 	void audioTick(qint64 time);
 	void playerStateChanged(QMediaPlayer::State state);
 	void playerError(QMediaPlayer::Error error);
+	void playbackRateChanged(qreal rate);
 	void playBuffer(const QByteArray& buffer);
 	void statusBarMessage(const QString& message);
 	void updatePiano(int y);
@@ -91,6 +92,7 @@ public slots:
 	void on_actionUltraStarTXT_triggered();
 	void on_actionFoFMIDI_triggered();
 	void on_actionLRC_triggered();
+	void on_actionSoramimiTXT_triggered();
 	void on_actionLyricsToFile_triggered();
 	void on_actionLyricsToClipboard_triggered();
 	void on_actionExit_triggered();
@@ -131,15 +133,10 @@ public slots:
 	void on_cmbNoteType_activated(int state);
 	void on_chkFloating_clicked(bool checked);
 	void on_chkLineBreak_clicked(bool checked);
+	void on_sliderPlaybackRate_valueChanged(int value);
 
 protected:
 	void closeEvent(QCloseEvent *event);
-
-
-private slots:
-	void on_actionSoramimi_TXT_triggered();
-
-	void on_SliderPlaybackRate_valueChanged(int value);
 
 private:
 	Ui::EditorApp ui;

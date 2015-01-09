@@ -142,6 +142,7 @@ public slots:
 	void scrollToFirstNote();
 	void startNotePixmapUpdates(); ///< Starts creating pixmaps for NoteLabels
 	void forcedNotePixmapUpdate();
+	void playbackRateChanged(qreal rate);
 
 signals:
 	void analyzeProgress(int, int);
@@ -175,6 +176,7 @@ private:
 	int m_playbackTimer;
 	QElapsedTimer m_playbackInterval;
 	qint64 m_playbackPos;
+	qreal m_playbackRate;
 	QPixmap m_pixmap[MaxPitchVis];
 	QPoint m_pixmapPos[MaxPitchVis];
 };
