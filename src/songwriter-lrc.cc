@@ -31,7 +31,7 @@ void LRCWriter::writeLRC(bool enhancedLRC) const {
 			out << '\n' << sec2timestamp(n.begin);
 		if(enhancedLRC) //if using "enhanced LRC use <> timestamps!
 		out <<  n.syllable << EnhancedLRCsec2timestamp(n.begin);
-		// Output the lyrics
+		else // Output the lyrics
 		out << n.syllable;
 	}
 	out << '\n';
