@@ -440,6 +440,8 @@
      <addaction name="actionFoFMIDI"/>
      <addaction name="separator"/>
      <addaction name="actionLRC"/>
+     <addaction name="actionEnhanced_LRC"/>
+     <addaction name="separator"/>
      <addaction name="actionSoramimiTXT"/>
      <addaction name="separator"/>
      <addaction name="actionLyricsToFile"/>
@@ -773,6 +775,11 @@
   <action name="actionSoramimiTXT">
    <property name="text">
     <string>Sora&amp;mimi TXT...</string>
+   </property>
+  </action>
+  <action name="actionEnhanced_LRC">
+   <property name="text">
+    <string>&amp;Enhanced LRC...</string>
    </property>
   </action>
  </widget>

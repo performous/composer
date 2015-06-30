@@ -501,7 +501,8 @@ void EditorApp::exportSong(QString format, QString dialogTitle)
 			if (format == "XML") SingStarXMLWriter(*song.data(), path);
 			else if (format == "TXT") UltraStarTXTWriter(*song.data(), path);
 			else if (format == "INI") FoFMIDIWriter(*song.data(), path);
-			else if (format == "LRC") LRCWriter(*song.data(), path);
+			else if (format == "LRC") LRCWriter(*song.data(), path, false);
+			else if (format == "ENHANCED LRC") LRCWriter(*song.data(), path, true);
 			else if (format == "SMM") SMMWriter(*song.data(), path);
 		} catch (const std::exception& e) {
 			QMessageBox::critical(this, tr("Error exporting song!"), e.what());
@@ -516,6 +517,8 @@ void EditorApp::on_actionUltraStarTXT_triggered() { exportSong("TXT", tr("Export
 void EditorApp::on_actionFoFMIDI_triggered() { exportSong("INI", tr("Export Frets on Fire MIDI")); }
 
 void EditorApp::on_actionLRC_triggered() { exportSong("LRC", tr("Export LRC")); }
+
+void EditorApp::on_actionEnhanced_LRC_triggered() { exportSong("ENHANCED LRC", tr("Export Enhanced LRC")); }
 
 void EditorApp::on_actionSoramimiTXT_triggered() { exportSong("SMM", tr("Export Soramimi TXT")); }
 
@@ -1128,3 +1131,5 @@ void EditorApp::on_sliderPlaybackRate_valueChanged(int value)
 	player->setPlaybackRate(playbackRate);
 	ui.labelPlayBackRate->setText(tr("Playback rate: ") + QString::number(playbackRate));
 }
+
+

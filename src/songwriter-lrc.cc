@@ -5,7 +5,7 @@
 #include <QTextStream>
 
 
-void LRCWriter::writeLRC() const {
+void LRCWriter::writeLRC(bool enhancedLRC) const {
 	QFile f(path + "/song.lrc");
 	if (!f.open(QFile::WriteOnly | QFile::Truncate))
 		throw std::runtime_error("Couldn't open target file");
@@ -29,7 +29,8 @@ void LRCWriter::writeLRC() const {
 		// Put timestamp before new phrases
 		if (i == 0 || n.lineBreak)
 			out << '\n' << sec2timestamp(n.begin);
-
+		if(enhancedLRC) //if using "enhanced LRC use <> timestamps!
+		out <<  n.syllable << EnhancedLRCsec2timestamp(n.begin);
 		// Output the lyrics
 		out << n.syllable;
 	}
@@ -45,4 +46,11 @@ QString LRCWriter::sec2timestamp(double sec) const {
 			.arg(int(100 * (modsec - int(modsec))), 2, 10, QChar('0'));
 }
 
+QString LRCWriter::EnhancedLRCsec2timestamp(double sec) const {
+	double modsec = std::fmod(sec, 60.0);
+	return QString("<%1:%2.%3>")
+			.arg(int(sec/60), 2, 10, QChar('0'))
+			.arg(int(modsec), 2, 10, QChar('0'))
+			.arg(int(100 * (modsec - int(modsec))), 2, 10, QChar('0'));
+}
 

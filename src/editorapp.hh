@@ -92,6 +92,7 @@ public slots:
 	void on_actionUltraStarTXT_triggered();
 	void on_actionFoFMIDI_triggered();
 	void on_actionLRC_triggered();
+	void on_actionEnhanced_LRC_triggered();
 	void on_actionSoramimiTXT_triggered();
 	void on_actionLyricsToFile_triggered();
 	void on_actionLyricsToClipboard_triggered();
@@ -137,6 +138,8 @@ public slots:
 
 protected:
 	void closeEvent(QCloseEvent *event);
+
+private slots:
 
 private:
 	Ui::EditorApp ui;

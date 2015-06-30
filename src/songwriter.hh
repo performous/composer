@@ -44,11 +44,12 @@ private:
 
 struct LRCWriter: public SongWriter
 {
-	LRCWriter(const Song& s_, const QString& path_)
-		: SongWriter(s_, path_) { writeLRC(); }
+	LRCWriter(const Song& s_, const QString& path_, bool enhanced = false)
+		: SongWriter(s_, path_) { writeLRC(enhanced); }
 private:
-	void writeLRC() const;
+	void writeLRC(bool enhancedLRC = false) const;
 	QString sec2timestamp(double sec) const;
+	QString EnhancedLRCsec2timestamp(double sec) const;
 };
 
 struct SMMWriter: public SongWriter
