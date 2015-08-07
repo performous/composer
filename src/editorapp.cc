@@ -175,6 +175,7 @@ void EditorApp::setupNoteGraph()
 	connect(ui.actionCopy, SIGNAL(triggered()), noteGraph, SLOT(copy()));
 	connect(ui.actionPaste, SIGNAL(triggered()), noteGraph, SLOT(paste()));
 	connect(ui.cmdTimeSentence, SIGNAL(pressed()), noteGraph, SLOT(timeSentence()));
+	connect(ui.cmdTimeNote,SIGNAL(pressed()),noteGraph, SLOT(timeSyllable()));
 	connect(ui.cmdSkipSentence, SIGNAL(pressed()), noteGraph, SLOT(selectNextSentenceStart()));
 	connect(ui.chkGrabSeekHandle, SIGNAL(toggled(bool)), noteGraph, SLOT(setSeekHandleWrapToViewport(bool)));
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());

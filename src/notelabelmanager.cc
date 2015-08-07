@@ -378,6 +378,12 @@ void NoteLabelManager::doOperation(const Operation& op, int flags)
 						n->close();
 						m_notes.removeAt(op.i(1));
 					} else if (action == "MOVE") {
+						if(op.i(1) > 0) {
+							NoteLabel *previous = m_notes.at(op.i(1) -1);
+							if(previous && previous->note().end < op.d(2)) {
+								previous->note().end = op.d(2);
+							}
+						}
 						n->note().begin = op.d(2);
 						n->note().end = op.d(3);
 						n->note().note = op.i(4);
