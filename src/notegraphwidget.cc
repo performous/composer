@@ -75,11 +75,15 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 			QString word;
 			ts2 >> word;
 			if (!word.isEmpty()) {
-				Note note(word + " "); note.end = NoteLabel::default_length; note.note = 24;
-				if (sentenceStart) note.lineBreak = true;
-				doOperation(opFromNote(note, m_notes.size(), !firstNote), Operation::NO_UPDATE);
-				firstNote = false;
-				sentenceStart = false;
+				QStringList syllables = word.split('_');
+				syllables.last().append(" "); //add the space to the last part of the word
+				for(int i = 0; i < syllables.size(); i++) {
+					Note note(syllables[i]); note.end = NoteLabel::default_length; note.note = 24;
+					if (sentenceStart) note.lineBreak = true;
+					doOperation(opFromNote(note, m_notes.size(), !firstNote), Operation::NO_UPDATE);
+					firstNote = false;
+					sentenceStart = false;
+				}
 			}
 		}
 	}
