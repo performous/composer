@@ -380,7 +380,7 @@ void NoteLabelManager::doOperation(const Operation& op, int flags)
 					} else if (action == "MOVE") {
 						if(op.i(1) > 0) {
 							NoteLabel *previous = m_notes.at(op.i(1) -1);
-							if(previous && previous->note().end < op.d(2)) {
+							if(previous && previous->note().end > op.d(2)) {
 								previous->note().end = op.d(2);
 							}
 						}
