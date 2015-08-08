@@ -382,7 +382,7 @@ void NoteLabelManager::doOperation(const Operation& op, int flags)
 							NoteLabel *previous = m_notes.at(op.i(1) -1);
 							if(previous && previous->note().end > op.d(2)) {
 								previous->note().end = op.d(2);
-								if(previous->note().begin < previous->note().end) previous->note().begin = previous->note().end -0.01;
+								if(previous->note().begin >= previous->note().end) previous->note().begin = previous->note().end -0.01;
 							}
 						}
 						n->note().begin = op.d(2);
