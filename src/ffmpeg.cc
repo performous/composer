@@ -6,8 +6,6 @@
 #include <QtGlobal>
 
 // Somehow ffmpeg headers give errors that these are not defined...
-#define INT64_C Q_INT64_C
-#define UINT64_C Q_UINT64_C
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 extern "C" {
 #include AVCODEC_INCLUDE
@@ -150,7 +148,7 @@ void FFmpeg::decodeNextFrame() {
 		ReadFramePacket(AVFormatContext* s): m_s(s) {
 			if (av_read_frame(s, this) < 0) throw eof_error();
 		}
-		~ReadFramePacket() { av_free_packet(this); }
+        ~ReadFramePacket() { av_packet_unref(this); }
 		double time() {
 			return uint64_t(dts) == uint64_t(AV_NOPTS_VALUE) ?
 			  getNaN() : double(dts) * av_q2d(m_s->streams[stream_index]->time_base);
