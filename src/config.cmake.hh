@@ -17,7 +17,7 @@
 #define AVRESAMPLE_INCLUDE <@AVResample_INCLUDE@>
 #define SWSCALE_INCLUDE <@SWScale_INCLUDE@>
 #define AVUTIL_INCLUDE <@AVUtil_INCLUDE@>
-#define AVUTIL_OPT_INCLUDE <@AVUtil_INCLUDE_DIRS@/libavutil/opt.h> //HACK to get AVOption class!
-#define AVUTIL_MATH_INCLUDE <@AVUtil_INCLUDE_DIRS@/libavutil/mathematics.h>
+#define AVUTIL_OPT_INCLUDE <libavutil/opt.h> //HACK to get AVOption class!
+#define AVUTIL_MATH_INCLUDE <libavutil/mathematics.h>
 
 #endif
