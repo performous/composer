@@ -11,7 +11,7 @@ extern "C" {
 #include AVCODEC_INCLUDE
 #include AVFORMAT_INCLUDE
 #include SWSCALE_INCLUDE
-#include AVRESAMPLE_INCLUDE
+#include SWRESAMPLE_INCLUDE
 #include AVUTIL_INCLUDE
 #include AVUTIL_OPT_INCLUDE
 #include AVUTIL_MATH_INCLUDE
@@ -87,14 +87,14 @@ void FFmpeg::open() {
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
 	if (avcodec_open2(cc, pAudioCodec, NULL) < 0) throw std::runtime_error("Cannot open audio codec");
 	pAudioCodecCtx = cc;
-	m_resampleContext = avresample_alloc_context();
+	m_resampleContext = swr_alloc();
 	av_opt_set_int(m_resampleContext, "in_channel_layout", pAudioCodecCtx->channel_layout ? pAudioCodecCtx->channel_layout : av_get_default_channel_layout(pAudioCodecCtx->channels), 0);
 	av_opt_set_int(m_resampleContext, "out_channel_layout", av_get_default_channel_layout(2), 0);
 	av_opt_set_int(m_resampleContext, "in_sample_rate", pAudioCodecCtx->sample_rate, 0);
 	av_opt_set_int(m_resampleContext, "out_sample_rate", m_rate, 0);
 	av_opt_set_int(m_resampleContext, "in_sample_fmt", pAudioCodecCtx->sample_fmt, 0);
 	av_opt_set_int(m_resampleContext, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
-	avresample_open(m_resampleContext);
+	swr_init(m_resampleContext);
 	if (!m_resampleContext) throw std::runtime_error("Cannot create resampling context");
 
 }
@@ -177,11 +177,9 @@ void FFmpeg::decodeNextFrame() {
 				//resample here!
 				int16_t * output;
 				int out_linesize;
-				int out_samples = avresample_available(m_resampleContext) +
-					av_rescale_rnd(avresample_get_delay(m_resampleContext) +
-					m_frame->nb_samples, m_frame->sample_rate, m_rate, AV_ROUND_UP);
+				int out_samples = swr_get_out_samples(m_resampleContext, m_frame->nb_samples);
 				av_samples_alloc((uint8_t**)&output, &out_linesize, 2, out_samples,AV_SAMPLE_FMT_S16, 0);
-				out_samples = avresample_convert(m_resampleContext, (uint8_t**)&output, 0, out_samples, &m_frame->data[0], 0, m_frame->nb_samples);
+				out_samples = swr_convert(m_resampleContext, (uint8_t**)output, out_samples, (const uint8_t**)&m_frame->data[0], m_frame->nb_samples);
 				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
 				int outsize = m_output.size(); /* Convert bytes into samples */ \

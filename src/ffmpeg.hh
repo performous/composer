@@ -82,7 +82,7 @@ extern "C" {
   struct AVCodecContext;
   struct AVFormatContext;
   struct AVFrame;
-  struct AVAudioResampleContext;
+  struct SwrContext;
   struct SwsContext;
 }
 
@@ -114,7 +114,7 @@ class FFmpeg: public QThread {
 	volatile bool m_eof;
 	volatile double m_seekTarget;
 	AVFormatContext* pFormatCtx;
-	AVAudioResampleContext* m_resampleContext;
+	SwrContext* m_resampleContext;
 	AVCodecContext* pAudioCodecCtx;
 	AVCodec* pAudioCodec;
 
