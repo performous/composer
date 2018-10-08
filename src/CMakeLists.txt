@@ -31,7 +31,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # Final binary
 add_executable(${EXENAME} ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES} ${RESOURCE_SOURCES} ${UI_SOURCES})
 target_link_libraries(${EXENAME} ${LIBS})
-target_link_libraries(${EXENAME} avresample) #FIXME!! should be included in ${LIBS}
+target_link_libraries(${EXENAME} swresample) #FIXME!! should be included in ${LIBS}
 
 # We don't currently have any assets, so on Windows, we just install to the root installation folder
 if(UNIX)

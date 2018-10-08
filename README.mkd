@@ -26,7 +26,7 @@ Qt5:
 Core, Gui, Widgets, Network, XML, Multimedia, Multimedia-widgets, Multimedia-plugins and Platform files
 
 FFmpeg/Libav:
-LibAVCodec, LibAVUtil, LibAVFormat, LibAVResample and/or LibSWResample (when cross-compiling with ffmpeg)
+LibAVCodec, LibAVUtil, LibAVFormat, LibSWResample
 
 Other:
 Zlib, Xvid, ssleay, libxml, libx264, libvorbis, libtheora, libspeex, libpng, libstdc++, libpcre,
