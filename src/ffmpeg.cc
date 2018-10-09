@@ -179,7 +179,7 @@ void FFmpeg::decodeNextFrame() {
 				int out_linesize;
 				int out_samples = swr_get_out_samples(m_resampleContext, m_frame->nb_samples);
 				av_samples_alloc((uint8_t**)&output, &out_linesize, 2, out_samples,AV_SAMPLE_FMT_S16, 0);
-				out_samples = swr_convert(m_resampleContext, (uint8_t**)output, out_samples, (const uint8_t**)&m_frame->data[0], m_frame->nb_samples);
+				out_samples = swr_convert(m_resampleContext, (uint8_t**)&output, out_samples, (const uint8_t**)&m_frame->data[0], m_frame->nb_samples);
 				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
 				int outsize = m_output.size(); /* Convert bytes into samples */ \
