@@ -496,7 +496,7 @@ void EditorApp::exportSong(QString format, QString dialogTitle)
 	if (!path.isNull()) {
 		latestPath = path;
 		// Sync notes
-		if (noteGraph) song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
+		if (noteGraph) song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
 		// Pick exporter
 		try {
 			if (format == "XML") SingStarXMLWriter(*song.data(), path);
@@ -1139,12 +1139,15 @@ void EditorApp::on_comboBoxTrack_currentIndexChanged(int index)
 {
 	switch(index) {
 	case 0:
-		song->insertVocalTrack(TrackName::DUET_P2, noteGraph->getVocalTrack());
-		noteGraph->setLyrics(song->getVocalTrack(TrackName::LEAD_VOCAL));
+		song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
+		noteGraph->activeTrack = TrackName::LEAD_VOCAL;
+		noteGraph->setLyrics(song->getVocalTrack(noteGraph->activeTrack));
 		break;
 	case 1:
-		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
-		noteGraph->setLyrics(song->getVocalTrack(TrackName::DUET_P2));
+		song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
+		noteGraph->activeTrack = TrackName::DUET_P2;
+		noteGraph->setLyrics(song->getVocalTrack(noteGraph->activeTrack));
+
 		break;
 	}
 }

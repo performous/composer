@@ -1,4 +1,4 @@
-#include "songwriter.hh"
+﻿#include "songwriter.hh"
 #include "config.hh"
 #include "util.hh"
 #include <QTextStream>
@@ -42,9 +42,13 @@ void UltraStarTXTWriter::writeTXT() const {
 	//out << "#RELATIVE:" << "no" << '\n';
 	//out << "#PREVIEWSTART:" << s.preview_start << '\n';
 	//if (!s.music["vocals"].isEmpty()) out << "#VOCALS:" << s.music["vocals"] << '\n'; // FIXME: remove full path
-
+	bool duet = !s.getVocalTrack(TrackName::DUET_P2).notes.empty();
 	// Loop through the notes
-	const Notes& notes = s.getVocalTrack().notes;
+	Notes notes = s.getVocalTrack(TrackName::LEAD_VOCAL).notes;
+	if(duet) {
+		out << "P1:" << '\n';
+	}
+	//P1 notes
 	for (int i = 0; i < notes.size(); ++i) {
 		const Note& n = notes[i];
 		if (n.type == Note::SLEEP) continue;
@@ -57,6 +61,24 @@ void UltraStarTXTWriter::writeTXT() const {
 
 		// Output the note
 		out << (char)n.type << ' '<< sec2dur(n.begin) << ' ' << sec2dur(n.length()) << ' ' << n.note << ' ' << n.syllable << '\n';
+	}
+
+	if(duet) {
+		notes = s.getVocalTrack(TrackName::DUET_P2).notes;
+		out << "P2:" << '\n';
+		for (int i = 0; i < notes.size(); ++i) {
+			const Note& n = notes[i];
+			if (n.type == Note::SLEEP) continue;
+
+			// Put sleeps between phrases
+			if (i > 0 && n.lineBreak) {
+				double ts = 0.5 * (notes[i-1].end + n.begin);
+				out << "- " << sec2dur(ts) << '\n';
+			}
+
+			// Output the note
+			out << (char)n.type << ' '<< sec2dur(n.begin) << ' ' << sec2dur(n.length()) << ' ' << n.note << ' ' << n.syllable << '\n';
+		}
 	}
 
 	out << "E"; // End indicator

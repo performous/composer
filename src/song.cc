@@ -1,4 +1,4 @@
-#include "song.hh"
+﻿#include "song.hh"
 #include "songparser.hh"
 #include "notes.hh"
 #include "util.hh"
@@ -37,6 +37,8 @@ void Song::reload(bool errorIgnore) {
 		try { SongParser(*this); } catch (...) { if (!errorIgnore) throw; }
 	}
 	collateUpdate();
+	insertVocalTrack(TrackName::LEAD_VOCAL, VocalTrack(TrackName::LEAD_VOCAL)); //to avoid the editor dumping notes in both tracks at startup
+	insertVocalTrack(TrackName::DUET_P2, VocalTrack(TrackName::DUET_P2));
 }
 
 void Song::dropNotes() {
