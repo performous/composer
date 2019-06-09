@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QObject>
 #include <QString>
@@ -29,6 +29,8 @@ namespace TrackName {
 	const QString BASS = "Bass";
 	const QString DRUMS = "Drums";
 	const QString LEAD_VOCAL = "Vocals";
+	const QString DUET_P2 = "Duet singer";
+	//const QString DUET_BOTH = "Both singers"; //NOT USED
 	const QString HARMONIC_1 = "Harmonic 1";
 	const QString HARMONIC_2 = "Harmonic 2";
 	const QString HARMONIC_3 = "Harmonic 3";
@@ -122,6 +124,8 @@ class Song {
 	QString creator; ///< creator
 	QString language; ///< language
 	QString year; ///< year
+	QString duetsingerP1;
+	QString duetsingerP2;
 	QMap<QString,QString> music; ///< music files (background, guitar, rhythm/bass, drums, vocals)
 	QString cover; ///< cd cover
 	QString background; ///< background image

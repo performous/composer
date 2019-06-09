@@ -1,4 +1,4 @@
-#include "songparser.hh"
+﻿#include "songparser.hh"
 
 #include <stdexcept>
 #include <iostream>
@@ -24,13 +24,34 @@ void SongParser::txtParse() {
 
 	// Parse notes
 	VocalTrack vocal(TrackName::LEAD_VOCAL);
-	while (txtParseNote(line, vocal) && getline(line)) {}
+	VocalTrack back(TrackName::DUET_P2);
+	VocalTrack * ActiveVocalTrack = &vocal;
+	bool finished = false;
+	while (!finished) {
+
+		if(!txtParseNote(line, *ActiveVocalTrack)) {
+			if(line[0] == 'P') { //P indicator, let's swap tracks
+				if(line.indexOf('1') != -1) {ActiveVocalTrack = &vocal; m_prevts = 0; m_prevtime = 0; }
+				if(line.indexOf('2') != -1) {
+					ActiveVocalTrack = &back;
+					m_prevts = 0;
+					m_prevtime = 0;
+				}
+			} else {
+				finished = true;
+			}
+		}
+		if(!getline(line)) {
+			finished = true;
+		}
+	}
 
 	// Workaround for the terminating : 1 0 0 line, written by some converters
 	if (!vocal.notes.empty() && vocal.notes.back().type != Note::SLEEP
 	  && vocal.notes.back().begin == vocal.notes.back().end) vocal.notes.pop_back();
 
 	m_song.insertVocalTrack(TrackName::LEAD_VOCAL, vocal);
+	m_song.insertVocalTrack(TrackName::DUET_P2, back);
 }
 
 bool SongParser::txtParseField(QString const& line) {
@@ -60,6 +81,9 @@ bool SongParser::txtParseField(QString const& line) {
 	else if (key == "BPM") m_song.bpm = value.replace(',','.').toDouble(&ok);
 	else if (key == "LANGUAGE") m_song.language = value;
 	else if (key == "YEAR") m_song.year = value;
+	else if (key == "DUETSINGERP1" || key == "P1") m_song.duetsingerP1 = value;
+	// Strong hint that this is a duet, so it will be readily displayed with two singers in browser and properly filtered
+	else if (key == "DUETSINGERP2" || key == "P2") m_song.duetsingerP2 = value;
 
 	if (!ok) throw std::runtime_error(QString("Invalid value for %1: %2").arg(key).arg(value).toStdString());
 	return true;
@@ -84,7 +108,7 @@ bool SongParser::txtParseNote(QString line, VocalTrack &vocal) {
 		addBPM(ts, bpm);
 		return true;
 	}
-	if (line[0] == 'P') return true; //We ignore player information for now (multiplayer hack)
+	if (line[0] == 'P') return false; //We ignore player information for now (multiplayer hack)
 	Note n;
 	n.type = Note::Type(iss.read(1)[0].toLatin1());
 	unsigned int ts = m_prevts;
