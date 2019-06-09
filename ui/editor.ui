@@ -131,19 +131,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="chkGrabSeekHandle">
-          <property name="toolTip">
-           <string>Make sure the playback cursor is always visible</string>
-          </property>
-          <property name="text">
-           <string>Grab playback</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <widget class="QPushButton" name="cmdSkipSentence">
           <property name="toolTip">
@@ -320,6 +307,42 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="chkGrabSeekHandle">
+          <property name="toolTip">
+           <string>Make sure the playback cursor is always visible</string>
+          </property>
+          <property name="text">
+           <string>Grab playback</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QComboBox" name="comboBoxTrack">
+          <property name="toolTip">
+           <string>Active Track</string>
+          </property>
+          <property name="currentText">
+           <string>Lead Vocal</string>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Lead Vocal</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Duet P2</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tabSong">
@@ -431,7 +454,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -470,7 +493,7 @@
     </property>
     <widget class="QMenu" name="menuPreferences">
      <property name="title">
-      <string>P&amp;references</string>
+      <string>Pr&amp;eferences</string>
      </property>
      <addaction name="actionAntiAliasing"/>
     </widget>
@@ -625,7 +648,7 @@
   </action>
   <action name="actionLyricsToFile">
    <property name="text">
-    <string>Lyrics to fi&amp;le...</string>
+    <string>L&amp;yrics to file...</string>
    </property>
   </action>
   <action name="actionLyricsToClipboard">
@@ -758,7 +781,7 @@
   </action>
   <action name="actionAboutQt">
    <property name="text">
-    <string>About Qt...</string>
+    <string>About &amp;Qt...</string>
    </property>
   </action>
   <action name="actionAdditionalMusicFile">
@@ -768,7 +791,7 @@
   </action>
   <action name="actionLyricsFromLRCFile">
    <property name="text">
-    <string>Timed lyrics from LRC/Soramimi file...</string>
+    <string>&amp;Timed lyrics from LRC/Soramimi file...</string>
    </property>
   </action>
   <action name="actionSelectAllAfter">

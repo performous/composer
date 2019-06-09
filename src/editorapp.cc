@@ -1,4 +1,4 @@
-#include <QProgressBar>
+﻿#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QMessageBox>
@@ -1134,3 +1134,17 @@ void EditorApp::on_sliderPlaybackRate_valueChanged(int value)
 }
 
 
+
+void EditorApp::on_comboBoxTrack_currentIndexChanged(int index)
+{
+	switch(index) {
+	case 0:
+		song->insertVocalTrack(TrackName::DUET_P2, noteGraph->getVocalTrack());
+		noteGraph->setLyrics(song->getVocalTrack(TrackName::LEAD_VOCAL));
+		break;
+	case 1:
+		song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
+		noteGraph->setLyrics(song->getVocalTrack(TrackName::DUET_P2));
+		break;
+	}
+}

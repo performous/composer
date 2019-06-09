@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ui_editor.h"
 #include "ui_aboutdialog.h"
@@ -138,6 +138,9 @@ public slots:
 
 protected:
 	void closeEvent(QCloseEvent *event);
+
+private slots:
+	void on_comboBoxTrack_currentIndexChanged(int index);
 
 private slots:
 
