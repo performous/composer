@@ -56,6 +56,8 @@ public:
 private:
 	void setupNoteGraph();
 	void setMusic(QString filepath, bool primary = true);
+	void setVideo(QString filepath);
+	void setBPM(double);
 	bool promptSaving();
 	void saveProject(QString fileName);
 	void exportSong(QString format, QString dialogTitle);
@@ -108,6 +110,7 @@ public slots:
 
 	// Insert menu
 	void on_actionMusicFile_triggered();
+	void on_actionVideoFile_triggered();
 	void on_actionAdditionalMusicFile_triggered();
 	void on_actionLyricsFromFile_triggered();
 	void on_actionLyricsFromClipboard_triggered();
@@ -129,6 +132,7 @@ public slots:
 	void on_txtArtist_editingFinished();
 	void on_txtGenre_editingFinished();
 	void on_txtYear_editingFinished();
+	void on_txtBPM_editingFinished();
 	void on_cmdSplit_clicked();
 	void on_cmdInsert_clicked();
 	void on_cmbNoteType_activated(int state);
