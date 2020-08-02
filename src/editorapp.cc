@@ -141,6 +141,7 @@ EditorApp::EditorApp(QWidget *parent)
 	updateNoteInfo(NULL);
 
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
+	connect(ui.cmdVideoFile, SIGNAL(clicked()), this, SLOT(on_actionVideoFile_triggered()));
 
 	piano->updatePixmap(noteGraph);
 
@@ -219,6 +220,11 @@ void EditorApp::doOpStack()
 				erased = true;
 				if (metakey == "MUSICFILE") {
 					newMusic = metavalue;
+				} else if (metakey == "VIDEOFILE") {
+					song->video = metavalue;
+				} else if (metakey == "BPM") {
+					std::cout << "BPM: " << metavalue.toDouble() << " from '" << metavalue.toStdString() << "'" << std::endl;
+					song->bpm = metavalue.toDouble();
 				} else if (metakey == "TITLE") {
 					song->title = metavalue;
 				} else if (metakey == "ARTIST") {
@@ -244,6 +250,10 @@ void EditorApp::doOpStack()
 	noteGraph->updateNotes();
 	noteGraph->startNotePixmapUpdates();
 	if (!newMusic.isEmpty()) setMusic(newMusic);
+	
+	setVideo(song->video);
+	setBPM(song->bpm);
+	
 	updateMenuStates();
 }
 
@@ -464,6 +474,16 @@ bool EditorApp::promptSaving()
 	return true;
 }
 
+namespace {
+
+	QString toQString(double d) {
+		const auto a = floor(d);
+		const auto b = (d - a) * 1000;	
+		
+		return QString(std::to_string(static_cast<int>(a)).c_str()) + "." + QString(std::to_string(static_cast<int>(b)).c_str());
+	}
+}
+
 void EditorApp::saveProject(QString fileName)
 {
 	QFile f(fileName);
@@ -481,7 +501,9 @@ void EditorApp::saveProject(QString fileName)
 			<< Operation("META", "ARTIST", song->artist)
 			<< Operation("META", "GENRE", song->genre)
 			<< Operation("META", "DATE", song->year)
-			<< Operation("META", "MUSICFILE", song->music["EDITOR"]);
+			<< Operation("META", "MUSICFILE", song->music["EDITOR"])
+			<< Operation("META", "VIDEOFILE", song->video)
+			<< Operation("META", "BPM", toQString(song->bpm));
 
 		projectFileName = fileName;
 		setWindowModified(false);
@@ -641,6 +663,22 @@ void EditorApp::setMusic(QString filepath, bool primary)
 	} else noteGraph->analyzeMusic(filepath, 1);
 }
 
+void EditorApp::setVideo(QString filepath)
+{
+	ui.valVideoFile->setText(filepath);
+	song->video = filepath;
+	setWindowModified(true);
+	updateMenuStates();
+}
+
+void EditorApp::setBPM(double bpm)
+{
+	ui.txtBPM->setText(std::to_string(bpm).c_str());
+	song->bpm = bpm;
+	setWindowModified(true);
+	updateMenuStates();
+}
+
 
 void EditorApp::on_actionMusicFile_triggered()
 {
@@ -651,6 +689,18 @@ void EditorApp::on_actionMusicFile_triggered()
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName); latestPath = finfo.path();
 		setMusic(fileName);
+	}
+}
+
+void EditorApp::on_actionVideoFile_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+			latestPath,
+			tr("Video files") + " (*.mp4 *.avi)");
+
+	if (!fileName.isNull()) {
+		QFileInfo finfo(fileName); latestPath = finfo.path();
+		setVideo(fileName);
 	}
 }
 
@@ -796,11 +846,16 @@ void EditorApp::updateSongMeta(bool readFromSongToUI)
 		if (ui.txtYear->text() != song->year) {
 			song->year = ui.txtYear->text();
 		}
+		const auto bpm = ui.txtBPM->text().toDouble(); 
+		if (bpm != song->bpm)
+			song->bpm = bpm;
 	} else {
 		if (!song->title.isEmpty()) ui.txtTitle->setText(song->title);
 		if (!song->artist.isEmpty()) ui.txtArtist->setText(song->artist);
 		if (!song->genre.isEmpty()) ui.txtGenre->setText(song->genre);
 		if (!song->year.isEmpty()) ui.txtYear->setText(song->year);
+		
+		ui.txtBPM->setText(toQString(song->bpm));
 	}
 }
 
@@ -817,6 +872,8 @@ void EditorApp::metaDataChanged()
 			song->genre = player->metaData("Genre").toString();
 		if (!player->metaData("Year").toString().isEmpty())
 			song->year = player->metaData("Year").toString();
+		if (!player->metaData("BPM").toString().isEmpty())
+			song->bpm = player->metaData("BPM").toDouble();
 		updateSongMeta(true);
 	}
 }
@@ -916,6 +973,7 @@ void EditorApp::on_txtTitle_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtArtist_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtGenre_editingFinished() { updateSongMeta(); }
 void EditorApp::on_txtYear_editingFinished() { updateSongMeta(); }
+void EditorApp::on_txtBPM_editingFinished() { updateSongMeta(); }
 
 void EditorApp::on_cmdSplit_clicked()
 {
