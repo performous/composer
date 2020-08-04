@@ -696,7 +696,7 @@ void EditorApp::on_actionVideoFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
 			latestPath,
-			tr("Video files") + " (*.mp4 *.avi)");
+			tr("Video files") + " (*.avi *.mpg *.mpeg *.flv *.mov *.mp4 *.mkv *.m4v)");
 
 	if (!fileName.isNull()) {
 		QFileInfo finfo(fileName); latestPath = finfo.path();
