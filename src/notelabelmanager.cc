@@ -30,7 +30,7 @@ NoteLabelManager::NoteLabelManager(QWidget *parent)
 
 void NoteLabelManager::clearNotes()
 {
-	selectNote(NULL);
+	selectNote(nullptr);
 	// Clear NoteLabels
 	const QObjectList &childlist = children();
 	for (QObjectList::const_iterator it = childlist.begin(); it != childlist.end(); ++it) {
@@ -61,7 +61,7 @@ void NoteLabelManager::selectNote(NoteLabel* note, bool clearPrevious)
 
 void NoteLabelManager::selectAll()
 {
-	selectNote(NULL); // Clear previous
+	selectNote(nullptr); // Clear previous
 	for (int i = m_notes.size()-1; i >= 0; --i) // Traverse in reverse order to get the first note first
 		selectNote(m_notes[i], false);
 }
@@ -70,7 +70,7 @@ void NoteLabelManager::selectAllAfter()
 {
 	if (m_selectedNotes.empty()) return;
 	NoteLabel* first = m_selectedNotes.back();
-	selectNote(NULL); // Clear previous
+	selectNote(nullptr); // Clear previous
 	for (int i = m_notes.size()-1; i >= 0; --i) { // Traverse in reverse order to get the first note first
 		selectNote(m_notes[i], false);
 		if (m_notes[i] == first) break;
@@ -84,7 +84,7 @@ void NoteLabelManager::shiftSelect(NoteLabel* note)
 
 	// Select all notes between the last selection and this
 	int n = getNoteLabelId(selectedNote()), m = getNoteLabelId(note);
-	selectNote(NULL); // Unselect everything
+	selectNote(nullptr); // Unselect everything
 	if (m < n) std::swap(n, m);
 	for (int i = n; i <= m; ++i)
 		selectNote(m_notes[i], false);
@@ -96,7 +96,7 @@ void NoteLabelManager::boxSelect(QPoint p1, QPoint p2)
 	if (p1.x() > p2.x()) std::swap(p1.rx(), p2.rx());
 	if (p1.y() > p2.y()) std::swap(p1.ry(), p2.ry());
 	// Deselect all
-	selectNote(NULL);
+	selectNote(nullptr);
 	// Loop through notes, select the ones inside rectangle
 	for (int i = 0; i < m_notes.size(); ++i) {
 		NoteLabel *nl = m_notes[i];
@@ -145,7 +145,7 @@ void NoteLabelManager::selectNextSentenceStart()
 
 QScrollArea* NoteLabelManager::getScrollArea() const
 {
-	if (!parentWidget()) return NULL;
+	if (!parentWidget()) return nullptr;
 	return qobject_cast<QScrollArea*>(parentWidget()->parent());
 }
 
@@ -204,7 +204,7 @@ void NoteLabelManager::split(NoteLabel *note, float ratio)
 	if (!note) return;
 
 	if (selectedNote() == note)
-		selectNote(NULL);
+		selectNote(nullptr);
 
 	// Cut the text
 	int cutpos = int(std::ceil(note->lyric().length() * ratio));
@@ -510,7 +510,7 @@ void NoteLabelManager::paste()
 		QDataStream stream(&buf, QIODevice::ReadOnly);
 
 		// Deselect previous
-		selectNote(NULL);
+		selectNote(nullptr);
 
 		double mouseTime = 0;
 		int mouseNote = 0;

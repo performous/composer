@@ -32,7 +32,7 @@ public:
 	typedef std::vector<PitchPath> Paths;
 	QMutex mutex;
 
-	PitchVis(QString const& filename, QWidget *parent = NULL, int visId = 0);
+	PitchVis(QString const& filename, QWidget *parent = nullptr, int visId = 0);
 	~PitchVis() { stop(); wait(); }
 
 	void stop();

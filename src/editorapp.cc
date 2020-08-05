@@ -138,7 +138,7 @@ EditorApp::EditorApp(QWidget *parent)
 
 	// NoteGraph setup down here so that the objects we setup signals are already created
 	setupNoteGraph();
-	updateNoteInfo(NULL);
+	updateNoteInfo(nullptr);
 
 	connect(ui.cmdMusicFile, SIGNAL(clicked()), this, SLOT(on_actionMusicFile_triggered()));
 	connect(ui.cmdVideoFile, SIGNAL(clicked()), this, SLOT(on_actionVideoFile_triggered()));
@@ -355,7 +355,7 @@ void EditorApp::on_actionNew_triggered()
 		projectFileName = "";
 		opStack.clear();
 		redoStack.clear();
-		updateNoteInfo(NULL);
+		updateNoteInfo(nullptr);
 		statusbarProgress->hide();
 		statusbarButton->hide();
 		ui.txtTitle->clear(); ui.txtArtist->clear(); ui.txtGenre->clear(); ui.txtYear->clear();
@@ -409,7 +409,7 @@ void EditorApp::openFile(QString fileName)
 							doOpStack();
 							projectFileName = fileName;
 							setWindowModified(false);
-							updateNoteInfo(NULL); // Title bar
+							updateNoteInfo(nullptr); // Title bar
 							if (noteGraph) noteGraph->scrollToFirstNote();
 						} else
 							QMessageBox::critical(this, tr("Error opening file!"), tr("Unsupported project file version in %1").arg(fileName));

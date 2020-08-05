@@ -6,9 +6,9 @@
 #include <vector>
 
 namespace midifile {
-	typedef uint8_t value_type;
-	typedef uint8_t* iterator;
-	typedef uint8_t const* const_iterator;
+	using value_type = uint8_t;
+	using iterator = uint8_t*;
+	using const_iterator = uint8_t const*;
 
 	struct Event {
 		enum Type {

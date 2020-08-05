@@ -57,7 +57,6 @@ void SongParser::iniParseField(QString const& line) {
 	else if (key == "PREVIEW_START_TIME") m_song.preview_start = 1e-3 * value.toDouble(&ok);
 
 	if (!ok) throw std::runtime_error(QString("Invalid value for %1: %2").arg(key).arg(value).toStdString());
-	return;
 }
 
 namespace {

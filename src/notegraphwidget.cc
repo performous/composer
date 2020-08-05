@@ -790,9 +790,9 @@ void SeekHandle::moveEvent(QMoveEvent*)
 {
 	// Make handle always visible in the ScrollArea
 	if (wrapToViewport && parentWidget() && parentWidget()->parentWidget()) {
-		QScrollArea *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget()->parent());
+		auto *scrollArea = qobject_cast<QScrollArea*>(parentWidget()->parentWidget()->parent());
 		if (scrollArea) {
-			QScrollBar *scrollVer = scrollArea->verticalScrollBar();
+			auto *scrollVer = scrollArea->verticalScrollBar();
 			int y = 0;
 			if (scrollVer) y = scrollVer->value();
 			scrollArea->ensureVisible(x() + scrollArea->width()/3, y, scrollArea->width()/3, 0);

@@ -2,15 +2,15 @@
 
 #ifdef WIN32
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef short int16_t;
-typedef unsigned short uint16_t;
-typedef int int32_t;
-typedef unsigned int uint32_t;
+using int8_t = signed char;
+using uint8_t = unsigned char;
+using int16_t = short;
+using uint16_t = unsigned short;
+using int32_t = int;
+using uint32_t = unsigned int;
 
 #else
 
-#include <stdint.h>
+#include <cstdint>
 
 #endif

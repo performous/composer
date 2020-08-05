@@ -10,7 +10,7 @@ namespace da {
 	template <typename T> T round(T val) { return static_cast<T>(static_cast<int>(val + (val >= 0 ? 0.5 : -0.5))); }
 
 	// WARNING: changing this breaks binary compatibility on the library!
-	typedef float sample_t;
+	using sample_t = float;
 
 	// A helper function for clamping a value to a certain range
 	template <typename T> T clamp(T val, T min, T max) {
@@ -61,6 +61,6 @@ namespace da {
 		// TODO: more operators
 	};
 
-	typedef step_iterator<sample_t> sample_iterator;
-	typedef step_iterator<sample_t const> sample_const_iterator;
+	using sample_iterator = step_iterator<sample_t>;
+	using sample_const_iterator = step_iterator<sample_t const>;
 }

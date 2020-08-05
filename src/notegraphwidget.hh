@@ -3,6 +3,7 @@
 #include "pitchvis.hh"
 #include "notes.hh"
 #include "operation.hh"
+
 #include <QLabel>
 #include <QList>
 #include <QScopedPointer>
@@ -10,7 +11,7 @@
 
 class QScrollArea;
 class NoteLabel;
-typedef QList<NoteLabel*> NoteLabels;
+using NoteLabels = QList<NoteLabel*>;
 
 
 class SeekHandle: public QLabel
@@ -33,7 +34,7 @@ class NoteLabelManager: public QLabel
 public:
 	static const QString MimeType;
 
-	NoteLabelManager(QWidget *parent = 0);
+	NoteLabelManager(QWidget *parent = nullptr);
 
 	virtual void updateNotes(bool leftToRight = true) {}
 	virtual void startNotePixmapUpdates() {}
@@ -113,17 +114,17 @@ public:
 	static const QString BGColor;
 	static const int Height;
 
-	NoteGraphWidget(QWidget *parent = 0);
+	NoteGraphWidget(QWidget *parent = nullptr);
 
 	void setLyrics(QString lyrics);
 	void setLyrics(const VocalTrack &track);
 	void analyzeMusic(QString filepath, int visId = 0);
 
-	void updateNotes(bool leftToRight = true);
+	void updateNotes(bool leftToRight = true) override;
 	void updateMusicPos(qint64 time, bool smoothing = true);
 	void stopMusic();
 	void seek(int x);
-	void zoom(float steps, double focalSecs = -1);
+	void zoom(float steps, double focalSecs = -1) override;
 
 	VocalTrack getVocalTrack() const;
 	QString getCurrentSentence() const;
@@ -139,8 +140,8 @@ public slots:
 	void updatePitch();
 	void abortPitch() { for (int i = 0; i < MaxPitchVis; ++i) if (m_pitch[i]) m_pitch[i]->cancel(); }
 	void scrollToFirstNote();
-	void startNotePixmapUpdates(); ///< Starts creating pixmaps for NoteLabels
-	void forcedNotePixmapUpdate();
+	void startNotePixmapUpdates() override; ///< Starts creating pixmaps for NoteLabels
+	void forcedNotePixmapUpdate() override;
 	void playbackRateChanged(qreal rate);
 
 signals:

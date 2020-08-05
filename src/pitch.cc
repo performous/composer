@@ -13,7 +13,7 @@ static const double FFT_MINFREQ = 45.0;
 static const double FFT_MAXFREQ = 3000.0;
 
 Tone::Tone(): freq(), level(), prev(), next() {
-	for (std::size_t i = 0; i < MAXHARM; ++i) harmonics[i] = 0.0;
+	for (double & harmonic : harmonics) harmonic = 0.0;
 }
 
 bool Tone::operator==(double f) const {
@@ -78,19 +78,19 @@ void Analyzer::calcTones() {
 		m_peaks[k].level = level;
 	}
 	// Filter peaks and combine adjacent peaks pointing at the same frequency into one
-	typedef std::vector<Combo> Combos;
+	using Combos = std::vector<Combo>;
 	Combos combos;
 	for (size_t k = kMin; k < kMax; ++k) {
 		Peak const& p = m_peaks[k];
 		bool ok = p.level > 1e-3 && p.freq >= FFT_MINFREQ && p.freq <= FFT_MAXFREQ && std::abs(p.freqFFT - p.freq) < freqPerBin;
 		if (!ok) continue;
 		// Do we need to add a new Combo (rather than using the last one)?
-		if (combos.empty() || !combos.back().match(p.freq)) combos.push_back(Combo());
+		if (combos.empty() || !combos.back().match(p.freq)) combos.emplace_back();
 		combos.back().combine(p);
 	}
 	// Convert sum frequencies into averages
-	for (Combos::iterator it = combos.begin(), itend = combos.end(); it != itend; ++it) {
-		it->freq /= it->level;
+	for (auto & combo : combos) {
+		combo.freq /= combo.level;
 	}
 	// Only keep a reasonable amount of strongest combos
 	std::sort(combos.begin(), combos.end(), Combo::cmpByLevel);
@@ -105,7 +105,7 @@ void Analyzer::calcTones() {
 			int plausibleHarmonics = 0;
 			double basefreq = it->freq / div;
 			if (basefreq < FFT_MINFREQ) break;  // Do not try any lower frequencies
-			for (Combos::const_iterator harm = it; harm != itend; ++harm) {
+			for (auto harm = it; harm != itend; ++harm) {
 				double ratio = harm->freq / basefreq;
 				unsigned n = round(ratio);
 				if (n > Tone::MAXHARM) break; // No more harmonics can be found
@@ -124,8 +124,8 @@ void Analyzer::calcTones() {
 	}
 	// Clean harmonics misdetected as fundamental
 	tones.sort();
-	for (Tones::iterator it = tones.begin(); it != tones.end(); ++it) {
-		Tones::iterator it2 = it;
+	for (auto it = tones.begin(); it != tones.end(); ++it) {
+		auto it2 = it;
 		++it2;
 		while (it2 != tones.end()) {
 			double ratio = it2->freq / it->freq;
@@ -142,20 +142,20 @@ void Analyzer::calcTones() {
 void Analyzer::temporalMerge(Tones& tones) {
 	if (!m_moments.empty()) {
 		Tones& old = m_moments.back().m_tones;
-		Tones::iterator it = tones.begin();
+		auto it = tones.begin();
 		// Iterate over old tones
-		for (Tones::iterator oldit = old.begin(); oldit != old.end(); ++oldit) {
+		for (auto & oldit : old) {
 			// Try to find a matching new tone
-			while (it != tones.end() && *it < *oldit) ++it;
+			while (it != tones.end() && *it < oldit) ++it;
 			// If match found
-			if (it != tones.end() && *it == *oldit) {
+			if (it != tones.end() && *it == oldit) {
 				// Link together the old and the new tones
-				oldit->next = &*it;
-				it->prev = &*oldit;
+				oldit.next = &*it;
+				it->prev = &oldit;
 			}
 		}
 	}
-	m_moments.push_back(Moment(m_moments.size() * processStep() / m_rate));
+	m_moments.emplace_back(m_moments.size() * processStep() / m_rate);
 	m_moments.back().stealTones(tones);  // No pointers are invalidated
 }
 

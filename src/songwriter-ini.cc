@@ -38,7 +38,7 @@ void FoFMIDIWriter::writeMIDI() const {
 	std::copy(partvocals.begin(), partvocals.end(), buf);
 	ev.end = ev.begin + partvocals.size();
 	writer.writeEvent(ev);
-	ev.begin = ev.end = NULL;
+	ev.begin = ev.end = nullptr;
 	// Write notes
 	bool sentenceOn = false;  // Sentence note 105 not playing
 	unsigned timecode = 0;

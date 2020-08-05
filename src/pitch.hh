@@ -66,7 +66,7 @@ struct Combo {
 class Analyzer {
 public:
 	typedef std::vector<std::complex<float> > Fourier;  ///< FFT vector (the first level of detection)
-	typedef std::vector<Peak> Peaks;  ///< Peaks (the second level of detection)
+	using Peaks = std::vector<Peak>;  ///< Peaks (the second level of detection)
 	typedef std::list<Tone> Tones; ///< Tones (the final level of detection)
 	typedef std::list<Moment> Moments; ///< Time-serie history of time and tones
 	/// constructor

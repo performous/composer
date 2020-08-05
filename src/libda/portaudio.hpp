@@ -8,7 +8,7 @@
 #include <portaudio.h>
 #include <cstdlib>
 #include <stdexcept>
-#include <stdint.h>
+#include <cstdint>
 
 #include "../unicode.hh"
 
@@ -103,8 +103,8 @@ namespace portaudio {
 		  double sampleRate,
 		  unsigned long framesPerBuffer = paFramesPerBufferUnspecified,
 		  PaStreamFlags flags = paNoFlag,
-		  PaStreamCallback* callback = NULL,
-		  void* userData = NULL)
+		  PaStreamCallback* callback = nullptr,
+		  void* userData = nullptr)
 		{
 			PORTAUDIO_CHECKED(Pa_OpenStream, (&m_handle, input, output, sampleRate, framesPerBuffer, flags, callback, userData));
 		}

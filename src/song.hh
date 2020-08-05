@@ -81,7 +81,7 @@ class Song {
 			}
 		}
 	}
-	VocalTrack getVocalTrack(QString vocalTrack = TrackName::LEAD_VOCAL) const {
+	const VocalTrack& getVocalTrack(QString vocalTrack = TrackName::LEAD_VOCAL) const {
 		if(vocalTracks.find(vocalTrack) != vocalTracks.end()) {
 			return vocalTracks.find(vocalTrack)->second;
 		} else {

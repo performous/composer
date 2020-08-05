@@ -32,7 +32,7 @@ class Synth: public QThread
 public:
 	static const int SampleRate = 22050; ///< Sample rate
 
-	Synth(QObject *parent = NULL) : QThread(parent), m_delay(), m_pos(), m_rate(1.0), m_noteBegin(), m_curBuffer(), m_quit()
+	Synth(QObject *parent = nullptr) : QThread(parent), m_delay(), m_pos(), m_rate(1.0), m_noteBegin(), m_curBuffer(), m_quit()
 	{
 		qRegisterMetaType<QByteArray>("QByteArray"); // Register type for use with queued connections
 	}
