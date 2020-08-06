@@ -80,6 +80,46 @@ EditorApp::EditorApp(QWidget *parent)
 	ui.actionAbout->setIcon(QIcon::fromTheme("help-about", QIcon(":/icons/help-about.png")));
 	ui.cmdPlay->setIcon(QIcon::fromTheme("media-playback-start", QIcon(":/icons/media-playback-start.png")));
 
+	m_scrollBar = new ScrollBar([&](QImage& image){
+			image.fill(QColor(0, 0, 0, 0));
+			
+			if(!noteGraph)
+				return;
+			
+			const auto endTime = noteGraph->getSongLengthInSeconds();
+			
+			if(endTime < 1.0)
+				return;
+			
+			const auto& noteLabels = noteGraph->noteLabels();
+			//std::cout << "length: " << endTime << std::endl;
+			const static auto normalColor = QColor(255, 200, 100);
+			const static auto startColor = QColor(255, 150, 150);
+			const static auto verticalLineColor = QColor(100, 100, 100, 127);
+			
+			for(const auto& noteLabel : noteLabels) {
+				const auto& note = noteLabel->note();
+				const auto xs = note.begin * image.width() / endTime;
+				const auto xe = note.end * image.width() / endTime;
+				
+				if(xs >= image.width() || xe >= image.width())
+					continue;
+				
+				const auto y = image.height() - (note.note * image.height() / 50);
+				const auto& color = note.lineBreak ? startColor : normalColor;
+
+				if(note.lineBreak) {
+					for(auto y = 0; y < image.height(); ++y)
+						image.setPixelColor(xs, y, verticalLineColor);
+				}
+				
+				for(auto x = xs; x < xe; ++x)
+					image.setPixelColor(x, y, color);
+			}
+		}, Qt::Orientation::Horizontal);
+	
+	ui.noteGraphScroller->setHorizontalScrollBar(m_scrollBar);
+	
 	// Statusbar stuff
 	statusbarButton = new QPushButton(NULL);
 	ui.statusbar->addPermanentWidget(statusbarButton);
@@ -168,6 +208,7 @@ void EditorApp::setupNoteGraph()
 	connect(noteGraph, SIGNAL(operationDone(const Operation&)), this, SLOT(operationDone(const Operation&)));
 	connect(noteGraph, SIGNAL(updateNoteInfo(NoteLabel*)), this, SLOT(updateNoteInfo(NoteLabel*)));
 	connect(noteGraph, SIGNAL(statusBarMessage(QString)), this, SLOT(statusBarMessage(QString)));
+	connect(noteGraph, SIGNAL(updatedNotes()), this, SLOT(updatedNotes()));
 	connect(statusbarButton, SIGNAL(clicked()), noteGraph, SLOT(abortPitch()));
 	connect(ui.noteGraphScroller->horizontalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
 	connect(ui.noteGraphScroller->verticalScrollBar(), SIGNAL(valueChanged(int)), noteGraph, SLOT(updatePitch()));
@@ -181,6 +222,11 @@ void EditorApp::setupNoteGraph()
 	noteGraph->setSeekHandleWrapToViewport(ui.chkGrabSeekHandle->isChecked());
 	connect(noteGraph, SIGNAL(analyzeProgress(int, int)), this, SLOT(analyzeProgress(int, int)));
 	connect(noteGraph, SIGNAL(seeked(qint64)), player, SLOT(setPosition(qint64)));
+}
+
+void EditorApp::updatedNotes()
+{
+	m_scrollBar->update();
 }
 
 void EditorApp::operationDone(const Operation &op)
@@ -329,6 +375,14 @@ void EditorApp::analyzeProgress(int value, int maximum)
 			statusbarButton->show();
 		}
 	}
+
+	if(m_scrollBarNeedUpdate) {
+		if(noteGraph->getSongLengthInSeconds() > 10)
+		{
+			m_scrollBar->update();
+			m_scrollBarNeedUpdate = false;
+		}
+	}
 }
 
 
@@ -379,7 +433,8 @@ void EditorApp::openFile(QString fileName)
 		latestPath = finfo.path();
 		try {
 			if (finfo.suffix() == PROJECT_SAVE_FILE_EXTENSION) {
-
+				if(noteGraph) noteGraph->reset();
+				
 				// Project file loading
 				QFile f(fileName);
 				if (f.open(QFile::ReadOnly)) {
@@ -421,6 +476,8 @@ void EditorApp::openFile(QString fileName)
 			QMessageBox::critical(this, tr("Error loading file!"), e.what());
 		}
 	}
+	
+	m_scrollBarNeedUpdate = true;
 }
 
 void EditorApp::on_actionSave_triggered()

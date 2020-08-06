@@ -5,6 +5,7 @@
 #include "operation.hh"
 #include "song.hh"
 #include "synth.hh"
+#include "scrollbar.hh"
 #include "notegraphwidget.hh"
 #include <QMediaPlayer>
 
@@ -140,7 +141,8 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-
+	void updatedNotes();
+	
 private:
 	Ui::EditorApp ui;
 	GettingStartedDialog *gettingStarted;
@@ -157,4 +159,6 @@ private:
 	QString projectFileName;
 	QString latestPath;
 	int currentBufferPlayer;
+	ScrollBar* m_scrollBar = nullptr;
+	bool m_scrollBarNeedUpdate = true;
 };
