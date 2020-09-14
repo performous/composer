@@ -39,6 +39,7 @@ public:
 	virtual void startNotePixmapUpdates() {}
 	virtual void forcedNotePixmapUpdate() {}
 
+	void reset();
 	void clearNotes();
 	void selectNote(NoteLabel *note, bool clearPrevious = true);
 	void selectAll();
@@ -72,6 +73,8 @@ public:
 	int n2px(double note) const;
 	double px2n(int px) const;
 
+	double getSongLengthInSeconds() const;
+	
 signals:
 	void updateNoteInfo(NoteLabel*);
 	void operationDone(const Operation&);
@@ -99,7 +102,7 @@ protected:
 	NoteLabels m_selectedNotes;
 	enum NoteAction { NONE, RESIZE, MOVE } m_selectedAction;
 	int m_noteHalfHeight;
-	double m_duration;
+	double m_songLengthInSeconds;
 };
 
 
@@ -146,7 +149,8 @@ public slots:
 signals:
 	void analyzeProgress(int, int);
 	void seeked(qint64 time);
-
+	void updatedNotes();
+	
 protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);

@@ -20,12 +20,17 @@
 
 
 NoteLabelManager::NoteLabelManager(QWidget *parent)
-	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal), m_duration(10.0)
+	: QLabel(parent), m_selectedAction(NONE), m_pixelsPerSecond(ppsNormal), m_songLengthInSeconds(10.0)
 {
 	// Determine NoteLabel height
 	NoteLabel templabel(Note(" "), NULL);
 	m_noteHalfHeight = templabel.height()/2;
 	templabel.close();
+}
+
+void NoteLabelManager::reset()
+{
+	m_songLengthInSeconds = 10;
 }
 
 void NoteLabelManager::clearNotes()
@@ -441,7 +446,7 @@ void NoteLabelManager::zoom(float steps, double focalSecs) {
 		m_pixelsPerSecond = pps;
 	}
 
-	setFixedSize(s2px(m_duration), height());
+	setFixedSize(s2px(m_songLengthInSeconds), height());
 
 	// Update scroll bar position
 	scrollArea->horizontalScrollBar()->setValue(s2px(focalSecs) - focalFactor * scrollArea->width());
@@ -543,3 +548,9 @@ void NoteLabelManager::paste()
 	emit updateNoteInfo(selectedNote());
 	forcedNotePixmapUpdate();
 }
+
+double NoteLabelManager::getSongLengthInSeconds() const {
+	//std::cout << "duration: " << m_songLengthInSeconds << std::endl;
+	return m_songLengthInSeconds;
+}
+

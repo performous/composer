@@ -88,7 +88,7 @@ void NoteGraphWidget::setLyrics(QString lyrics)
 		}
 	}
 	// Set duration
-	m_duration = std::max(m_duration, NoteLabel::default_length * m_notes.size() * 1.1 + endMarginSeconds);
+	m_songLengthInSeconds = std::max(m_songLengthInSeconds, NoteLabel::default_length * m_notes.size() * 1.1 + endMarginSeconds);
 
 	finalizeNewLyrics();
 }
@@ -97,7 +97,7 @@ void NoteGraphWidget::setLyrics(const VocalTrack &track)
 {
 	BusyDialog busy(this, 10);
 	doOperation(Operation("CLEAR"));
-	m_duration = std::max(m_duration, track.endTime + endMarginSeconds);
+	m_songLengthInSeconds = std::max(m_songLengthInSeconds, track.endTime + endMarginSeconds);
 	const Notes &notes = track.notes;
 	for (Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 		if (it->type == Note::SLEEP) continue;
@@ -116,8 +116,8 @@ void NoteGraphWidget::finalizeNewLyrics()
 		doOperation(Operation("FLOATING", (int)m_notes.size()-1, false));
 		Operation moveop("MOVE");
 		moveop << (int)m_notes.size()-1
-			<< m_duration - NoteLabel::default_length - endMarginSeconds
-			<< m_duration - endMarginSeconds
+			<< m_songLengthInSeconds - NoteLabel::default_length - endMarginSeconds
+			<< m_songLengthInSeconds - endMarginSeconds
 			<< m_notes.back()->note().note;
 		doOperation(moveop);
 		ops += 2; // Amount of extra Operations added here
@@ -128,7 +128,7 @@ void NoteGraphWidget::finalizeNewLyrics()
 
 	// Make sure there is enough room
 	if (!m_notes.isEmpty())
-		setFixedWidth(std::max<int>(width(), s2px(m_duration)));
+		setFixedWidth(std::max<int>(width(), s2px(m_songLengthInSeconds)));
 
 	// Calculate floating note positions
 	updateNotes();
@@ -174,7 +174,7 @@ void NoteGraphWidget::timerEvent(QTimerEvent* event)
 			if (i == 0) duration = m_pitch[i]->getDuration();
 		}
 		emit analyzeProgress(1000 * progress, 1000); // Update progress bar
-		m_duration = std::max(m_duration, duration);
+		m_songLengthInSeconds = std::max(m_songLengthInSeconds, duration);
 		// Analyzing has ended?
 		if (progress == 1.0) {
 			killTimer(m_analyzeTimer);
@@ -221,7 +221,7 @@ void NoteGraphWidget::playbackRateChanged(qreal rate)
 
 void NoteGraphWidget::paintEvent(QPaintEvent*)
 {
-	setFixedSize(s2px(m_duration), height());
+	setFixedSize(s2px(m_songLengthInSeconds), height());
 
 	// Find out the viewport
 	int x1, y1, x2, y2;
@@ -276,7 +276,7 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 {
 	// Here happens the magic that adjusts the floating
 	// notes according to the fixed ones.
-	FloatingGap gap(leftToRight ? 0 : m_duration);
+	FloatingGap gap(leftToRight ? 0 : m_songLengthInSeconds);
 
 	// Determine gaps between non-floating notes
 	// Variable leftToRight controls the iteration direction.
@@ -331,6 +331,8 @@ void NoteGraphWidget::updateNotes(bool leftToRight)
 			gap = FloatingGap(leftToRight ? n.end : n.begin);
 		}
 	}
+	
+	emit updatedNotes();
 }
 
 void NoteGraphWidget::updateMusicPos(qint64 time, bool smoothing)
