@@ -1,4 +1,4 @@
-#include <QProgressBar>
+﻿#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QMessageBox>
@@ -518,7 +518,7 @@ void EditorApp::exportSong(QString format, QString dialogTitle)
 	if (!path.isNull()) {
 		latestPath = path;
 		// Sync notes
-		if (noteGraph) song->insertVocalTrack(TrackName::LEAD_VOCAL, noteGraph->getVocalTrack());
+		if (noteGraph) song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
 		// Pick exporter
 		try {
 			if (format == "XML") SingStarXMLWriter(*song.data(), path);
@@ -1192,3 +1192,20 @@ void EditorApp::on_sliderPlaybackRate_valueChanged(int value)
 }
 
 
+
+void EditorApp::on_comboBoxTrack_currentIndexChanged(int index)
+{
+	switch(index) {
+	case 0:
+		song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
+		noteGraph->activeTrack = TrackName::LEAD_VOCAL;
+		noteGraph->setLyrics(song->getVocalTrack(noteGraph->activeTrack));
+		break;
+	case 1:
+		song->insertVocalTrack(noteGraph->activeTrack, noteGraph->getVocalTrack());
+		noteGraph->activeTrack = TrackName::DUET_P2;
+		noteGraph->setLyrics(song->getVocalTrack(noteGraph->activeTrack));
+
+		break;
+	}
+}

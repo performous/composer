@@ -1,4 +1,4 @@
-#include <QMouseEvent>
+﻿#include <QMouseEvent>
 #include <QKeyEvent>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -695,7 +695,7 @@ void NoteGraphWidget::showContextMenu(const QPoint &pos)
 
 VocalTrack NoteGraphWidget::getVocalTrack() const
 {
-	VocalTrack track(TrackName::LEAD_VOCAL);
+	VocalTrack track(activeTrack);
 	Notes& notes = track.notes;
 	if (!m_notes.isEmpty()) {
 		for (int i = 0; i < m_notes.size(); ++i) {

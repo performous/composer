@@ -1,8 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "pitchvis.hh"
 #include "notes.hh"
 #include "operation.hh"
+#include "song.hh"
 #include <QLabel>
 #include <QList>
 #include <QScopedPointer>
@@ -129,6 +130,7 @@ public:
 	QString getCurrentSentence() const;
 	QString getPrevSentence() const;
 	QString dumpLyrics() const;
+	QString activeTrack = TrackName::LEAD_VOCAL;
 
 public slots:
 	void showContextMenu(const QPoint &pos);
