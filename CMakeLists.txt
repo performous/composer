@@ -1,7 +1,7 @@
 project("Composer" CXX C)
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
-set(PROJECT_VERSION "2.0")
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(VERSION 3.0)
+set(PROJECT_VERSION "2.0.1")
 set(BUILD_SHARED_LIBS OFF)
 #FIXME: Changes in version number or project name must manually also be put to:
 #       platform/mingw-cross-env/makeinstaller.py
@@ -26,15 +26,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-
-# Find all the libs that don't require extra parameters
-foreach(lib AVFormat SWResample SWScale Qt5Core Qt5Widgets Qt5Gui Qt5Xml Qt5Multimedia)
-	find_package(${lib} REQUIRED)
-	include_directories(${${lib}_INCLUDE_DIRS})
-	list(APPEND LIBS ${${lib}_LIBRARIES})
-	add_definitions(${${lib}_DEFINITIONS})
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${lib}_EXECUTABLE_COMPILE_FLAGS}")
-endforeach(lib)
 
 # Sources
 add_subdirectory(src)

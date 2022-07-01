@@ -17,7 +17,7 @@ libfind_pkg_check_modules(SWScale_PKGCONF libswscale)
 
 find_path(SWScale_INCLUDE_DIR
   NAMES libswscale/swscale.h ffmpeg/swscale.h swscale.h
-  PATHS ${SWScale_PKGCONF_INCLUDE_DIRS}
+  HINTS ${SWScale_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES ffmpeg
 )
 
@@ -37,10 +37,8 @@ endif(SWScale_INCLUDE_DIR)
 
 find_library(SWScale_LIBRARY
   NAMES libswscale.dll.a swscale
-  PATHS ${SWScale_PKGCONF_LIBRARY_DIRS}
+  HINTS ${SWScale_PKGCONF_LIBRARY_DIRS}
 )
 
-set(SWScale_PROCESS_INCLUDES SWScale_INCLUDE_DIR AVUtil_INCLUDE_DIRS)
-set(SWScale_PROCESS_LIBS SWScale_LIBRARY AVUtil_LIBRARIES)
 libfind_process(SWScale)
 
