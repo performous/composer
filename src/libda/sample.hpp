@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 /**
  * @file sample.hpp Sample format definition and format conversions.
  */
