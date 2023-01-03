@@ -68,6 +68,7 @@ jobs:
           - os: fedora
             version: 35
           ## FFMPEG5 causes issues
+          ## See https://github.com/performous/composer/issues/45
           #- os: fedora
           #  version: 36
     steps:
