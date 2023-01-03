@@ -14,6 +14,10 @@ set(CPACK_PACKAGE_EXECUTABLES composer)
 set(CPACK_SOURCE_GENERATOR "TBZ2")
 set(CPACK_GENERATOR "TBZ2")
 
+# Debian specific settings
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_SECTION "Games")
+
 if("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 	set(CPACK_STRIP_FILES TRUE)
 endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
@@ -48,29 +52,6 @@ if(UNIX)
 			set(CPACK_PACKAGE_ARCHITECTURE amd64)
 		endif("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "x86_64")
 
-		# Set the dependencies based on the distro version
-
-		# Ubuntu
-		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4, libqtgui4, libqt4-xml, phonon, libavformat52|libavformat-extra-52")
-		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
-
-		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4, libqtgui4, libqt4-xml, phonon, libavformat52|libavformat-extra-52")
-		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-
-		# Debian
-		if("${LSB_DISTRIB}" MATCHES "Debian5.*")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4, libqtgui4, libqt4-xml, phonon, libavformat52|libavformat-extra-52")
-		endif("${LSB_DISTRIB}" MATCHES "Debian5.*")
-
-		if("${LSB_DISTRIB}" MATCHES "Debiantesting")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4, libqtgui4, libqt4-xml, phonon, libavformat52|libavformat-extra-52")
-                endif("${LSB_DISTRIB}" MATCHES "Debiantesting")
-
-		if(NOT CPACK_DEBIAN_PACKAGE_DEPENDS)
-			message("WARNING: ${LSB_DISTRIB} not supported yet.\nPlease set deps in packaging.cmake before packaging.")
-		endif(NOT CPACK_DEBIAN_PACKAGE_DEPENDS)
 		string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${LSB_DISTRIB}_${CPACK_PACKAGE_ARCHITECTURE}" CPACK_PACKAGE_FILE_NAME)
 	endif("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
 	# For Fedora-based distros we want to create RPM packages.
@@ -106,4 +87,3 @@ if(UNIX)
 endif(UNIX)
 
 include(CPack)
-
