@@ -29,4 +29,3 @@ set(CMAKE_AUTOMOC ON)
 
 # Sources
 add_subdirectory(src)
-
