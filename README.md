@@ -44,4 +44,4 @@ Build for linux:
 To build for linux simply install the required libraries through your distribution's package manager along with CMake. Then create a build folder and use cmake (or cmake-gui) to generate your makefiles. Then make && make install (last command might require root privileges).
 
 Build for Windows:
-todo
+To build for Windows simply install the required libraries through vcpkg. Then startup Visual Studio and let cmake generate your makefiles. Then build the project and make it run.
