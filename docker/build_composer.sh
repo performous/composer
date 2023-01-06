@@ -69,13 +69,6 @@ if [ "${ID}" == "fedora" ]; then
   EXTRA_CMAKE_ARGS="${EXTRA_CMAKE_ARGS} -DUSE_BOOST_REGEX=1"
 fi
 
-## Set more cmake flags for Debian 10
-# Debian Buster has system Aubio 0.4.5, this is not enough
-# because performous requires a minimum version of 0.4.9.
-if ([ "${ID}" = "debian" ] && [ "${VERSION_ID}" = "10" ]); then
-  EXTRA_CMAKE_ARGS="${EXTRA_CMAKE_ARGS} -DSELF_BUILT_AUBIO=ALWAYS -DSELF_BUILT_JSON=ALWAYS"
-fi
-
 if [ "${RELEASE_BUILD}" ]; then
   EXTRA_CMAKE_ARGS="${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=Release"
 fi
