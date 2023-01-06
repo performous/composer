@@ -4,7 +4,7 @@ on:
   # Only run when the other workflow is completed since
   # the build workflow only publishes artifacts after it has completed
   workflow_run:
-    workflows: [ 'Build and Release Performous' ]
+    workflows: [ 'Build and Release Composer' ]
     types: [completed]
 
 jobs:
