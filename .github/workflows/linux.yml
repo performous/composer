@@ -107,7 +107,7 @@ jobs:
         run: |
           # Set the correct version in cmake
           PACKAGE_VERSION=${{ inputs.package_complete_version }}
-          EXTRA_CMAKE_ARGS="-DPERFORMOUS_VERSION=${PACKAGE_VERSION}"
+          EXTRA_CMAKE_ARGS="-DCOMPOSER_VERSION=${PACKAGE_VERSION}"
 
           # Decide if we should build a 'Release' package or a 'RelWithDebInfo' (default)
           # For some reason, building with 'RelWithDebInfo' (default) doesn't work 
