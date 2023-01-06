@@ -17,6 +17,14 @@ Features
 	- Frets on Fire MIDI
 	- LRC
 
+Latest builds
+==========
+- [Linux - Ubuntu 20.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_20.04.deb.zip)
+- [Linux - Ubuntu 22.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_22.04.deb.zip)
+- [Linux - Debian 10](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_10.deb.zip)
+- [Linux - Debian 11](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_11.deb.zip)
+- [Linux - Fedora 34](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_34.rpm.zip)
+- [Linux - Fedora 35](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_35.rpm.zip)
 
 Build & Install
 --------
