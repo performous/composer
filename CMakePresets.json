@@ -1,0 +1,69 @@
+{
+    "version": 2,
+    "configurePresets": [
+      {
+        "name": "windows-base",
+        "description": "Target Windows with the Visual Studio development environment.",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build/${presetName}",
+        "cacheVariables": {
+          "CMAKE_C_COMPILER": "cl.exe",
+          "CMAKE_CXX_COMPILER": "cl.exe",
+          "BUILD_SHARED_LIBS": "ON",
+          "ENABLE_WEBSERVER": "OFF",
+          "SELF_BUILT_AUBIO": "ALWAYS",
+          "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}-install",
+          "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+          "COMPOSER_VERSION": "$env{COMPOSER_VERSION}"
+        }
+      },
+      {
+        "name": "x64-debug",
+        "displayName": "x64 Debug",
+        "description": "Target Windows Debug (64-bit).",
+        "inherits": "windows-base",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug"
+        }
+      },
+      {
+        "name": "x64-release",
+        "displayName": "x64 Release",
+        "description": "Target Windows Release (64-bit).",
+        "inherits": "windows-base",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release"
+        }
+      },
+      {
+        "name": "x64-debinfo",
+        "displayName": "x64 Release with Debug info",
+        "description": "Target Windows Release with Debug info (64-bit).",
+        "inherits": "x64-release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "x64-debug",
+        "configurePreset": "x64-debug",
+        "displayName": "Build x64-debug.",
+        "description": "Build x64-debug."
+      },
+      {
+        "name": "x64-release",
+        "configurePreset": "x64-release",
+        "displayName": "Build x64-release.",
+        "description": "Build x64-release."
+      },
+      {
+        "name": "x64-debinfo",
+        "configurePreset": "x64-debinfo",
+        "displayName": "Build x64-debinfo.",
+        "description": "Build x64-debinfo."
+      }
+    ]
+  }
