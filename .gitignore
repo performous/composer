@@ -2,3 +2,4 @@ build
 build32
 build64
 CMakeLists.txt.user*
+.vs
