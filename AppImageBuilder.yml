@@ -1,0 +1,52 @@
+version: 1
+
+AppDir:
+  path: ./AppDir
+  app_info:
+    id: Performous Composer
+    name: Composer
+    icon: composer
+    version: @@VERSION@@
+    exec: usr/bin/composer
+    exec_args: $@
+  apt:
+    arch: amd64
+    allow_unauthenticated: true
+    sources:
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse
+    include:
+      ## All of these dependencies can be found by downloading the Composer
+      ## package for Ubuntu 20.04 and doing a dpkg -I on it
+      - libavcodec58
+      - libavformat58
+      - libavutil56
+      - libc6
+      - libgcc-s1
+      - libqt5core5a
+      - libqt5gui5
+      - libqt5multimedia5
+      - libqt5widgets5
+      - libqt5xml5
+      - libstdc++6
+      - libswresample3
+  files:
+    exclude:
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
+  after_bundle: |
+    ## In Fedora and Gentoo (probably others too), libnsl has been deprecated
+    ## from glibc and is available in another package. It still exists as part
+    ## of the Debian lineage, and must be copied into the project root so it
+    ## can run on Distros where it is not available by default.
+    ## Hopefully this can be removed some day.
+    cp $TARGET_APPDIR/runtime/compat/lib/x86_64-linux-gnu/libnsl.so.1 $TARGET_APPDIR/
+    ## This needs to be copied to make Arch work
+    cp $TARGET_APPDIR/runtime/compat/lib/x86_64-linux-gnu/libcrypt.so.1 $TARGET_APPDIR/
+AppImage:
+  arch: x86_64
+  update-information: None
+  sign-key: None

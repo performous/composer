@@ -25,6 +25,7 @@ Latest builds
 - [Linux - Debian 11](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_11.deb.zip)
 - [Linux - Fedora 34](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_34.rpm.zip)
 - [Linux - Fedora 35](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_35.rpm.zip)
+- [Linux - AppImage](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest.AppImage.zip)
 
 Build & Install
 --------
