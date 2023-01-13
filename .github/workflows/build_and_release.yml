@@ -84,15 +84,15 @@ jobs:
       - create_release
 
   # Pull in the AppImage build workflow
-  #AppImage_Package:
-  #  name: Build the AppImage package
-  #  uses: ./.github/workflows/appimage.yml
-  #  with:
-  #    package_complete_version: ${{ needs.determine_version.outputs.complete_version }}
-  #    release_upload_url: ${{ needs.create_release.outputs.upload_url }}
-  #  needs:
-  #    - determine_version
-  #    - create_release
+  AppImage_Package:
+    name: Build the AppImage package
+    uses: ./.github/workflows/appimage.yml
+    with:
+      package_complete_version: ${{ needs.determine_version.outputs.complete_version }}
+      release_upload_url: ${{ needs.create_release.outputs.upload_url }}
+    needs:
+      - determine_version
+      - create_release
 
   # Pull in the MacOS build workflow
   #MacOS_Package:
