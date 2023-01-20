@@ -2,6 +2,10 @@ name: Build and Release Composer
 
 # Controls when the workflow will run
 on:
+  # Run on a schedule to get monthly updates
+  schedule:
+    - cron: "0 0 28 * *"
+
   # Triggers the workflow on merges to master, release branches,
   # all PRs, and release tags 
   push:
