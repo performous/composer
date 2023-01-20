@@ -6,7 +6,7 @@
 ## such as finding the package that was just created.
 ## This is meant to reduce the size of the workflow
 ## files, and to utilize a single set of shared code
-## among all the functions, since copying these
+## among all the workflows, since copying these
 ## everywhere is error-prone and tedious.
 ##
 ## For simplicity, these functions should work on all

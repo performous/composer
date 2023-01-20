@@ -31,15 +31,11 @@ jobs:
       - name: Checkout Git
         id: checkout_git
         uses: actions/checkout@v3
-        with:
-          path: composer
 
       - name: Build the AppImage
         id: build_appimage
         run: |
-          cd composer
-
-          ## Pull in our common build functions
+          # Pull in our common build functions
           . .github/workflows/build_functions.sh
 
           PACKAGE_VERSION=${{ inputs.package_complete_version }}
@@ -53,7 +49,6 @@ jobs:
 
           ## Provided by the common build functions
           package_name "$(pwd)" "*.AppImage" "${PACKAGE_VERSION}"
-
 
       # Upload artifacts during pull-requests
       - name: Upload artifact
