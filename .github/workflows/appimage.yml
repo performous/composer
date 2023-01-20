@@ -1,10 +1,6 @@
 name: Build AppImage Packages
 
 on:
-  # Run on a schedule to get monthly updates
-  schedule:
-    - cron: "0 0 28 * *"
-
   # Run when called from other workflows
   workflow_call:
     inputs:
@@ -42,6 +38,10 @@ jobs:
         id: build_appimage
         run: |
           cd composer
+
+          ## Pull in our common build functions
+          . .github/workflows/build_functions.sh
+
           PACKAGE_VERSION=${{ inputs.package_complete_version }}
           sed -i s/@@VERSION@@/${PACKAGE_VERSION}/ AppImageBuilder.yml
           mkdir build
@@ -51,20 +51,9 @@ jobs:
           cd ..
           appimage-builder --recipe AppImageBuilder.yml --skip-test
 
-          WORK_DIR=$(pwd)
-          PACKAGE_PATH=$(ls ${WORK_DIR}/*.AppImage)
-          PACKAGE_NAME=$(echo ${PACKAGE_PATH} | sed 's/\(Composer\).*$/\1/')
-          PACKAGE_SUFFIX=".AppImage"
-          NEW_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}${PACKAGE_SUFFIX}"
-          MASTER_NEW_PACKAGE_NAME="${PACKAGE_NAME}-latest${PACKAGE_SUFFIX}"
-          cp ${PACKAGE_PATH} ${MASTER_NEW_PACKAGE_NAME}
-          mv ${PACKAGE_PATH} ${NEW_PACKAGE_NAME}
-          ARTIFACT_NAME=$( echo ${NEW_PACKAGE_NAME} | rev | cut -d '/' -f1 | rev)
-          MASTER_ARTIFACT_NAME=$( echo ${MASTER_NEW_PACKAGE_NAME} | rev | cut -d '/' -f1 | rev)
-          echo "ARTIFACT_PATH=${NEW_PACKAGE_NAME}" >> ${GITHUB_ENV}
-          echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> ${GITHUB_ENV}
-          echo "MASTER_ARTIFACT_PATH=${MASTER_NEW_PACKAGE_NAME}" >> ${GITHUB_ENV}
-          echo "MASTER_ARTIFACT_NAME=${MASTER_ARTIFACT_NAME}" >> ${GITHUB_ENV}
+          ## Provided by the common build functions
+          package_name "$(pwd)" "*.AppImage" "${PACKAGE_VERSION}"
+
 
       # Upload artifacts during pull-requests
       - name: Upload artifact
