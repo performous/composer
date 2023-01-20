@@ -101,6 +101,9 @@ jobs:
         # up-to-date anyway.
         if: ${{ github.event_name != 'schedule' }}
         run: |
+          # Pull in our common build functions
+          . .github/workflows/build_functions.sh
+
           # Set the correct version in cmake
           PACKAGE_VERSION=${{ inputs.package_complete_version }}
           EXTRA_CMAKE_ARGS="-DCOMPOSER_VERSION=${PACKAGE_VERSION}"
@@ -120,9 +123,6 @@ jobs:
           # Run the build inside the docker containers using the
           # build script that was pulled inside during the build
           docker run --rm -v $(pwd):/github_actions_build/ ${{ env.CONTAINER_NAME }} ./build_composer.sh -g -D /github_actions_build/ -E ${EXTRA_CMAKE_ARGS} ${RELEASE_TYPE}
-
-          ## Pull in our common build functions
-          . .github/workflows/build_functions.sh
 
           ## Provided by the common build functions
           package_name "$(pwd)/build" "Composer*64.*" "${PACKAGE_VERSION}" "${{ matrix.os }}" "${{ matrix.version }}"
