@@ -89,7 +89,7 @@ jobs:
 
   # Pull in the AppImage build workflow
   AppImage_Package:
-    name: Build the AppImage package
+    name: Build the AppImage
     uses: ./.github/workflows/appimage.yml
     with:
       package_complete_version: ${{ needs.determine_version.outputs.complete_version }}
