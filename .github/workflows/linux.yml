@@ -60,13 +60,17 @@ jobs:
           - os: debian
             version: 11
           - os: fedora
-            version: 34
-          - os: fedora
             version: 35
           ## FFMPEG5 causes issues
           ## See https://github.com/performous/composer/issues/45
-          #- os: fedora
-          #  version: 36
+          - os: fedora
+            version: 36
+          - os: fedora
+            version: 37
+          - os: fedora
+            version: 38
+          - os: fedora
+            version: 39
     steps:
       - name: Container name
         run: |
