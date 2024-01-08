@@ -68,7 +68,9 @@ double FFmpeg::duration() const {
 
 void FFmpeg::open() {
 	QMutexLocker l(&s_avcodec_mutex);
+#if (LIBAVFORMAT_VERSION_INT) <= (AV_VERSION_INT(59, 0, 100))
 	av_register_all();
+#endif
 	av_log_set_level(AV_LOG_ERROR);
 	if (avformat_open_input(&pFormatCtx, m_filename.c_str(), NULL, NULL)) throw std::runtime_error("Cannot open input file");
 	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) throw std::runtime_error("Cannot find stream information");
@@ -82,6 +84,9 @@ void FFmpeg::open() {
 	}
 	if (audioStream == -1) throw std::runtime_error("No audio stream found");
 	AVCodecContext* cc = pFormatCtx->streams[audioStream]->codec;
+#if (LIBAVFORMAT_VERSION_INT) >= (AV_VERSION_INT(59, 0, 100))
+	const
+#endif
 	pAudioCodec = avcodec_find_decoder(cc->codec_id);
 	audioQueue.setRateChannels(m_rate, 2);
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");

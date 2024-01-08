@@ -23,8 +23,12 @@ Latest builds
 - [Linux - Ubuntu 22.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_22.04.deb.zip)
 - [Linux - Debian 10](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_10.deb.zip)
 - [Linux - Debian 11](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_11.deb.zip)
-- [Linux - Fedora 34](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_34.rpm.zip)
+- [Linux - Debian 12](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-debian_12.deb.zip)
 - [Linux - Fedora 35](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_35.rpm.zip)
+- [Linux - Fedora 36](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_36.rpm.zip)
+- [Linux - Fedora 37](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_37.rpm.zip)
+- [Linux - Fedora 38](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_38.rpm.zip)
+- [Linux - Fedora 39](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-fedora_39.rpm.zip)
 - [Linux - AppImage](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest.AppImage.zip)
 
 Build & Install
