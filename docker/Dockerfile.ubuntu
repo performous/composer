@@ -6,6 +6,7 @@ FROM docker.io/library/ubuntu:${OS_VERSION}
 ## hang on asking for user input for configuration
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG TZ="America/New_York"
+ENV PACKAGE_TYPE="DEB"
 
 ## Install the deps and create the build directory
 RUN apt-get update && \ 
