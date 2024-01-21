@@ -2,6 +2,9 @@ ARG OS_VERSION
 ## Use the official Fedora <OS_VERSION> Image from Dockerhub
 FROM docker.io/library/fedora:${OS_VERSION}
 
+ENV OS_VERSION=${OS_VERSION}
+ENV PACKAGE_TYPE="RPM"
+
 ## Install the deps and create the working directory
 ## Enable the RPM Fusion Free Repo
 RUN dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm &&\

@@ -5,6 +5,7 @@ FROM docker.io/library/debian:${OS_VERSION}
 ## Copy OS_VERSION into ENV so we can use it in scripts too
 ARG OS_VERSION
 ENV OS_VERSION=${OS_VERSION}
+ENV PACKAGE_TYPE="DEB"
 
 ## Set up environment variables so the tzdata install doesn't
 ## hang on asking for user input for configuration

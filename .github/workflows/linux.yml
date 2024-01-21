@@ -8,7 +8,7 @@ on:
         description: 'The output of the complete_version of the "determine_version" job from the build_and_release.yml workflow'
         required: true
         type: string
-      release_upload_url:
+      release_id:
         description: 'The output of the "create_release" job from the build_and_release.yml workflow'
         required: true
         type: string
@@ -19,11 +19,14 @@ env:
 
 jobs:
   # Decide if we need to build the containers on this run
-  determine_docker_build:
+  determine_docker_version:
     name: Determine whether to build the containers or not
     runs-on: ubuntu-latest
     outputs:
-      build_docker_containers: ${{ steps.docker_check.outputs.build_docker_containers }}
+      build_docker_containers: ${{ steps.version.outputs.build_docker_containers }}
+      build_debian_containers: ${{ steps.version.outputs.build_debian_containers }}
+      build_ubuntu_containers: ${{ steps.version.outputs.build_ubuntu_containers }}
+      build_fedora_containers: ${{ steps.version.outputs.build_fedora_containers }}
     steps:
       - name: Checkout
         id: checkout
@@ -31,23 +34,58 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build docker check
-        id: docker_check
+      - name: Determine version
+        id: version
         run: |
           # Only run the container builds when something in the docker folder or
           # this workflow has changed from master, or if it was cron triggered
-          GIT_OUTPUT="$(git log -n 2 --stat)"
-          if [ $(echo ${GIT_OUTPUT} | grep -c docker/) -gt 0 ] || [ $(echo ${GIT_OUTPUT} | grep -c .github/workflows/linux.yml) -gt 0 ] || [ '${{ github.event_name }}' = 'schedule' ]; then
+          if [[ '${{ github.event_name }}' == 'push' ]]; then
+            base_version='${{ github.event.before }}'
+          else
+            base_version='origin/master'
+          fi
+          DIFF_YML=$((git rev-parse HEAD:.github/workflows/linux.yml && git diff --merge-base ${base_version} --exit-code -- .github/workflows/linux.yml) > /dev/null 2>&1 ; echo $?)
+          if [[ $DIFF_YML != 0 || '${{ github.event_name }}' == 'schedule' ]]; then
+            echo "Refresh all containers: TRUE"
             echo "build_docker_containers=true" >> $GITHUB_OUTPUT
           else
+            echo "Refresh all containers: FALSE"
             echo "build_docker_containers=false" >> $GITHUB_OUTPUT
+          fi
+
+          DIFF_UBUNTU=$((git rev-parse HEAD:docker/Dockerfile.ubuntu HEAD:docker/build_performous.sh && git diff --merge-base ${base_version} --exit-code -- docker/Dockerfile.ubuntu docker/build_performous.sh) > /dev/null 2>&1 ; echo $?)
+          DIFF_DEBIAN=$((git rev-parse HEAD:docker/Dockerfile.debian HEAD:docker/build_performous.sh && git diff --merge-base ${base_version} --exit-code -- docker/Dockerfile.debian docker/build_performous.sh) > /dev/null 2>&1 ; echo $?)
+          DIFF_FEDORA=$((git rev-parse HEAD:docker/Dockerfile.fedora HEAD:docker/build_performous.sh && git diff --merge-base ${base_version} --exit-code -- docker/Dockerfile.fedora docker/build_performous.sh) > /dev/null 2>&1 ; echo $?)
+
+          if [[ $DIFF_UBUNTU != 0 ]]; then
+            echo "Refresh Ubuntu containers: TRUE"
+            echo "build_ubuntu_containers=true" >> $GITHUB_OUTPUT
+          else
+            echo "Refresh Ubuntu containers: FALSE"
+            echo "build_ubuntu_containers=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ $DIFF_FEDORA != 0 ]]; then
+            echo "Refresh FEDORA containers: TRUE"
+            echo "build_fedora_containers=true" >> $GITHUB_OUTPUT
+          else
+            echo "Refresh FEDORA containers: FALSE"
+            echo "build_fedora_containers=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ $DIFF_DEBIAN != 0 ]]; then
+            echo "Refresh DEBIAN containers: TRUE"
+            echo "build_debian_containers=true" >> $GITHUB_OUTPUT
+          else
+            echo "Refresh DEBIAN containers: FALSE"
+            echo "build_debian_containers=false" >> $GITHUB_OUTPUT
           fi
 
   build_packages:
     name: Build the Linux packages
     runs-on: ubuntu-latest
     needs:
-      - determine_docker_build
+      - determine_docker_version
     strategy:
       matrix:
         include:
@@ -59,6 +97,8 @@ jobs:
             version: 10
           - os: debian
             version: 11
+          - os: debian
+            version: 12
           - os: fedora
             version: 35
           ## FFMPEG5 causes issues
@@ -75,7 +115,7 @@ jobs:
       - name: Container name
         run: |
           # Figure out the container name we'll use for the build
-          BUILD_CONTAINER=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/composer-deps:${{ matrix.os }}-${{ matrix.version }}
+          BUILD_CONTAINER=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/deps:${{ matrix.os }}-${{ matrix.version }}
           echo "CONTAINER_NAME=${BUILD_CONTAINER}" >> $GITHUB_ENV
 
       - name: Checkout
@@ -89,7 +129,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build ${{ matrix.os }} ${{ matrix.version }} Container
-        if: ${{ needs.determine_docker_build.outputs.build_docker_containers == 'true' }}
+        if: needs.determine_docker_version.outputs[format('build_{0}_containers', matrix.os)] == 'true' || needs.determine_docker_version.outputs['build_docker_containers'] == 'true'
         uses: docker/build-push-action@v3
         with:
           context: docker/
@@ -106,25 +146,19 @@ jobs:
           # Set the correct version in cmake
           PACKAGE_VERSION=${{ inputs.package_complete_version }}
           EXTRA_CMAKE_ARGS="-DCOMPOSER_VERSION=${PACKAGE_VERSION}"
-
-          # Decide if we should build a 'Release' package or a 'RelWithDebInfo' (default)
-          # For some reason, building with 'RelWithDebInfo' (default) doesn't work 
-          # specifically on PRs, so we'll just build Releases for everything for now
-          #if [ '${{ github.event_name }}' != 'pull_request' ]; then
-            RELEASE_TYPE="-R"
-          #fi
+          COMPOSER_RELEASE_TYPE="RelWithDebInfo"
 
           # Only pull the container if it wasn't built locally
-          if [ '${{ needs.determine_docker_build.outputs.build_docker_containers }}' = 'false' ]; then
+          if [ '${{ needs.determine_docker_version.outputs.build_docker_containers }}' = 'false' ]; then
             docker pull ${{ env.CONTAINER_NAME }}
           fi
 
           # Run the build inside the docker containers using the
           # build script that was pulled inside during the build
-          docker run --rm -v $(pwd):/github_actions_build/ ${{ env.CONTAINER_NAME }} ./build_composer.sh -g -D /github_actions_build/ -E ${EXTRA_CMAKE_ARGS} ${RELEASE_TYPE}
+          docker run --env EXTRA_CMAKE_ARGS --rm -v $(pwd):/github_actions_build/ ${{ env.CONTAINER_NAME }} ./build_composer.sh -g -D /github_actions_build/ -E ${EXTRA_CMAKE_ARGS} -R ${COMPOSER_RELEASE_TYPE}
 
           ## Provided by the common build functions
-          package_name "$(pwd)/build" "Composer*64.*" "${PACKAGE_VERSION}" "${{ matrix.os }}" "${{ matrix.version }}"
+          package_name "$(pwd)/build" "Composer*Linux.*" "${PACKAGE_VERSION}" "${{ matrix.os }}" "${{ matrix.version }}"
 
       #- name: Run unit tests
       #  run: |
@@ -151,20 +185,18 @@ jobs:
       - name: Upload artifacts to tagged release
         id: upload_assets
         if: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
-        uses: actions/upload-release-asset@v1
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ inputs.release_upload_url }}
-          asset_path: ${{ env.ARTIFACT_PATH }}
-          asset_name: ${{ env.ARTIFACT_NAME }}
-          asset_content_type: application/octet-stream
+          release_id: ${{ inputs.release_id }}
+          file: ${{ env.ARTIFACT_PATH }}
 
       - name: Push container
         uses: docker/build-push-action@v3
         # Containers can't be pushed during PRs because of the way permissions
         # are delegated to secrets.GITHUB_TOKEN
-        if: ${{ needs.determine_docker_build.outputs.build_docker_containers == 'true' && github.event_name != 'pull_request' }}
+        if: ${{ needs.determine_docker_version.outputs.build_docker_containers == 'true' && github.event_name != 'pull_request' }}
         with:
           context: docker/
           file: ./docker/Dockerfile.${{ matrix.os }}
