@@ -1,12 +1,12 @@
 #pragma once
 
-#include "util.hh"
 #include "libda/sample.hpp"
 #include <QThread>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <QScopedPointer>
+
 #include <memory>
 #include <vector>
 
@@ -86,6 +86,21 @@ extern "C" {
   struct SwsContext;
 }
 
+struct AVFormatContextDeleter
+{
+	void operator ()(AVFormatContext*);
+};
+
+struct AVCodecContextDeleter
+{
+	void operator ()(AVCodecContext*);
+};
+
+struct SwrContextDeleter
+{
+	void operator ()(SwrContext*);
+};
+
 /// ffmpeg class
 class FFmpeg: public QThread {
   public:
@@ -113,13 +128,11 @@ class FFmpeg: public QThread {
 	volatile bool m_running;
 	volatile bool m_eof;
 	volatile double m_seekTarget;
-	AVFormatContext* pFormatCtx;
-	SwrContext* m_resampleContext;
-	AVCodecContext* pAudioCodecCtx;
-	AVCodec* pAudioCodec;
+	std::unique_ptr<AVFormatContext, AVFormatContextDeleter> pFormatCtx;
+	std::unique_ptr<SwrContext, SwrContextDeleter> m_resampleContext;
+	std::unique_ptr<AVCodecContext, AVCodecContextDeleter> pAudioCodecCtx;
 
 	int audioStream;
-	double m_position;
 	static QMutex s_avcodec_mutex; // Used for avcodec_open/close (which use some static crap and are thus not thread-safe)
 };
 

@@ -8,36 +8,43 @@
 // Somehow ffmpeg headers give errors that these are not defined...
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 extern "C" {
-#include AVCODEC_INCLUDE
-#include AVFORMAT_INCLUDE
-#include SWSCALE_INCLUDE
-#include SWRESAMPLE_INCLUDE
-#include AVUTIL_INCLUDE
-#include AVUTIL_OPT_INCLUDE
-#include AVUTIL_MATH_INCLUDE
+	#include AVCODEC_INCLUDE
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58,87,100) // FFmpeg 4.3
+	#include AVCODEC_CODEC_PAR_INCLUDE
+#endif
+	#include AVFORMAT_INCLUDE
+	#include SWSCALE_INCLUDE
+	#include SWRESAMPLE_INCLUDE
+	#include AVUTIL_INCLUDE
+	#include AVUTIL_OPT_INCLUDE
+	#include AVUTIL_MATH_INCLUDE
+	#include AVUTIL_ERROR_INCLUDE
 }
-
-/// A custom allocator that uses av_malloc for aligned buffers
-template <typename T> class AvMalloc: public std::allocator<T> {
-public:
-/*	pointer allocate(size_type count, allocator<void>::const_pointer* = 0) {
-		pointer ptr = static_cast<pointer>(m(count * sizeof(T)));
-		if (!ptr) throw std::bad_alloc();
-		return ptr;
-	}
-	void deallocate(pointer ptr, size_type) { f(ptr); }*/
-private:
-	void* m(size_t n) { return av_malloc(n); }
-	void f(void* ptr) { av_free(ptr); }
-};
-
 
 /*static*/ QMutex FFmpeg::s_avcodec_mutex;
 
+void AVFormatContextDeleter::operator ()(AVFormatContext* context) {
+	avformat_close_input(&context);
+}
+
+void AVCodecContextDeleter::operator ()(AVCodecContext* context) {
+	avcodec_free_context(&context);
+}
+
+void SwrContextDeleter::operator ()(SwrContext* context) {
+	swr_free(&context);
+}
+
+static std::string stringFromErrorCode(int code) {
+	char buffer[AV_ERROR_MAX_STRING_SIZE];
+	av_make_error_string(buffer, sizeof(buffer), code);
+	return buffer;
+}
+
 FFmpeg::FFmpeg(std::string const& _filename):
   m_filename(_filename), m_quit(), m_running(), m_eof(),
-  pFormatCtx(), pAudioCodecCtx(), pAudioCodec(), m_rate(48000),
-  audioStream(-1), m_position()
+  pFormatCtx(), pAudioCodecCtx(), m_rate(48000),
+  audioStream(-1)
 {
 	open(); // Throws on error
 	m_running = true;
@@ -51,8 +58,6 @@ FFmpeg::~FFmpeg() {
 	wait();
 	// TODO: use RAII for freeing resources (to prevent memory leaks)
 	QMutexLocker l(&s_avcodec_mutex); // avcodec_close is not thread-safe
-	if (pAudioCodecCtx) avcodec_close(pAudioCodecCtx);
-	if (pFormatCtx) avformat_close_input(&pFormatCtx);
 	}
 
 double FFmpeg::duration() const {
@@ -60,43 +65,72 @@ double FFmpeg::duration() const {
 	return d >= 0.0 ? d : getInf();
 }
 
-// FFMPEG has fluctuating API
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(64<<8)+0)
-#define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
-#define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
-#endif
-
 void FFmpeg::open() {
 	QMutexLocker l(&s_avcodec_mutex);
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58,9,100) // Got deprecated in 4.0 but needed for earlier versions
 	av_register_all();
+#endif
 	av_log_set_level(AV_LOG_ERROR);
-	if (avformat_open_input(&pFormatCtx, m_filename.c_str(), NULL, NULL)) throw std::runtime_error("Cannot open input file");
-	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) throw std::runtime_error("Cannot find stream information");
+
+	AVFormatContext *ps{};
+
+	if (auto err = avformat_open_input(&ps, m_filename.c_str(), NULL, NULL); err != 0)
+		throw std::runtime_error(std::string("Cannot open input file. Error: ") + std::to_string(err) + " " + stringFromErrorCode(err));
+
+	pFormatCtx = {ps, {}};
+
+	if (avformat_find_stream_info(pFormatCtx.get(), NULL) < 0) throw std::runtime_error("Cannot find stream information");
 	pFormatCtx->flags |= AVFMT_FLAG_GENPTS;
 	audioStream = -1;
+
 	// Take the first video/audio streams
 	for (unsigned int i=0; i<pFormatCtx->nb_streams; i++) {
-		AVCodecContext* cc = pFormatCtx->streams[i]->codec;
-		cc->workaround_bugs = FF_BUG_AUTODETECT;
-		if (audioStream == -1 && cc->codec_type==AVMEDIA_TYPE_AUDIO) audioStream = i;
+		auto * codecpar = pFormatCtx->streams[i]->codecpar;
+
+		if (codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
+		{
+			audioStream = i;
+			break;
+		}
 	}
 	if (audioStream == -1) throw std::runtime_error("No audio stream found");
-	AVCodecContext* cc = pFormatCtx->streams[audioStream]->codec;
-	pAudioCodec = avcodec_find_decoder(cc->codec_id);
+
+	auto* codecpar = pFormatCtx->streams[audioStream]->codecpar;
+	const auto* pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
 	audioQueue.setRateChannels(m_rate, 2);
 	if (!pAudioCodec) throw std::runtime_error("Cannot find audio codec");
-	if (avcodec_open2(cc, pAudioCodec, NULL) < 0) throw std::runtime_error("Cannot open audio codec");
-	pAudioCodecCtx = cc;
-	m_resampleContext = swr_alloc();
-	av_opt_set_int(m_resampleContext, "in_channel_layout", pAudioCodecCtx->channel_layout ? pAudioCodecCtx->channel_layout : av_get_default_channel_layout(pAudioCodecCtx->channels), 0);
-	av_opt_set_int(m_resampleContext, "out_channel_layout", av_get_default_channel_layout(2), 0);
-	av_opt_set_int(m_resampleContext, "in_sample_rate", pAudioCodecCtx->sample_rate, 0);
-	av_opt_set_int(m_resampleContext, "out_sample_rate", m_rate, 0);
-	av_opt_set_int(m_resampleContext, "in_sample_fmt", pAudioCodecCtx->sample_fmt, 0);
-	av_opt_set_int(m_resampleContext, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
-	swr_init(m_resampleContext);
-	if (!m_resampleContext) throw std::runtime_error("Cannot create resampling context");
 
+	pAudioCodecCtx = {avcodec_alloc_context3(pAudioCodec), {}};
+	avcodec_parameters_to_context(pAudioCodecCtx.get(), codecpar);
+	pAudioCodecCtx->workaround_bugs = 1;
+
+	if (avcodec_open2(pAudioCodecCtx.get(), pAudioCodec, NULL) < 0) throw std::runtime_error("Cannot open audio codec");
+	m_resampleContext = {swr_alloc(), {}};
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 24, 100) // FFmpeg 5.1 and up
+	AVChannelLayout in_chlayout{};
+	if (av_channel_layout_copy(&in_chlayout, &pAudioCodecCtx->ch_layout) < 0)
+	{
+		av_channel_layout_default(&in_chlayout, pAudioCodecCtx->ch_layout.nb_channels);
+	};
+	AVChannelLayout out_chlayout{};
+	av_channel_layout_default(&out_chlayout, 2);
+	// av_get_default_channel_layout(2)
+#endif
+
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 24, 100) // FFmpeg 5.1 and up
+	av_opt_set_chlayout(m_resampleContext.get(), "in_chlayout", &in_chlayout, 0);
+	av_opt_set_chlayout(m_resampleContext.get(), "out_chlayout", &out_chlayout, 0);
+#else // FFmpeg 5.0 and earlier
+	av_opt_set_int(m_resampleContext.get(), "in_channel_layout", pAudioCodecCtx->channel_layout ? pAudioCodecCtx->channel_layout : av_get_default_channel_layout(pAudioCodecCtx->channels), 0);
+	av_opt_set_int(m_resampleContext.get(), "out_channel_layout", av_get_default_channel_layout(2), 0);
+#endif
+	av_opt_set_int(m_resampleContext.get(), "in_sample_rate", pAudioCodecCtx->sample_rate, 0);
+	av_opt_set_int(m_resampleContext.get(), "out_sample_rate", m_rate, 0);
+	av_opt_set_int(m_resampleContext.get(), "in_sample_fmt", pAudioCodecCtx->sample_fmt, 0);
+	av_opt_set_int(m_resampleContext.get(), "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+	swr_init(m_resampleContext.get());
+	if (!m_resampleContext) throw std::runtime_error("Cannot create resampling context");
 }
 
 void FFmpeg::run() {
@@ -138,7 +172,7 @@ void FFmpeg::seek_internal() {
 	// Latest Performous code does not have these lines
 	//const AVRational time_base_q = { 1, AV_TIME_BASE };  // AV_TIME_BASE_Q is the same thing with C99 struct literal (not supported by MSVC)
 	//if (stream != -1) target = av_rescale_q(target, time_base_q, pFormatCtx->streams[stream]->time_base);
-	av_seek_frame(pFormatCtx, stream, target, flags);
+	av_seek_frame(pFormatCtx.get(), stream, target, flags);
 	m_seekTarget = getNaN(); // Signal that seeking is done
 }
 
@@ -155,40 +189,55 @@ void FFmpeg::decodeNextFrame() {
 		}
 	};
 
-	int frameFinished=0;
+	struct ReadFrame
+	{
+		AVFrame* m_frame;
+
+		ReadFrame(): m_frame(av_frame_alloc()) {
+			if (m_frame == nullptr) throw eof_error();
+		}
+        ~ReadFrame() { av_frame_free(&m_frame); }
+
+		operator AVFrame*() {return m_frame;}
+		AVFrame operator*() {return *m_frame;}
+		AVFrame* operator->() {return m_frame;}
+	};
+
+	bool frameFinished{};
 	while (!frameFinished) {
-		ReadFramePacket packet(pFormatCtx);
-		unsigned packetPos = 0;
+		ReadFramePacket packet(pFormatCtx.get());
 		if (packet.stream_index==audioStream) {
-			while (packetPos < packet.size) {
+			auto err = avcodec_send_packet(pAudioCodecCtx.get(), &packet);
+			if (err == AVERROR_EOF) break; // Nothing we can do
+			if (err != 0 && err != AVERROR(EAGAIN)) throw std::runtime_error(std::string("Can't send packet. Error: ") + std::to_string(err) + " " + stringFromErrorCode(err));
+
+			do
+			{
 				if (m_quit || m_seekTarget == m_seekTarget) return;
-				int bytesUsed;
-				#if (LIBAVCODEC_VERSION_INT) > (AV_VERSION_INT(55,0,0))
-				AVFrame* m_frame = av_frame_alloc();
-				#else
-				AVFrame* m_frame = avcodec_alloc_frame();
-				#endif
-				int gotFramePointer = 0;
-				bytesUsed = avcodec_decode_audio4(pAudioCodecCtx,m_frame,&gotFramePointer, &packet);
-				if (bytesUsed < 0) throw std::runtime_error("cannot decode audio frame");
-				packetPos += bytesUsed;
-				// Update position if timecode is available
-				if (packet.time() == packet.time()) m_position = packet.time();
+				ReadFrame m_frame{};
+
+				err = avcodec_receive_frame(pAudioCodecCtx.get(), m_frame);
+				if (err == 0);
+				else if (err == AVERROR(EAGAIN)) break;
+				else if (err == AVERROR_EOF) return; // Finished file
+				else throw std::runtime_error(std::string("cannot decode audio frame. Error: ") + std::to_string(err) + " " + stringFromErrorCode(err));
+
 				//resample here!
 				int16_t * output;
 				int out_linesize;
-				int out_samples = swr_get_out_samples(m_resampleContext, m_frame->nb_samples);
+				int out_samples = swr_get_out_samples(m_resampleContext.get(), m_frame->nb_samples);
 				av_samples_alloc((uint8_t**)&output, &out_linesize, 2, out_samples,AV_SAMPLE_FMT_S16, 0);
-				out_samples = swr_convert(m_resampleContext, (uint8_t**)&output, out_samples, (const uint8_t**)&m_frame->data[0], m_frame->nb_samples);
+				out_samples = swr_convert(m_resampleContext.get(), (uint8_t**)&output, out_samples, (const uint8_t**)&m_frame->data[0], m_frame->nb_samples);
 				std::vector<int16_t> m_output(output, output+out_samples*2);
 				// Output samples
 				int outsize = m_output.size(); /* Convert bytes into samples */ \
 				short* samples = reinterpret_cast<short*>(&m_output[0]);\
 				audioQueue.input(samples, samples + outsize, 1.0 / 32767.0);\
-				m_position += double(out_samples)/m_rate;  // New position in case the next packet doesn't have packet.time()
 			}
+			while (true);
+
 			// Audio frames are always finished
-			frameFinished = 1;
+			frameFinished = true;
 		}
 	}
 }
