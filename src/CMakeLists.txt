@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
-cmake_policy(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
+cmake_policy(VERSION 3.10)
 
 set(EXENAME ${CMAKE_PROJECT_NAME})
 set(CMAKE_AUTOMOC FALSE)
@@ -40,8 +40,8 @@ target_sources(${EXENAME} PRIVATE ${HEADER_FILES} ${SOURCE_FILES} ${MOC_SOURCES}
 # Generate config.hh
 configure_file(config.cmake.hh "${CMAKE_BINARY_DIR}/src/config.hh" @ONLY)
 
-include_directories(${CMAKE_BINARY_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/src)
+target_include_directories(${EXENAME} PRIVATE ${CMAKE_BINARY_DIR}/src)
+target_include_directories(${EXENAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # We don't currently have any assets, so on Windows, we just install to the root installation folder
 if(UNIX)
