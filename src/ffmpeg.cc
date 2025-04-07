@@ -21,7 +21,7 @@ extern "C" {
 	#include AVUTIL_ERROR_INCLUDE
 }
 
-/*static*/ QMutex FFmpeg::s_avcodec_mutex;
+QMutex FFmpeg::s_avcodec_mutex;
 
 void AVFormatContextDeleter::operator ()(AVFormatContext* context) {
 	avformat_close_input(&context);
@@ -74,7 +74,8 @@ void FFmpeg::open() {
 
 	AVFormatContext *ps{};
 
-	if (auto err = avformat_open_input(&ps, m_filename.c_str(), NULL, NULL); err != 0)
+	auto err = avformat_open_input(&ps, m_filename.c_str(), NULL, NULL);
+	if (err != 0)
 		throw std::runtime_error(std::string("Cannot open input file. Error: ") + std::to_string(err) + " " + stringFromErrorCode(err));
 
 	pFormatCtx = {ps, {}};
