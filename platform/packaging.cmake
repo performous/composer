@@ -10,7 +10,12 @@ set(CPACK_SOURCE_IGNORE_FILES
    "/.svn/"
    "/.git/"
 )
-set(CPACK_PACKAGE_EXECUTABLES composer)
+if(WIN32)
+	set(CPACK_PACKAGE_EXECUTABLES "Composer" "${CMAKE_CURRENT_SOURCE_DIR}/icons\\\\composer.png")
+	set(CPACK_PACKAGE_INSTALL_DIRECTORY "Performous\\\\Composer")
+else()
+	set(CPACK_PACKAGE_EXECUTABLES "composer")
+endif()
 set(CPACK_SOURCE_GENERATOR "TBZ2")
 set(CPACK_GENERATOR "TBZ2")
 

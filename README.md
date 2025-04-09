@@ -19,6 +19,8 @@ Features
 
 Latest builds
 ==========
+- [Windows (MSVC)](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-msvc.exe.zip)
+- [Windows (MinGW-w64)](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-mingw-w64.exe.zip)
 - [Linux - Ubuntu 20.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_20.04.deb.zip)
 - [Linux - Ubuntu 22.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_22.04.deb.zip)
 - [Linux - Ubuntu 24.04](https://nightly.link/performous/composer/workflows/build_and_release/master/Composer-latest-ubuntu_24.04.deb.zip)
