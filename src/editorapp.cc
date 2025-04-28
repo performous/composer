@@ -135,6 +135,18 @@ EditorApp::EditorApp(QWidget *parent)
 	// Audio stuff
 	player = new QMediaPlayer(this);
 	player->setNotifyInterval(100);
+	
+	// Set an explicit audio output to ensure playback works
+	QAudioDeviceInfo defaultOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
+	if (defaultOutputDevice.isNull()) {
+		qWarning() << "No default audio output device found";
+		foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
+			qDebug() << "Available audio device:" << deviceInfo.deviceName();
+			defaultOutputDevice = deviceInfo;
+			break;
+		}
+	}
+	
 	bufferPlayers[0] = new BufferPlayer(this);
 	bufferPlayers[1] = new BufferPlayer(this);
 
@@ -609,7 +621,7 @@ void EditorApp::on_actionLyricsToFile_triggered()
 	if (!fileName.isNull()) {
 		QFile f(fileName);
 		QFileInfo finfo(f); latestPath = finfo.path();
-		if (f.open(QFile::WriteOnly | QFile::Truncate)) {
+		if (f.open(QFile::WriteOnly | QIODevice::Truncate)) {
 			QTextStream out(&f);
 			out << noteGraph->dumpLyrics();
 		} else
@@ -967,11 +979,33 @@ void EditorApp::on_cmdPlay_clicked()
 	if (player) {
 		// Can't use currentMedia().isNull() because it will always return false after first set
 		if (player->currentMedia().canonicalUrl().isEmpty()) {
+			qDebug() << "No media loaded, opening media file dialog";
 			on_actionMusicFile_triggered();
 		} else {
-			if (player->state() == QMediaPlayer::PlayingState) player->pause();
-			else player->play();
+			qDebug() << "Media state:" << player->state() << "Media status:" << player->mediaStatus();
+			if (player->state() == QMediaPlayer::PlayingState) {
+				qDebug() << "Pausing playback";
+				player->pause();
+			} else {
+				qDebug() << "Starting playback";
+				// Make sure the player is ready before starting playback
+				if (player->mediaStatus() == QMediaPlayer::LoadedMedia || 
+				    player->mediaStatus() == QMediaPlayer::BufferedMedia) {
+					player->play();
+				} else {
+					qDebug() << "Media not yet loaded, forcing reload and play";
+					// Try to explicitly reload the media
+					QUrl currentUrl = player->currentMedia().canonicalUrl();
+					player->setMedia(QMediaContent(currentUrl));
+					// Give it a short time to load before playing
+					QTimer::singleShot(100, [this]() {
+						player->play();
+					});
+				}
+			}
 		}
+	} else {
+		qDebug() << "Player is not initialized";
 	}
 }
 
